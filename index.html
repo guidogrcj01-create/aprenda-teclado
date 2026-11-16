@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#f6f3ee">
+<title>Aprenda teclado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body.dark{--bg:#14161c;--card:#1e212a;--card2:#282c38;--line:#343947;--text:#f2f2f5;--muted:#9ba1ae;--accent:#f5b83d;--topbg:rgba(20,22,28,.96);--kbbg:#0d0e12;
+  --fall1:#171a21;--fall2:#1b1f28;--curbg:#3a3220;--exptext:#dfe1e7;--notebg:rgba(245,184,61,.1);--notebd:rgba(245,184,61,.35);--notetx:#f4d793;--handoff:#3a3f4b;--handtx:#cfd3dc;--grid:rgba(255,255,255,.08);--auto:#4a505e;--lanetx:#fff;--shadow:none}
+:root{
+  --bg:#f6f3ee;--card:#ffffff;--card2:#efebe4;--line:#e3ddd3;--text:#24262d;--muted:#6f7480;
+  --accent:#f0a823;--topbg:rgba(246,243,238,.95);--kbbg:#d9d4cc;--fall1:#fbf9f5;--fall2:#efeae2;--curbg:#fff2d6;--exptext:#30333b;
+  --notebg:#fff4dc;--notebd:#efc56b;--notetx:#6b4a00;--handoff:#d6d1c8;--handtx:#4a4e58;--grid:rgba(0,0,0,.09);--auto:#c9c4bb;--lanetx:#24262d;--shadow:0 1px 3px rgba(0,0,0,.08);--ok:#3ecf8e;--bad:#ef5b5b;--blue:#5aa9ff;
+  --f1:#ff6b6b;--f2:#ffa94d;--f3:#ffd43b;--f4:#69db7c;--f5:#4dabf7;
+  --kbh:clamp(110px,27vh,190px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Nunito,system-ui,sans-serif;font-size:15px}
+body.kb-on main{padding-bottom:calc(var(--kbh) + 18px)}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-weight:700;font-size:14px;color:var(--text)}
+select,input{font-family:inherit}
+.hidden{display:none!important}
+/* topo */
+#top{position:sticky;top:0;z-index:20;background:var(--topbg);backdrop-filter:blur(6px);display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+#top .ttl{font-weight:800;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{background:var(--card2);padding:8px 11px;font-size:14px}
+#inChip{background:var(--card2);color:var(--muted);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+#inChip.on{background:rgba(62,207,142,.16);color:var(--ok)}
+main{max-width:900px;margin:0 auto;padding:14px 12px 30px}
+h1{font-size:24px;margin:4px 0 4px;font-weight:800}
+h2{font-size:17px;margin:20px 0 10px;font-weight:800}
+h3{font-size:15px;margin:0 0 6px;font-weight:800}
+.card{box-shadow:var(--shadow);background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+p{line-height:1.5;margin:0 0 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--card2);padding:10px 14px}
+.btn.primary{background:var(--accent);color:#1b1404}
+.li,.tile{color:var(--text)}
+.btn.sm{padding:7px 10px;font-size:13px}
+.btn:disabled{opacity:.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{box-shadow:var(--shadow);background:var(--card);border-radius:16px;padding:16px 14px;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:96px}
+.tile .ic{font-size:26px}
+.tile b{font-size:16px}
+.tile span{font-size:12.5px;color:var(--muted);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px}
+.stat{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:22px}.stat span{font-size:11.5px;color:var(--muted)}
+.mod{margin-bottom:16px}
+.modh{display:flex;align-items:baseline;gap:8px;margin:18px 0 8px}
+.modh b{font-size:16px}.modh span{font-size:12px;color:var(--muted)}
+.li{box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;padding:11px 12px;margin-bottom:7px;width:100%;text-align:left}
+.li .n{width:32px;height:32px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:800;flex:none;font-size:13px}
+.li.done .n{background:var(--ok);color:#06281a}
+.li .t{font-weight:800;font-size:14.5px}
+.li .d{font-size:12px;color:var(--muted);font-weight:600}
+.li .st{margin-left:auto;color:var(--accent);flex:none;letter-spacing:1px}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--card2);color:var(--muted);margin-right:4px}
+.obj{border-left:4px solid var(--accent)}
+.exp p{color:var(--exptext)}
+.exp ul{margin:0 0 6px;padding-left:18px;line-height:1.5;color:var(--exptext)}
+.fb{min-height:22px;text-align:center;font-weight:700;margin-top:8px}
+.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.prompt{text-align:center;font-size:15px;color:var(--muted);font-weight:700}
+.prompt .big{display:block;font-size:52px;line-height:1.1;font-weight:800;color:var(--accent);margin:4px 0}
+.opts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.opt{min-width:56px;padding:12px 14px;font-size:16px;background:var(--card2)}
+.opt.right{background:var(--ok);color:#05301c}.opt.wrong{background:var(--bad);color:#fff}
+.exhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.cnt{font-size:12px;color:var(--muted);font-weight:800}
+.result{text-align:center;padding:10px 0}
+.result .stars{font-size:40px;color:var(--accent);letter-spacing:4px}
+.result .pct{font-size:22px;font-weight:800}
+/* configuração */
+.setg{margin-bottom:14px}
+.setg h3{margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:var(--card2);padding:9px 12px;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#1b1404}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;font-size:14px;border-top:1px solid var(--line)}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+.note{background:var(--notebg);border:1px solid var(--notebd);color:var(--notetx);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45;margin-bottom:12px}
+/* player */
+.lv{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:12px;background:var(--card2);margin-bottom:6px;cursor:pointer}
+.lv.on{outline:2px solid var(--accent)}
+.lv b{font-size:14px}.lv span{display:block;font-size:12px;color:var(--muted)}
+.lv i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.ctl{display:grid;grid-template-columns:1fr;gap:6px;margin-top:10px}
+.ctl label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.ctl input[type=range]{flex:1;accent-color:var(--accent)}
+.ctl input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+.ctl select{background:var(--card2);color:var(--text);border:0;border-radius:10px;padding:8px}
+.pstatus{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--muted);margin:6px 0}
+.bleed{display:block;width:100vw;margin-left:calc(50% - 50vw)}
+#fall{height:clamp(120px,34vh,240px);background:linear-gradient(var(--fall1),var(--fall2))}
+.lane{display:flex;gap:6px;overflow:hidden;padding:6px 0;min-height:86px;align-items:stretch}
+.lc{flex:none;min-width:54px;border-radius:12px;background:var(--card2);padding:6px 6px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:2px;opacity:.85}
+.lc.cur{background:var(--curbg);outline:2px solid var(--accent);opacity:1;transform:scale(1.04)}
+.lc.past{opacity:.35}
+.lc .lab{font-size:11px;color:var(--accent);font-weight:800}
+.lc .nm{font-size:15px;font-weight:800;line-height:1.15}
+.lc .fg{font-size:24px;font-weight:800;line-height:1.05}
+.lc .hd{font-size:10px;color:var(--muted);font-weight:800}
+.staffbox{background:#f7f4ec;border-radius:12px;overflow:hidden}
+.hands-row{display:flex;justify-content:center;margin:6px 0}
+.hands-row svg{width:min(320px,90%);height:auto}
+.handsbig svg{width:min(360px,95%);height:auto;display:block;margin:0 auto}
+/* teclado */
+#kbdock{position:fixed;left:0;right:0;bottom:0;height:var(--kbh);background:var(--kbbg);border-top:3px solid #a33a3a;z-index:30;padding-top:4px}
+#kb{position:relative;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.wk,.bk{position:absolute;top:0;display:flex;align-items:flex-end;justify-content:center;transition:background .08s}
+.wk{height:100%;background:#f5f5f7;border:1px solid #b5b9c2;border-radius:0 0 6px 6px;padding-bottom:6px}
+.bk{height:62%;background:#1f2128;border:1px solid #000;border-radius:0 0 4px 4px;z-index:2;padding-bottom:5px}
+.wk.down{background:#d3d8e2}.bk.down{background:#4a4f5c}
+.kl{font-size:10px;font-weight:800;color:#8d919b;text-align:center;line-height:1.05;pointer-events:none}
+.bk .kl{color:#9aa}
+.kl.big b{display:block;font-size:17px;color:#111}
+.kl.big i{font-style:normal;font-size:9.5px;color:#222}
+.bk .kl.big b{font-size:13px}
+.wk.mark{background:#d8ecff}.bk.mark{background:#2d5c8c}
+.wk.found{background:var(--ok)!important}
+.flash-ok{box-shadow:inset 0 0 0 4px var(--ok);background:#b9f5d8!important}
+.bk.flash-ok{background:#1f9e6a!important}
+.flash-bad{box-shadow:inset 0 0 0 4px var(--bad);background:#ffc9c9!important}
+.bk.flash-bad{background:#b33!important}
+.cdot{position:absolute;top:6px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--blue)}
+.chordnow{font-size:44px;font-weight:800;text-align:center;color:var(--accent)}
+.chart{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+.chart span{padding:8px 12px;border-radius:10px;background:var(--card2);font-weight:800}
+.chart span.cur{background:var(--accent);color:#1b1404}
+.rec{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bad);margin-right:6px;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.2}}
+@media (min-width:700px){.grid2{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div id="top">
+  <button class="ib" id="backBtn">←</button>
+  <div class="ttl" id="ttl">Aprenda teclado</div>
+  <span id="inChip">👆 Tela</span>
+  <button class="ib" id="noteBtn" title="Anotar problema">📝</button>
+  <button class="ib" id="setBtn">⚙</button>
+</div>
+<main id="view"></main>
+<div id="kbdock" class="hidden"><div id="kb"></div></div>
+
+<script>
+"use strict";
+/* =========================================================
+   UTILIDADES, CONFIGURAÇÕES E PROGRESSO
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const mod=(a,n)=>((a%n)+n)%n;
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const ST={get(k,d){try{const v=localStorage.getItem('at_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+          set(k,v){try{localStorage.setItem('at_'+k,JSON.stringify(v))}catch(e){}}};
+const S=Object.assign({theme:'light',notation:'falling',names:'solfa',input:'touch',hands:false,headphones:false,allNames:false,keySound:true},ST.get('settings',{}));
+if(!S.handsV2){S.hands=false;S.handsV2=true;ST.set('settings',S)}
+function saveSettings(){ST.set('settings',S)}
+let PROG=ST.get('prog',{}), DAYS=ST.get('days',[]);
+function dayKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function markDay(){const k=dayKey(new Date());if(!DAYS.includes(k)){DAYS.push(k);ST.set('days',DAYS)}}
+function streak(){const s=new Set(DAYS);let n=0;const d=new Date();if(!s.has(dayKey(d)))d.setDate(d.getDate()-1);while(s.has(dayKey(d))){n++;d.setDate(d.getDate()-1)}return n}
+function saveScore(key,stars,acc){if(!key)return;const p=PROG[key];if(!p||p.stars<stars||p.acc<acc)PROG[key]={stars:Math.max(stars,p?p.stars:0),acc:Math.max(acc,p?p.acc:0)};PROG[key].d=dayKey(new Date());ST.set('prog',PROG);markDay()}
+const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
+
+/* nomes das notas */
+const SOL=['Dó','Dó#','Ré','Ré#','Mi','Fá','Fá#','Sol','Sol#','Lá','Lá#','Si'];
+const LET=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SOLb={1:'Ré♭',3:'Mi♭',6:'Sol♭',8:'Lá♭',10:'Si♭'}, LETb={1:'D♭',3:'E♭',6:'G♭',8:'A♭',10:'B♭'};
+function nn(m,sp){const pc=mod(m,12);if(S.names==='letters')return sp==='b'&&LETb[pc]?LETb[pc]:LET[pc];return sp==='b'&&SOLb[pc]?SOLb[pc]:SOL[pc]}
+const oct=m=>Math.floor(m/12)-1;
+const isBlack=m=>[1,3,6,8,10].includes(mod(m,12));
+const FC={1:'#ff6b6b',2:'#ffa94d',3:'#ffd43b',4:'#69db7c',5:'#4dabf7'};
+const FNAME={1:'polegar',2:'indicador',3:'médio',4:'anelar',5:'mindinho'};
+
+/* =========================================================
+   ÁUDIO (sintetizador, bateria, metrônomo)
+   ========================================================= */
+let AC=null, master=null, session=null, micMuteUntil=0;
+function ac(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.8;master.connect(AC.destination)}if(AC.state==='suspended')AC.resume();return AC}
+function newSession(){endSession();const c=ac();const g=c.createGain();g.connect(master);session={g};return session}
+function endSession(){if(session){try{session.g.gain.setValueAtTime(0,AC.currentTime);session.g.disconnect()}catch(e){}session=null}}
+function noteMute(end){if(S.headphones||!AC)return;const ms=performance.now()+(end-AC.currentTime)*1000+180;if(ms>micMuteUntil)micMuteUntil=ms}
+const TIMBRES={
+  piano:{w:[['sine',1,1],['sine',2,.35],['triangle',3,.08]],a:.006,dec:.9,sus:.18,rel:.25},
+  epiano:{w:[['sine',1,1],['sine',4,.18]],a:.004,dec:1.2,sus:.15,rel:.3},
+  organ:{w:[['square',1,.3],['sine',2,.4],['sine',4,.15]],a:.01,dec:0,sus:1,rel:.06,lp:2400},
+  strings:{w:[['sawtooth',1,.45],['sawtooth',1.004,.35]],a:.18,dec:0,sus:1,rel:.35,lp:1800},
+  flute:{w:[['sine',1,1],['sine',2,.08]],a:.06,dec:0,sus:1,rel:.12,vib:4},
+  bass:{w:[['triangle',1,1],['sine',2,.25]],a:.005,dec:.5,sus:.35,rel:.12,lp:900}
+};
+const TNAME={piano:'Piano',epiano:'Piano elétrico',organ:'Órgão',strings:'Cordas',flute:'Flauta',bass:'Baixo'};
+function tone(m,when,dur,o={}){
+  const c=ac(),T=TIMBRES[o.timbre||'piano'],vel=o.vel??.28;
+  const t=Math.max(when||0,c.currentTime),f=440*Math.pow(2,(m-69)/12);
+  const g=c.createGain();let node=g;
+  if(T.lp){const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=T.lp;g.connect(lp);node=lp}
+  node.connect(o.dest||(session?session.g:master));
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel,t+T.a);
+  if(T.dec>0)g.gain.setTargetAtTime(vel*T.sus,t+T.a,T.dec/3);
+  const end=t+Math.max(dur,T.a+.03);g.gain.setTargetAtTime(0,end,T.rel/3);
+  const stop=end+T.rel*2+.05;
+  T.w.forEach(([type,mul,amp])=>{const osc=c.createOscillator();osc.type=type;osc.frequency.value=f*mul;const og=c.createGain();og.gain.value=amp;osc.connect(og);og.connect(g);
+    if(T.vib){const l=c.createOscillator();l.frequency.value=5;const lg=c.createGain();lg.gain.value=T.vib*mul;l.connect(lg);lg.connect(osc.frequency);l.start(t);l.stop(stop)}
+    osc.start(t);osc.stop(stop)});
+  noteMute(stop);
+}
+let NOISE=null;
+function noiseBuf(){if(!NOISE){const c=ac();NOISE=c.createBuffer(1,c.sampleRate*.5,c.sampleRate);const d=NOISE.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}return NOISE}
+function drum(type,when,vol=1){
+  const c=ac(),t=Math.max(when,c.currentTime),dest=session?session.g:master;
+  if(type==='kick'){const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(.7*vol,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(dest);o.start(t);o.stop(t+.3)}
+  else if(type==='click'||type==='accent'){const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=type==='accent'?1900:1200;g.gain.setValueAtTime(.16*vol,t);g.gain.exponentialRampToValueAtTime(.001,t+.04);o.connect(g);g.connect(dest);o.start(t);o.stop(t+.06)}
+  else{const s=c.createBufferSource();s.buffer=noiseBuf();const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=type==='hat'?7000:1500;const g=c.createGain();const len=type==='hat'?.05:.16;g.gain.setValueAtTime((type==='hat'?.1:.3)*vol,t);g.gain.exponentialRampToValueAtTime(.001,t+len);s.connect(f);f.connect(g);g.connect(dest);s.start(t);s.stop(t+len+.02)}
+  noteMute(t+.3);
+}
+function playChordNow(ms,dur=1.2,timbre='piano'){const c=ac();ms.forEach(m=>tone(m,c.currentTime,dur,{timbre,vel:.2}))}
+function playSeqNow(ms,gap=.5,dur=.45){const c=ac();ms.forEach((m,i)=>{if(m!=null)(Array.isArray(m)?m:[m]).forEach(mm=>tone(mm,c.currentTime+.05+i*gap,dur))})}
+
+/* =========================================================
+   TECLADO FIXO NA TELA
+   ========================================================= */
+const KB={lo:48,hi:84,els:{}};
+let TARGETS=new Map();           // midi -> {f,sp}
+let touchTimbre=()=> 'piano';
+function buildKB(lo,hi){
+  if(KB.lo===lo&&KB.hi===hi&&Object.keys(KB.els).length)return;
+  KB.lo=lo;KB.hi=hi;const kb=$('#kb');kb.innerHTML='';KB.els={};
+  const whites=[];for(let m=lo;m<=hi;m++)if(!isBlack(m))whites.push(m);
+  const ww=100/whites.length;let wi=0;
+  for(let m=lo;m<=hi;m++){
+    const el=document.createElement('div');el.dataset.m=m;
+    if(!isBlack(m)){el.className='wk';el.style.left=(wi*ww)+'%';el.style.width=ww+'%';wi++}
+    else{el.className='bk';el.style.left=(wi*ww-ww*.3)+'%';el.style.width=(ww*.6)+'%'}
+    el.innerHTML=(m===60?'<span class="cdot"></span>':'')+'<span class="kl"></span>';
+    kb.appendChild(el);KB.els[m]=el;
+  }
+  refreshKeys();
+}
+function refreshKeys(){
+  for(const k in KB.els){const m=+k,el=KB.els[k],lab=el.querySelector('.kl'),t=TARGETS.get(m);
+    el.style.background='';
+    if(t){el.style.background=t.f?FC[t.f]:'var(--accent)';lab.className='kl big';
+      lab.innerHTML=t.f?`<b>${t.f}</b><i>${nn(m,t.sp)}</i>`:`<b>${nn(m,t.sp)}</b>`}
+    else{lab.className='kl';lab.textContent=(!isBlack(m)&&(S.allNames||mod(m,12)===0))?nn(m)+(mod(m,12)===0?oct(m):''):''}
+  }
+}
+function setTargets(list){TARGETS=new Map();(list||[]).forEach(n=>TARGETS.set(n.m,{f:n.f,sp:n.sp}));refreshKeys()}
+function keyFor(m){if(KB.els[m])return KB.els[m];let x=m;while(x<KB.lo)x+=12;while(x>KB.hi)x-=12;return KB.els[x]}
+function flashKey(m,kind){const el=keyFor(m);if(!el)return;const c='flash-'+kind;el.classList.add(c);setTimeout(()=>el.classList.remove(c),320)}
+function markKeys(pred,cls){for(const k in KB.els){KB.els[k].classList.toggle(cls,!!pred(+k))}}
+function clearMarks(){for(const k in KB.els)KB.els[k].classList.remove('mark','found')}
+function showKB(on,lo=48,hi=84){$('#kbdock').classList.toggle('hidden',!on);document.body.classList.toggle('kb-on',on);if(on)buildKB(lo,hi)}
+(function(){
+  const kb=$('#kb'),ptr={};
+  kb.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-m]');if(!el)return;e.preventDefault();ptr[e.pointerId]=el;el.classList.add('down');noteOn(+el.dataset.m,'touch')});
+  const up=e=>{const el=ptr[e.pointerId];if(el){el.classList.remove('down');delete ptr[e.pointerId]}};
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>kb.addEventListener(t,up));
+  kb.addEventListener('contextmenu',e=>e.preventDefault());
+})();
+
+/* =========================================================
+   ENTRADAS: TELA, MICROFONE, CABO USB (MIDI)
+   ========================================================= */
+let HANDLER=null, LEFTZONE=null;
+function noteOn(m,src){
+  if(src==='touch'&&S.keySound)tone(m,0,.7,{timbre:touchTimbre(m)});
+  if(src!=='touch'){const el=KB.els[m];if(el){el.classList.add('down');setTimeout(()=>el.classList.remove('down'),180)}}
+  if(HANDLER)HANDLER(m,src);
+}
+let micStream=null,analyser=null,abuf=null,micTimer=null,lastPc=-1,stableN=0,smRms=0,onsetAt=0,armed=true,accPc=-1,MICVIEW=null;
+async function startMic(){
+  stopMic();
+  try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw 0;
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
+  catch(e){S.input='touch';saveSettings();updChip();return 'O navegador bloqueou o microfone. Abra o app por um endereço https (ex.: GitHub Pages) no Chrome e permita o microfone.'}
+  const c=ac(),src=c.createMediaStreamSource(micStream);analyser=c.createAnalyser();analyser.fftSize=2048;src.connect(analyser);
+  abuf=new Float32Array(analyser.fftSize);micTimer=setInterval(micTick,35);S.input='mic';saveSettings();updChip();return '';
+}
+function stopMic(){if(micTimer)clearInterval(micTimer);micTimer=null;if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null}
+function autoCorr(b,sr){
+  let n=b.length,rms=0;for(let i=0;i<n;i++)rms+=b[i]*b[i];rms=Math.sqrt(rms/n);if(rms<.008)return{f:-1,rms};
+  let r1=0,r2=n-1;for(let i=0;i<n/2;i++)if(Math.abs(b[i])<.2){r1=i;break}for(let i=1;i<n/2;i++)if(Math.abs(b[n-i])<.2){r2=n-i;break}
+  b=b.slice(r1,r2);n=b.length;if(n<200)return{f:-1,rms};
+  const ML=Math.min(n,Math.floor(sr/55)),c=new Float32Array(ML);
+  for(let i=0;i<ML;i++){let s=0;for(let j=0;j<n-i;j++)s+=b[j]*b[j+i];c[i]=s}
+  let d=0;while(d<ML-1&&c[d]>c[d+1])d++;let mv=-1,mp=-1;for(let i=d;i<ML;i++)if(c[i]>mv){mv=c[i];mp=i}
+  if(mp<=0||mp>=ML-1)return{f:-1,rms};const x1=c[mp-1],x2=c[mp],x3=c[mp+1],A=(x1+x3-2*x2)/2,B=(x3-x1)/2;
+  return{f:sr/(A?mp-B/(2*A):mp),rms};
+}
+function micTick(){
+  analyser.getFloatTimeDomainData(abuf);const now=performance.now();
+  if(now<micMuteUntil){stableN=0;lastPc=-1;smRms=0;return}
+  const{f,rms}=autoCorr(abuf,AC.sampleRate);
+  if(rms>smRms*1.35&&rms>.015){onsetAt=now;armed=true}smRms=smRms*.7+rms*.3;
+  if(MICVIEW)MICVIEW(f,rms);
+  if(f<60||f>2100){stableN=0;lastPc=-1;return}
+  const m=Math.round(69+12*Math.log2(f/440)),pc=mod(m,12);
+  if(pc===lastPc)stableN++;else{stableN=1;lastPc=pc;if(pc!==accPc)armed=true}
+  if(stableN>=2&&armed&&(now-onsetAt<400||pc!==accPc)){armed=false;accPc=pc;noteOn(m,'mic')}
+}
+let midiAcc=null,midiCount=0;
+async function startMidi(){
+  try{if(!navigator.requestMIDIAccess)throw 0;midiAcc=await navigator.requestMIDIAccess()}
+  catch(e){return 'Este navegador não liberou o acesso USB/MIDI. Use o Chrome do Android abrindo o app por um endereço https.'}
+  const hook=()=>{midiCount=0;midiAcc.inputs.forEach(inp=>{midiCount++;inp.onmidimessage=ev=>{const[s,n,v]=ev.data;if((s&0xf0)===0x90&&v>0)noteOn(n,'midi')}});updChip()};
+  midiAcc.onstatechange=hook;stopMic();S.input='midi';saveSettings();hook();
+  return midiCount?'':'Nenhum teclado USB encontrado. Ligue o cabo OTG e o teclado; ele aparece aqui automaticamente.';
+}
+function updChip(){const c=$('#inChip');
+  if(S.input==='mic'&&micStream){c.textContent='🎤 Microfone';c.classList.add('on')}
+  else if(S.input==='midi'&&midiAcc){c.textContent=midiCount?'🔌 USB ligado':'🔌 USB: nenhum';c.classList.toggle('on',midiCount>0)}
+  else{c.textContent='👆 Tela';c.classList.remove('on')}}
+
+/* =========================================================
+   DESENHO DAS MÃOS (dedo que deve tocar)
+   ========================================================= */
+function handsSVG(id){
+  const R=[[0,64,17,30,1],[22,8,18,58,2],[44,0,18,64,3],[66,8,18,58,4],[88,22,16,44,5]];
+  const hand=(ox,h)=>{let s=`<rect x="${ox+16}" y="62" width="92" height="50" rx="20" style="fill:var(--handoff)"/>`;
+    R.forEach(([x,y,w,hh,f])=>{const xx=h==='R'?ox+x:ox+(124-x-w);s+=`<rect id="${id}-${h}${f}" x="${xx}" y="${y}" width="${w}" height="${hh}" rx="9" style="fill:var(--handoff);stroke:var(--card);stroke-width:1.5"/><text x="${xx+w/2}" y="${y+16}" text-anchor="middle" font-size="12" font-weight="800" style="fill:var(--handtx)" id="${id}-t${h}${f}">${f}</text>`});
+    s+=`<text x="${ox+62}" y="96" text-anchor="middle" font-size="11" font-weight="800" style="fill:var(--handtx)">${h==='L'?'ESQUERDA':'DIREITA'}</text>`;return s};
+  return `<svg viewBox="0 0 280 118" xmlns="http://www.w3.org/2000/svg">${hand(6,'L')}${hand(150,'R')}</svg>`;
+}
+function setHands(id,list){
+  ['L','R'].forEach(h=>{for(let f=1;f<=5;f++){const r=document.getElementById(`${id}-${h}${f}`),t=document.getElementById(`${id}-t${h}${f}`);if(r){r.style.fill='var(--handoff)';t.style.fill='var(--handtx)'}}});
+  (list||[]).forEach(n=>{if(!n.f)return;const h=n.h||(n.m!=null&&n.m<60?'L':'R');const r=document.getElementById(`${id}-${h}${n.f}`),t=document.getElementById(`${id}-t${h}${n.f}`);if(r){r.style.fill=FC[n.f];t.style.fill='#111'}});
+}
+
+/* =========================================================
+   PARTITURA (pauta dupla simplificada) E FIGURAS RÍTMICAS
+   ========================================================= */
+const LETI=[0,0,1,1,2,3,3,4,4,5,5,6];
+function dia(m,sp){const pc=mod(m,12);let o=oct(m),li=LETI[pc],acc=isBlack(m)?'#':'';if(sp==='b'&&acc){li++;acc='♭';if(li>6){li=0;o++}}return{d:o*7+li,acc}}
+const TB=60,BB=128;
+const yT=d=>TB-(d-30)*4, yB=d=>BB-(d-18)*4;
+function glyph(x,ys,d,col,up){
+  const open=d>=2,stem=d<4,flag=d<1,flag2=d<.5,dot=[3,1.5,.75,.375].includes(d);let s='';
+  ys.forEach(y=>{s+=`<ellipse cx="${x}" cy="${y}" rx="5.6" ry="4.1" transform="rotate(-20 ${x} ${y})" fill="${open?'none':col}" stroke="${col}" stroke-width="${open?1.8:1}"/>`;if(dot)s+=`<circle cx="${x+10}" cy="${y-2}" r="1.7" fill="${col}"/>`});
+  if(stem){const top=Math.min(...ys),bot=Math.max(...ys);
+    if(up){const sx=x+5;s+=`<line x1="${sx}" y1="${bot}" x2="${sx}" y2="${top-26}" stroke="${col}" stroke-width="1.4"/>`;if(flag)s+=`<path d="M${sx} ${top-26} q9 6 6 17" stroke="${col}" fill="none" stroke-width="1.7"/>`;if(flag2)s+=`<path d="M${sx} ${top-19} q9 6 6 17" stroke="${col}" fill="none" stroke-width="1.7"/>`}
+    else{const sx=x-5;s+=`<line x1="${sx}" y1="${top}" x2="${sx}" y2="${bot+26}" stroke="${col}" stroke-width="1.4"/>`;if(flag)s+=`<path d="M${sx} ${bot+26} q9 -6 6 -17" stroke="${col}" fill="none" stroke-width="1.7"/>`;if(flag2)s+=`<path d="M${sx} ${bot+19} q9 -6 6 -17" stroke="${col}" fill="none" stroke-width="1.7"/>`}}
+  return s;
+}
+function restGlyph(x,y,d,col){
+  if(d>=4)return `<rect x="${x-6}" y="${y}" width="12" height="5" fill="${col}"/>`;
+  if(d>=2)return `<rect x="${x-6}" y="${y-5}" width="12" height="5" fill="${col}"/>`;
+  if(d>=1)return `<path d="M${x-3} ${y-14} l6 7 l-6 6 l6 7 q-8 -3 -3 6" stroke="${col}" fill="none" stroke-width="2.2"/>`;
+  return `<circle cx="${x-2}" cy="${y-6}" r="2.6" fill="${col}"/><path d="M${x-2} ${y-4} q6 2 7 -4 l-5 16" stroke="${col}" fill="none" stroke-width="1.8"/>`;
+}
+function ledgers(x,d,clef){let s='';const L=(dd)=>{const y=clef==='T'?yT(dd):yB(dd);s+=`<line x1="${x-10}" y1="${y}" x2="${x+10}" y2="${y}" stroke="#333" stroke-width="1.2"/>`};
+  if(clef==='T'){for(let dd=28;dd>=d;dd-=2)L(dd);for(let dd=40;dd<=d;dd+=2)L(dd)}else{for(let dd=28;dd<=d;dd+=2)L(dd);for(let dd=16;dd>=d;dd-=2)L(dd)}return s}
+function staffSVG(steps,cur,width,opt={}){
+  const W=Math.max(260,width),H=158,X0=46,SP=opt.sp||48;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block">`;
+  const showT=opt.clef!=='bass',showB=opt.clef!=='treble';
+  if(showT){for(let i=0;i<5;i++)s+=`<line x1="4" y1="${TB-i*8}" x2="${W-4}" y2="${TB-i*8}" stroke="#555" stroke-width="1"/>`;s+=`<circle cx="12" cy="${yT(32)}" r="3.5" fill="#b07a00"/><text x="18" y="${yT(32)+4}" font-size="11" font-weight="800" fill="#b07a00">Sol</text>`}
+  if(showB){for(let i=0;i<5;i++)s+=`<line x1="4" y1="${BB-i*8}" x2="${W-4}" y2="${BB-i*8}" stroke="#555" stroke-width="1"/>`;s+=`<circle cx="12" cy="${yB(24)}" r="3.5" fill="#2a6fb0"/><text x="18" y="${yB(24)+4}" font-size="11" font-weight="800" fill="#2a6fb0">Fá</text>`}
+  if(showT&&showB)s+=`<line x1="4" y1="${TB-32}" x2="4" y2="${BB}" stroke="#555" stroke-width="2"/>`;
+  let lastBar=null;
+  steps.forEach((st,i)=>{
+    const x=X0+i*SP+SP/2;if(x>W-10)return;
+    if(lastBar!=null&&st.bar!=null&&st.bar!==lastBar){s+=`<line x1="${x-SP/2}" y1="${showT?TB-32:BB-32}" x2="${x-SP/2}" y2="${showB?BB:TB}" stroke="#777" stroke-width="1"/>`}
+    lastBar=st.bar;
+    const state=i===cur?'cur':(i<cur?'past':'next');
+    if(state==='cur')s+=`<rect x="${x-SP/2+3}" y="4" width="${SP-6}" height="${H-8}" rx="8" fill="rgba(245,184,61,.22)"/>`;
+    if(st.label)s+=`<text x="${x}" y="12" text-anchor="middle" font-size="12" font-weight="800" fill="#7a5200">${st.label}</text>`;
+    if(st.rest){s+=restGlyph(x,TB-16,st.rest,state==='past'?'#aaa':'#222');return}
+    ['T','B'].forEach(clef=>{
+      const ns=st.notes.filter(n=>(opt.clef==='bass'?'B':opt.clef==='treble'?'T':(n.h==='L'?'B':'T'))===clef);if(!ns.length)return;
+      const ds=ns.map(n=>dia(n.m,n.sp)),ys=ds.map(o=>clef==='T'?yT(o.d):yB(o.d));
+      ds.forEach((o,k)=>{s+=ledgers(x,o.d,clef);if(o.acc)s+=`<text x="${x-17}" y="${ys[k]+4}" font-size="13" font-weight="800" fill="#222">${o.acc}</text>`});
+      const col=st.status==='bad'?'#d33':state==='past'?'#9a9a9a':(state==='cur'&&ns[0].f?'#111':'#222');
+      const mid=clef==='T'?34:22,avg=ds.reduce((a,o)=>a+o.d,0)/ds.length;
+      s+=glyph(x,ys,ns[0].d*(opt.scale||1),col,avg<mid);
+      if(!opt.nofingers){const fs=ns.filter(n=>n.f).map(n=>n.f);if(fs.length){
+        const fy=clef==='T'?Math.min(TB-36,Math.min(...ys)-(avg<mid?32:10)):Math.max(BB+14,Math.max(...ys)+(avg<mid?14:34));
+        const txt=fs.join('');s+=`<rect x="${x-4-txt.length*4}" y="${fy-10}" width="${8+txt.length*8}" height="14" rx="4" fill="${state==='cur'?FC[fs[0]]:'transparent'}"/><text x="${x}" y="${fy+1}" text-anchor="middle" font-size="12" font-weight="800" fill="${state==='past'?'#aaa':'#222'}">${txt}</text>`}}
+    });
+  });
+  return s+'</svg>';
+}
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+let CLEAN=[],HIST=[],CURKEY=null;
+function addClean(f){CLEAN.push(f)}
+function teardown(){CLEAN.forEach(f=>{try{f()}catch(e){}});CLEAN=[];HANDLER=null;MICVIEW=null;endSession();setTargets([]);clearMarks();touchTimbre=()=>'piano';stopPlay();accStop()}
+function go(fn,...args){teardown();HIST.push([fn,args]);window.scrollTo(0,0);fn(...args)}
+function back(){if(HIST.length>1){HIST.pop();const[fn,args]=HIST[HIST.length-1];teardown();window.scrollTo(0,0);fn(...args)}}
+$('#backBtn').onclick=back;
+$('#setBtn').onclick=()=>go(viewSettings);
+$('#noteBtn').onclick=()=>openNote();
+$('#inChip').onclick=()=>go(viewSettings);
+function title(t,showBack=true){$('#ttl').textContent=t;$('#backBtn').style.visibility=showBack?'visible':'hidden'}
+const V=()=>$('#view');
+
+/* =========================================================
+   CIFRAS / ACORDES
+   ========================================================= */
+const PCOF={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const QUAL={'':[0,4,7],m:[0,3,7],'7':[0,4,7,10],m7:[0,3,7,10],'7M':[0,4,7,11]};
+const QNAME={'':'maior',m:'menor','7':'com sétima',m7:'menor com sétima','7M':'com sétima maior'};
+const CHV={ // voicings para a mão direita, com dedos
+  C:[[60,64,67],[1,3,5]],Dm:[[62,65,69],[1,3,5]],Em:[[59,64,67],[1,3,5]],F:[[60,65,69],[1,3,5]],G:[[59,62,67],[1,2,5]],Am:[[60,64,69],[1,2,5]],
+  G7:[[59,62,65,67],[1,2,3,5]],C7M:[[60,64,67,71],[1,2,3,5]],Dm7:[[60,62,65,69],[1,2,3,5]],Am7:[[60,64,67,69],[1,2,3,5]],A7:[[61,64,67,69],[1,2,3,5]],
+  D:[[62,66,69],[1,3,5]],E:[[59,64,68],[1,3,5]],A:[[61,64,69],[1,2,5]],E7:[[59,62,64,68],[1,2,3,5]],D7:[[60,62,66,69],[1,2,3,5]]
+};
+const BASSM={0:48,1:49,2:50,3:51,4:52,5:41,6:42,7:43,8:44,9:45,10:46,11:47};
+function chordInfo(sym){
+  const m=/^([A-G])(#|b)?(m7|7M|m|7)?$/.exec(sym);if(!m)return null;
+  const root=mod(PCOF[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0),12),q=m[3]||'';
+  const pcs=QUAL[q].map(i=>mod(root+i,12));
+  let v,f;if(CHV[sym]){[v,f]=CHV[sym]}else{v=pcs.map(p=>60+mod(p-0,12)).sort((a,b)=>a-b);f=v.length===3?[1,3,5]:[1,2,3,5]}
+  const rootName=S.names==='letters'?LET[root]:SOL[root];
+  return{sym,root,q,pcs,v,f,bass:BASSM[root],fifth:BASSM[mod(root+7,12)],pt:rootName+' '+QNAME[q]};
+}
+function detectChord(pcsArr){
+  const pcs=[...new Set(pcsArr)];if(!pcs.length)return null;
+  const nm=p=>LET[p];
+  if(pcs.length===1)return nm(pcs[0]);
+  for(const r of pcs){const rel=new Set(pcs.map(p=>mod(p-r,12)));
+    if(rel.has(4)&&rel.has(10))return nm(r)+'7';if(rel.has(3)&&rel.has(10))return nm(r)+'m7';
+    if(rel.has(4)&&rel.has(11))return nm(r)+'7M';if(rel.has(4)&&(rel.has(7)||pcs.length===2))return nm(r);if(rel.has(3)&&(rel.has(7)||pcs.length===2))return nm(r)+'m'}
+  return nm(Math.min(...pcsArr));
+}
+
+/* =========================================================
+   MOTOR DE PRÁTICA (músicas e sequências das lições)
+   ========================================================= */
+function L(items,hand,t0=0){let t=t0;const out=[];for(const it of items){const[m,d,f,x]=it;if(m!=null){const ms=Array.isArray(m)?m:[m],fs=Array.isArray(f)?f:[f];ms.forEach((mm,i)=>out.push(Object.assign({t,d,m:mm,f:fs[i]??fs[0],h:hand},x||{})))}t+=d}return out}
+function mkPiece(o){o.bpb=o.bpb||4;o.range=o.range||[48,84];const all=Object.values(o.tracks).flat();o.len=o.len||Math.ceil(Math.max(...all.map(n=>n.t+n.d))/o.bpb-1e-9)*o.bpb;return o}
+const LEVELS=[
+  {t:'Só mão direita',d:'Aprenda a parte da direita. A esquerda pode tocar sozinha no fundo.',u:['R'],a:['L']},
+  {t:'Só mão esquerda',d:'Aprenda a parte da esquerda. A direita pode tocar sozinha no fundo.',u:['L'],a:['R']},
+  {t:'Duas mãos simplificada',d:'Direita completa e esquerda só com as notas do baixo.',u:['R','Ls'],a:[]},
+  {t:'Duas mãos completa',d:'O arranjo inteiro, com as duas mãos.',u:['RF','L'],a:[]},
+  {t:'Execução',d:'Música inteira no tempo, sem o app esperar. Vale a nota e o ritmo.',u:['RF','L'],a:[],perf:true}
+];
+let P=null;
+function stopPlay(){if(P){P.dead=true;cancelAnimationFrame(P.raf)}P=null}
+function trk(piece,k){if(k==='RF')return piece.tracks.Rf||piece.tracks.R||[];return piece.tracks[k]||[]}
+
+function playSetup(box,piece,o){
+  // o: {levels:bool, user:[..], auto:[..], key, note}
+  const st={lv:o.lv||0,speed:100,wait:true,auto:true,metro:false,sec:-1};
+  const secs=piece.sections||[];
+  box.innerHTML=`<div id="psetup">
+   ${o.levels?`<h3>Nível</h3><div id="lvs">${LEVELS.map((l,i)=>`<div class="lv${i===(o.lv||0)?' on':''}" data-i="${i}"><i>${i+1}</i><div><b>${l.t}</b><span>${l.d}</span>${PROG[o.key+':'+i]?`<span style="color:var(--accent)">${starStr(PROG[o.key+':'+i].stars)}</span>`:''}</div></div>`).join('')}</div>`:''}
+   <div class="ctl">
+     ${secs.length?`<label>Trecho <select id="psec"><option value="-1">Música inteira</option>${secs.map((s,i)=>`<option value="${i}">${s[0]}</option>`).join('')}</select></label>`:''}
+     <label>Velocidade <input type="range" id="pspd" min="40" max="100" step="5" value="100"><b id="pspdv" style="width:44px;text-align:right">100%</b></label>
+     <label id="lwait">Modo espera (só avança quando acerta) <input type="checkbox" id="pwait" checked></label>
+     <label id="lauto">Outra mão tocando no fundo <input type="checkbox" id="pauto" checked></label>
+     <label>Metrônomo <input type="checkbox" id="pmet"></label>
+     <label>Mostrar desenho das mãos <input type="checkbox" id="phands" ${S.hands?'checked':''}></label>
+   </div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="phear">▶ Ouvir</button><button class="btn primary" id="pgo">Começar</button></div></div>
+   <div id="pstage"></div>`;
+  const upd=()=>{const lv=LEVELS[st.lv];$('#lwait').classList.toggle('hidden',!!(o.levels&&lv.perf));$('#lauto').classList.toggle('hidden',o.levels?!lv.a.length:!(o.auto&&o.auto.length))};
+  if(o.levels)box.querySelectorAll('.lv').forEach(el=>el.onclick=()=>{box.querySelectorAll('.lv').forEach(e=>e.classList.remove('on'));el.classList.add('on');st.lv=+el.dataset.i;upd()});
+  upd();
+  $('#phands').onchange=e=>{S.hands=e.target.checked;saveSettings()};
+  $('#pspd').oninput=e=>{st.speed=+e.target.value;$('#pspdv').textContent=st.speed+'%'};
+  const cfg=()=>{const lv=o.levels?LEVELS[st.lv]:null;const sec=$('#psec')?+$('#psec').value:-1;
+    return{user:lv?lv.u:o.user,auto:lv?lv.a:(o.auto||[]),autoOn:$('#pauto').checked,wait:$('#pwait').checked&&!(lv&&lv.perf),metro:$('#pmet').checked,speed:st.speed,
+      range:sec>=0?[secs[sec][1],secs[sec][2]]:[0,piece.len],key:o.key+(o.levels?':'+st.lv:'')}};
+  $('#pgo').onclick=()=>runPlay($('#pstage'),piece,cfg(),false);
+  $('#phear').onclick=()=>runPlay($('#pstage'),piece,cfg(),true);
+}
+
+function runPlay(stage,piece,cfg,demo){
+  stopPlay();ac();
+  const[a,b]=cfg.range;const userK=demo?[]:cfg.user;
+  const autoK=demo?[...cfg.user,...(cfg.autoOn?cfg.auto:[])]:(cfg.autoOn?cfg.auto:[]);
+  const evs=[];const seen=new Set();
+  const add=(k,user)=>{if(seen.has(k))return;seen.add(k);trk(piece,k).forEach(n=>{if(n.t>=a-1e-6&&n.t<b-1e-6)evs.push(Object.assign({},n,{user}))})};
+  userK.forEach(k=>add(k,true));autoK.forEach(k=>add(k,false));
+  evs.sort((x,y)=>x.t-y.t||x.m-y.m);
+  const steps=[];
+  (demo?evs:evs.filter(e=>e.user)).forEach(e=>{let s=steps[steps.length-1];if(!s||Math.abs(s.t-e.t)>1e-6){s={t:e.t,notes:[],got:new Set(),bar:Math.floor(e.t/piece.bpb+1e-9)};steps.push(s)}s.notes.push(e);if(e.lab&&!s.label)s.label=e.lab});
+  const bps=piece.bpm/60*cfg.speed/100;
+  P={piece,evs,steps,a,b,bps,demo,cfg,wait:!demo&&cfg.wait,idx:0,jidx:0,ph:a,phT:a,errors:0,hits:0,miss:{},dead:false,lastCur:-2,pre:false,done:false};
+  newSession();
+  stage.innerHTML=`<div class="pstatus"><span id="pinfo">${demo?'Ouvindo…':'Toque a nota indicada'}</span><span id="pscore"></span></div>
+    <div id="nt">${S.notation==='falling'?'<canvas id="fall" class="bleed"></canvas>':S.notation==='staff'?'<div class="staffbox" id="staff"></div>':'<div class="lane" id="lane"></div>'}</div>
+    ${S.hands?`<div class="hands-row">${handsSVG('p')}</div>`:''}
+    <div class="row"><button class="btn sm" id="pstop">⚙ Parar e ajustar</button><button class="btn sm" id="prst">↺ Recomeçar</button>${demo?'':'<button class="btn sm" id="pnext">🔊 Ouvir a próxima</button>'}</div>
+    <div id="pres"></div>`;
+  $('#pstop').onclick=()=>{stopPlay();endSession();setTargets([]);stage.innerHTML='';const su=$('#psetup');if(su)su.classList.remove('hidden')};
+  {const su=$('#psetup');if(su)su.classList.add('hidden');const y=stage.getBoundingClientRect().top+window.scrollY-60;window.scrollTo({top:Math.max(0,y)})}
+  $('#prst').onclick=()=>runPlay(stage,piece,cfg,demo);
+  if(!demo)$('#pnext').onclick=()=>{const s=curStep();if(s)s.notes.forEach(n=>tone(n.m,0,.8,{dest:master}))};
+  if(!steps.length){$('#pinfo').textContent='Nada para tocar neste trecho com este nível.';return}
+  const c=AC;
+  if(!P.wait){
+    const cb=demo?0:piece.bpb;P.t0=c.currentTime+.3+cb/bps;
+    for(let k=0;k<cb;k++)drum(k===0?'accent':'click',P.t0-(cb-k)/bps);
+    if(cfg.metro)for(let bt=Math.ceil(a);bt<b;bt++)drum(mod(bt,piece.bpb)===0?'accent':'click',P.t0+(bt-a)/bps,.8);
+    evs.forEach(e=>{if(!e.user)tone(e.m,P.t0+(e.t-a)/bps,e.d/bps*.95,{vel:demo?.26:.18})});
+  }else{
+    const first=steps[0].t,pre=evs.filter(e=>!e.user&&e.t<first);
+    if(pre.length&&first>a){P.pre=true;P.t0=c.currentTime+.3;pre.forEach(e=>tone(e.m,P.t0+(e.t-a)/bps,e.d/bps*.95,{vel:.18}))}
+    else{P.ph=P.phT=first}
+    if(cfg.metro){P.metNext=Math.ceil(P.ph)}
+  }
+  HANDLER=playNote;
+  let last=performance.now();
+  const loop=()=>{if(!P||P.dead)return;const now=performance.now(),dt=(now-last)/1000;last=now;
+    if(!P.wait){P.ph=a+(AC.currentTime-P.t0)*bps;judgePerf();if(P.ph>b+.4&&!P.done)finishPlay(stage)}
+    else if(P.pre){P.ph=a+(AC.currentTime-P.t0)*bps;if(P.ph>=steps[0].t){P.pre=false;P.ph=P.phT=steps[0].t}}
+    else if(P.ph<P.phT){P.ph=Math.min(P.phT,P.ph+dt*bps)}
+    if(P.wait&&cfg.metro&&!P.pre){while(P.metNext<=P.ph+1e-6){drum(mod(P.metNext,piece.bpb)===0?'accent':'click',0,.7);P.metNext++}}
+    if(!P.wait&&P.ph<a)$('#pinfo').textContent='Prepare-se… '+Math.ceil(a-P.ph);
+    else if(!P.done&&!demo)$('#pinfo').textContent=P.wait?'Toque a nota indicada':'Tocando no tempo';
+    renderPlay();P.raf=requestAnimationFrame(loop)};
+  P.raf=requestAnimationFrame(loop);
+}
+function curStep(){if(!P)return null;if(P.wait)return P.steps[P.idx];const tol=.28*P.bps;for(let k=P.jidx;k<P.steps.length;k++){const s=P.steps[k];if(!s.done&&s.t>=P.ph-tol)return s}return null}
+function curIndex(){const s=curStep();return s?P.steps.indexOf(s):P.steps.length}
+function playNote(m,src){
+  if(!P||P.demo||P.done)return;const pc=mod(m,12);
+  if(P.wait){if(P.pre)return;const s=P.steps[P.idx];if(!s)return;
+    const n=s.notes.find(n=>mod(n.m,12)===pc&&!s.got.has(n));
+    if(n){s.got.add(n);flashKey(n.m,'ok');if(s.got.size>=s.notes.length){P.hits++;stepDone()}}
+    else if(!s.notes.some(n=>mod(n.m,12)===pc)){P.errors++;s.notes.forEach(n=>P.miss[n.m]=(P.miss[n.m]||0)+1);flashKey(m,'bad')}
+  }else{const tol=.28*P.bps;let best=null,bd=1e9;
+    for(let k=P.jidx;k<P.steps.length;k++){const s=P.steps[k];if(s.t-P.ph>tol)break;if(s.done)continue;const d=Math.abs(s.t-P.ph);
+      if(d<=tol&&d<bd&&s.notes.some(n=>mod(n.m,12)===pc&&!s.got.has(n))){bd=d;best=s}}
+    if(best){const n=best.notes.find(n=>mod(n.m,12)===pc&&!best.got.has(n));best.got.add(n);flashKey(n.m,'ok');if(best.got.size>=best.notes.length){best.done=true;P.hits++}}
+    else{P.errors++;flashKey(m,'bad')}}
+  const sc=$('#pscore');if(sc)sc.textContent=`✓ ${P.hits}   ✗ ${P.errors}`;
+}
+function stepDone(){
+  const s=P.steps[P.idx],nx=P.steps[P.idx+1],tEnd=nx?nx.t:P.b;
+  const c=AC;P.evs.forEach(e=>{if(!e.user&&e.t>=s.t-1e-6&&e.t<tEnd-1e-6)tone(e.m,c.currentTime+.02+(e.t-s.t)/P.bps,e.d/P.bps*.95,{vel:.18})});
+  P.idx++;if(!nx){setTimeout(()=>{if(P&&!P.dead)finishPlay($('#pstage')||document.body)},500)}else P.phT=nx.t;
+}
+function judgePerf(){const tol=.28*P.bps;while(P.jidx<P.steps.length&&P.steps[P.jidx].t<P.ph-tol){const s=P.steps[P.jidx];if(!s.done&&!P.demo){s.missed=true;s.notes.forEach(n=>P.miss[n.m]=(P.miss[n.m]||0)+1)}P.jidx++}}
+function finishPlay(stage){
+  if(!P||P.done)return;P.done=true;setTargets([]);setHands('p',[]);
+  if(P.demo){$('#pinfo').textContent='Fim. Agora é a sua vez: toque em Começar.';return}
+  const tot=P.steps.length;const acc=P.wait?Math.round(tot/(tot+P.errors)*100):Math.round(P.hits/tot*100);
+  const stars=acc>=95?3:acc>=80?2:1;saveScore(P.cfg.key,stars,acc);
+  const worst=Object.entries(P.miss).sort((x,y)=>y[1]-x[1]).slice(0,3).map(([m])=>nn(+m));
+  const tip=stars===3?(P.wait?'Ótimo! Agora tente desligar o modo espera ou aumentar a velocidade.':'Excelente! Música dominada neste nível.'):
+    worst.length?`Mais erros em: ${worst.join(', ')}. Repita só o trecho difícil, mais devagar.`:'Repita mais uma vez, mais devagar.';
+  $('#pinfo').textContent='Concluído';
+  const r=$('#pres');if(r)r.innerHTML=`<div class="card result"><div class="stars">${starStr(stars)}</div><div class="pct">${acc}% de precisão</div><p class="muted">${P.wait?`${P.errors} erro(s)`:`${P.hits} de ${tot} notas no tempo`}</p><p>${tip}</p></div>`;
+  r&&r.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderPlay(){
+  const ci=curIndex(),st=P.steps[ci];
+  if(ci!==P.lastCur){P.lastCur=ci;setTargets(st?st.notes.map(n=>({m:n.m,f:n.f,sp:n.sp})):[]);setHands('p',st?st.notes:[]);
+    if(S.notation==='staff'){const box=$('#staff');if(box){const w=box.clientWidth||320,per=Math.max(4,Math.floor((w-46)/48)),from=Math.max(0,ci-1);box.innerHTML=staffSVG(P.steps.slice(from,from+per),ci-from,w,{scale:P.piece.dscale||1})}}
+    else if(S.notation!=='falling'){const lane=$('#lane');if(lane){const from=Math.max(0,ci-1);lane.innerHTML=P.steps.slice(from,from+10).map((s,i)=>{const k=from+i,cl=k===ci?'cur':k<ci?'past':'';
+      const body=S.notation==='fingers'?s.notes.map(n=>`<div class="fg" style="color:${FC[n.f]||'var(--text)'};-webkit-text-stroke:.6px rgba(0,0,0,.35)">${n.f||'•'}</div>`).join('')+`<div class="hd">${s.notes[0].h==='L'?'esq.':'dir.'} · ${s.notes.map(n=>nn(n.m,n.sp)).join(' ')}</div>`
+        :s.notes.map(n=>`<div class="nm" style="${k===ci?'color:#111;background:'+(FC[n.f]||'var(--accent)')+';border-radius:6px;padding:0 4px':''}">${nn(n.m,n.sp)}</div>`).join('')+`<div class="hd">${s.notes.map(n=>n.f||'').join(' ')}</div>`;
+      return `<div class="lc ${cl}">${s.label?`<div class="lab">${s.label}</div>`:''}${body}</div>`}).join('')}}}
+  if(S.notation==='falling')drawFall();
+}
+function drawFall(){
+  const cv=$('#fall');if(!cv)return;const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const ppb=Math.max(38,Math.min(70,H/4.2)),look=H/ppb,cr=cv.getBoundingClientRect(),ph=P.ph,bpb=P.piece.bpb;
+  const CS=getComputedStyle(document.body);g.strokeStyle=CS.getPropertyValue('--grid');g.lineWidth=1;
+  for(let bt=Math.ceil(ph);bt<ph+look;bt++){const y=H-(bt-ph)*ppb;g.globalAlpha=mod(bt,bpb)===0?1:.35;g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}g.globalAlpha=1;
+  const geo={};const gx=m=>{if(geo[m]!==undefined)return geo[m];const el=KB.els[m];if(!el)return geo[m]=null;const r=el.getBoundingClientRect();return geo[m]={x:r.left-cr.left,w:r.width}};
+  for(const e of P.evs){if(e.t>ph+look)break;if(e.t+e.d<ph-.05)continue;if(!P.demo&&!e.user&&!P.cfg.autoOn)continue;
+    const k=gx(e.m);if(!k)continue;const y1=H-(e.t-ph)*ppb,y0=H-(e.t+e.d-ph)*ppb;const hh=Math.max(6,y1-y0-2);
+    const col=e.user||P.demo?(FC[e.f]||'#f5b83d'):CS.getPropertyValue('--auto');g.fillStyle=col;
+    const r=5,x=k.x+1.5,w=k.w-3,y=y1-hh;g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+hh,r);g.arcTo(x+w,y+hh,x,y+hh,r);g.arcTo(x,y+hh,x,y,r);g.arcTo(x,y,x+w,y,r);g.fill();
+    if(e.h==='L'&&(e.user||P.demo)){g.strokeStyle='rgba(0,0,0,.55)';g.setLineDash([4,3]);g.lineWidth=2;g.stroke();g.setLineDash([])}
+    if(hh>14&&e.f&&(e.user||P.demo)){g.fillStyle='#111';g.font='800 13px Nunito,sans-serif';g.textAlign='center';g.fillText(e.f,x+w/2,y1-6)}
+  }
+  g.fillStyle='rgba(245,184,61,.9)';g.fillRect(0,H-3,W,3);
+}
+
+/* =========================================================
+   ACOMPANHAMENTO AUTOMÁTICO (estilos do teclado arranjador)
+   ========================================================= */
+const STYLES={
+  balada:{n:'Balada',bpb:4,bpm:72,prog:['C','G','Am','F'],bass:[[0,2,'R'],[2,2,'5']],chord:[[0,1],[1,1],[2,1],[3,1]],kick:[0,2.5],snare:[1,3],hat:[0,.5,1,1.5,2,2.5,3,3.5]},
+  pop:{n:'Pop',bpb:4,bpm:96,prog:['C','G','Am','F'],bass:[[0,1.5,'R'],[1.5,.5,'R'],[2,2,'5']],chord:[[0,1.5],[1.5,1],[2.5,1.5]],kick:[0,1.5,2],snare:[1,3],hat:[0,.5,1,1.5,2,2.5,3,3.5]},
+  valsa:{n:'Valsa',bpb:3,bpm:120,prog:['C','G7','G7','C'],bass:[[0,1,'R']],chord:[[1,1],[2,1]],kick:[0],snare:[],hat:[1,2]},
+  baiao:{n:'Baião / forró',bpb:2,bpm:100,prog:['C','F','G7','C'],bass:[[0,.75,'R'],[.75,.75,'R'],[1.5,.5,'5']],chord:[[.5,.5],[1.5,.5]],kick:[0,.75],snare:[1],hat:[0,.25,.5,.75,1,1.25,1.5,1.75]},
+  frevo:{n:'Frevo',bpb:2,bpm:140,prog:['C','G7','G7','C'],bass:[[0,.5,'R'],[1,.5,'5']],chord:[[.5,.5],[1.5,.25],[1.75,.25]],kick:[0,1],snare:[.5,1.5,1.75],hat:[0,.25,.5,.75,1,1.25,1.5,1.75]},
+  bossa:{n:'Bossa nova',bpb:4,bpm:80,prog:['Dm7','G7','C7M','C7M'],bass:[[0,1.5,'R'],[1.5,.5,'5'],[2,1.5,'5'],[3.5,.5,'R']],chord:[[0,1],[1.5,1],[3,1]],kick:[0,1.5,2,3.5],snare:[],hat:[0,.5,1,1.5,2,2.5,3,3.5]},
+  samba:{n:'Samba / MPB',bpb:2,bpm:96,prog:['C','A7','Dm','G7'],bass:[[0,.5,'5'],[1,1,'R']],chord:[[.25,.25],[.75,.25],[1.25,.25],[1.5,.25]],kick:[1],snare:[.25,.75,1.25,1.5],hat:[0,.25,.5,.75,1,1.25,1.5,1.75]}
+};
+const ACC={on:false,timer:null};
+function accStart(o){ // o:{style,bpm,mode:'detect'|'demo'|'chart',chart,onBar}
+  accStop();newSession();const c=ac();Object.assign(ACC,{on:true,o,pos:0,next:c.currentTime+.15,chord:o.chart?o.chart[0]:(STYLES[o.style].prog[0]),special:null,barN:0,stopAfter:false});
+  ACC.timer=setInterval(accTick,25);
+}
+function accStop(){if(ACC.timer)clearInterval(ACC.timer);ACC.timer=null;ACC.on=false}
+function accTick(){
+  const c=AC,o=ACC.o,sty=STYLES[o.style],spb=60/(o.bpm||sty.bpm);
+  while(ACC.next<c.currentTime+.12){
+    const pos=ACC.pos,inBar=Math.round(mod(pos,sty.bpb)*4)/4,t=ACC.next;
+    if(inBar===0){
+      if(ACC.stopAfter){accStop();o.onEnd&&o.onEnd();return}
+      if(ACC.queued){ACC.special=ACC.queued;ACC.queued=null}else ACC.special=null;
+      if(o.mode==='demo'){ACC.chord=sty.prog[ACC.barN%sty.prog.length]}
+      if(o.mode==='chart'){ACC.chord=ACC.chord}
+      o.onBar&&o.onBar(ACC.barN,t);ACC.barN++;
+      if(ACC.special==='end'){const ci=chordInfo(ACC.chord);ci.v.forEach(m=>tone(m,t,spb*sty.bpb,{timbre:'epiano',vel:.16}));tone(ci.bass-12,t,spb*sty.bpb,{timbre:'bass',vel:.4});drum('kick',t);drum('snare',t,.6);ACC.stopAfter=true}
+    }
+    const sp=ACC.special;
+    if(sp!=='end'){
+      const ci=chordInfo(ACC.chord)||chordInfo('C');
+      if(sp==='fill'){if(inBar%.5===0)drum('snare',t,.7+inBar*.1);if(inBar===0)drum('kick',t)}
+      else{
+        sty.kick.forEach(k=>{if(k===inBar)drum('kick',t)});
+        if(sp!=='intro')sty.snare.forEach(k=>{if(k===inBar)drum('snare',t,.7)});
+        sty.hat.forEach(k=>{if(k===inBar)drum('hat',t,.8)});
+        sty.bass.forEach(([bt,d,w])=>{if(bt===inBar)tone((w==='R'?ci.bass:ci.fifth)-12,t,d*spb*.9,{timbre:'bass',vel:.38})});
+        if(sp!=='intro')sty.chord.forEach(([bt,d])=>{if(bt===inBar)ci.v.forEach(m=>tone(m,t,d*spb*.85,{timbre:'epiano',vel:.13}))});
+      }
+    }
+    ACC.pos+=.25;ACC.next+=spb*.25;
+  }
+}
+function stylePiece(key){
+  const sty=STYLES[key],R=[],Lt=[];
+  sty.prog.forEach((sym,bar)=>{const ci=chordInfo(sym),t0=bar*sty.bpb;
+    sty.chord.forEach(([bt,d])=>ci.v.forEach((m,i)=>R.push({t:t0+bt,d,m,f:ci.f[i],h:'R',lab:bt===sty.chord[0][0]?sym:undefined})));
+    const lo=Math.min(ci.bass,ci.fifth);
+    sty.bass.forEach(([bt,d,w])=>{const m=w==='R'?ci.bass:ci.fifth;Lt.push({t:t0+bt,d,m,f:m===lo?5:1,h:'L'})})});
+  return mkPiece({bpm:Math.round(sty.bpm*.75),bpb:sty.bpb,range:[41,77],tracks:{R,L:Lt}});
+}
+</script>
+<script id="dados">
+"use strict";
+/* =========================================================
+   MÚSICAS PARA APRENDER
+   ========================================================= */
+// Ode à Alegria (Beethoven) — domínio público
+const odeA=[[64,1,3],[64,1,3],[65,1,4],[67,1,5],[67,1,5],[65,1,4],[64,1,3],[62,1,2],[60,1,1],[60,1,1],[62,1,2],[64,1,3]];
+const odeEnd1=[[64,1.5,3],[62,.5,2],[62,2,2]], odeEnd2=[[62,1.5,2],[60,.5,1],[60,2,1]];
+const odeBridge=[[62,1,2],[62,1,2],[64,1,3],[60,1,1],[62,1,2],[64,.5,3],[65,.5,4],[64,1,3],[60,1,1],[62,1,2],[64,.5,3],[65,.5,4],[64,1,3],[62,1,2],[60,1,1],[62,1,2],[55,2,1]];
+const ODE=(()=>{
+  const R=L([...odeA,...odeEnd1,...odeA,...odeEnd2,...odeBridge,...odeA,...odeEnd2],'R');
+  const H=['C','C','G','G','C','C','C','G','C','C','G','G','C','C','G','C','G','C','G','C','G','G','C','G*','C','C','G','G','C','C','G','C'];
+  const OV={C:[[48,52,55],[5,3,1]],G:[[47,50,55],[5,3,1]],'G*':[[43,47,50],[5,3,1]]};
+  const OB={C:[48,2],G:[43,5],'G*':[43,5]};
+  const Lf=[],Ls=[];
+  H.forEach((c,i)=>{const[v,f]=OV[c];v.forEach((m,k)=>Lf.push({t:i*2,d:2,m,f:f[k],h:'L',lab:c.replace('*','')}))});
+  for(let b=0;b<16;b++){const c1=H[b*2],c2=H[b*2+1];const r1=OB[c1],r2=OB[c2];
+    if(r1[0]===r2[0])Ls.push({t:b*4,d:4,m:r1[0],f:r1[1],h:'L'});else{Ls.push({t:b*4,d:2,m:r1[0],f:r1[1],h:'L'});Ls.push({t:b*4+2,d:2,m:r2[0],f:r2[1],h:'L'})}}
+  return mkPiece({id:'ode',title:'Ode à Alegria',sub:'Beethoven · domínio público · melodia completa',bpm:96,bpb:4,range:[43,79],
+    tracks:{R,L:Lf,Ls},sections:[['Frase 1 (compassos 1–4)',0,16],['Frase 2 (5–8)',16,32],['Ponte (9–12)',32,48],['Frase final (13–16)',48,64]],
+    info:'Melodia completa do tema, na posição de Dó. A mão esquerda faz acordes de Dó e Sol. Na ponte (compasso 12) a mão direita desce até o Sol com o polegar: desloque a mão e volte logo em seguida.'});
+})();
+
+// Gymnopédie nº 1 (Erik Satie, 1888) — domínio público
+const GYM=(()=>{
+  const Lf=[],Ls=[];
+  for(let k=0;k<12;k++){const t=k*3,g=k%2===0,late=k>=8;
+    Lf.push({t,d:3,m:g?43:50,f:5,h:'L',lab:g?'G7M':'D7M'});Ls.push({t,d:3,m:g?43:50,f:5,h:'L'});
+    const ch=g?(late?[[59,2],[62,1]]:[[59,4],[62,2],[66,1]]):(late?[[57,2],[61,1]]:[[57,4],[61,2],[66,1]]);
+    ch.forEach(([m,f])=>Lf.push({t:t+1,d:2,m,f,h:'L'}))}
+  const R=L([[null,13],[78,1,2],[81,1,4],[79,1,3],[78,1,2],[73,1,3],[71,1,2],[73,1,3],[74,1,4],[69,3,1],[66,12,1]],'R');
+  return mkPiece({id:'gym',title:'Gymnopédie nº 1',sub:'Erik Satie · domínio público · introdução e primeira frase (compassos 1–12)',bpm:66,bpb:3,range:[43,81],
+    tracks:{R,L:Lf,Ls},sections:[['Introdução (1–4)',0,12],['Primeira frase (5–8)',12,24],['Nota longa final (9–12)',24,36]],
+    info:'Compasso de 3 tempos, bem lento. A mão esquerda alterna um baixo grave (tempo 1) e um acorde (tempos 2 e 3), saltando entre os dois. A melodia entra no compasso 5. Use o pedal (sustain) se seu teclado tiver.'});
+})();
+
+// Let It Be — arranjo próprio de acompanhamento (acordes e baixo), sem a melodia
+const LIB=(()=>{
+  const RV={C:[[60,64,67],[1,3,5]],G:[[59,62,67],[1,2,5]],Am:[[60,64,69],[1,2,5]],F:[[60,65,69],[1,3,5]]};
+  const RB={C:[48,1],G:[43,4],Am:[45,3],F:[41,5]};
+  const V=[['C','G'],['Am','F'],['C','G'],['F','C']],C=[['Am','G'],['F','C'],['C','G'],['F','C']];
+  const VL=[[[48,2,1],[47,2,2]],[[45,1,3],[43,1,4],[41,2,5]],[[48,2,1],[43,2,4]],[[41,2,5],[48,2,1]]];
+  const CL=[[[45,2,3],[43,2,4]],[[41,2,5],[48,2,1]],[[48,2,1],[47,2,2]],[[41,2,5],[48,2,1]]];
+  const plan=['V','V','V','C','V','V','C','V'];
+  const R=[],Rf=[],Lf=[],Ls=[];let t=0;
+  plan.forEach(p=>{const prog=p==='V'?V:C,bl=p==='V'?VL:CL;
+    prog.forEach((bar,bi)=>{const t0=t+bi*4;
+      bar.forEach((sym,hi)=>{const[v,f]=RV[sym];const tt=t0+hi*2;
+        v.forEach((m,k)=>{R.push({t:tt,d:2,m,f:f[k],h:'R',lab:sym});Rf.push({t:tt,d:1,m,f:f[k],h:'R',lab:sym});Rf.push({t:tt+1,d:1,m,f:f[k],h:'R'})});
+        Ls.push({t:tt,d:2,m:RB[sym][0],f:RB[sym][1],h:'L'})});
+      Lf.push(...L(bl[bi],'L',t0))});
+    t+=16});
+  const[v,f]=RV.C;v.forEach((m,k)=>{R.push({t,d:4,m,f:f[k],h:'R',lab:'C'});Rf.push({t,d:4,m,f:f[k],h:'R',lab:'C'})});
+  Ls.push({t,d:4,m:48,f:1,h:'L'});Lf.push({t,d:4,m:48,f:1,h:'L'});
+  return mkPiece({id:'lib',title:'Let It Be',sub:'The Beatles · arranjo de acompanhamento (acordes e baixo), sem a melodia',bpm:72,bpb:4,range:[41,72],
+    tracks:{R,Rf,L:Lf,Ls},sections:[['Introdução',0,16],['Verso 1',16,48],['Refrão 1',48,64],['Verso 2',64,96],['Refrão 2',96,112],['Final',112,132]],
+    info:'Arranjo próprio do acompanhamento ao piano: a mão direita faz os acordes Dó, Sol, Lá menor e Fá em inversões próximas, e a esquerda faz o baixo, com a linha que desce (Dó–Si–Lá–Sol–Fá). A melodia da voz não está incluída; você pode cantar junto.'});
+})();
+const SONGS=[ODE,GYM,LIB];
+
+/* =========================================================
+   PEÇAS USADAS NAS LIÇÕES
+   ========================================================= */
+const q=(ms,fs,d=1)=>ms.map((m,i)=>[m,Array.isArray(d)?d[i]:d,fs[i]]);
+const MARY=[[64,1,3],[62,1,2],[60,1,1],[62,1,2],[64,1,3],[64,1,3],[64,2,3],[62,1,2],[62,1,2],[62,2,2],[64,1,3],[67,1,5],[67,2,5],[64,1,3],[62,1,2],[60,1,1],[62,1,2],[64,1,3],[64,1,3],[64,1,3],[64,1,3],[62,1,2],[62,1,2],[64,1,3],[62,1,2],[60,4,1]];
+const LV={C:[[48,52,55],[5,3,1]],G:[[47,50,55],[5,3,1]]};
+const chordsR=(list,d)=>list.map(sym=>{const ci=chordInfo(sym);return[ci.v,d,ci.f,{lab:sym}]});
+const chordsRoot=(list,d)=>{const RT={C:[[60,64,67],[1,3,5]],F:[[65,69,72],[1,3,5]],G:[[67,71,74],[1,3,5]],Am:[[69,72,76],[1,3,5]],Dm:[[62,65,69],[1,3,5]],Em:[[64,67,71],[1,3,5]]};return list.map(s=>[RT[s][0],d,RT[s][1],{lab:s}])};
+const PIECES={
+  p6:()=>mkPiece({bpm:80,tracks:{R:L(q([60,62,64,65,67,65,64,62,60],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,2]),'R'),L:L(q([48,50,52,53,55,53,52,50,48],[5,4,3,2,1,2,3,4,5],[1,1,1,1,1,1,1,1,2]),'L',12)}}),
+  p7:()=>mkPiece({bpm:90,tracks:{R:L(MARY,'R')}}),
+  p13:()=>mkPiece({bpm:80,tracks:{R:[...L(q([64,62,60],[3,2,1]),'R',0),...L(q([60,62,64],[1,2,3]),'R',8)],L:[...L(q([55,53,52],[1,2,3]),'L',4),...L(q([52,53,55],[3,2,1]),'L',12)]}}),
+  p14:()=>mkPiece({bpm:80,tracks:{R:L([[60,1,1],[62,1,2],[64,1,3],[65,1,4],[67,1,5],[65,1,4],[64,1,3],[62,1,2],[64,1,3],[65,1,4],[67,2,5],[60,4,1]],'R'),L:L([[48,4,5],[55,4,1],[48,4,5],[48,4,5]],'L')}}),
+  p15:()=>mkPiece({bpm:84,tracks:{R:L([...odeA,...odeEnd1],'R'),L:L([[48,2,5],[48,2,5],[55,2,1],[55,2,1],[48,2,5],[48,2,5],[48,2,5],[55,2,1]],'L')}}),
+  p16:()=>mkPiece({bpm:72,tracks:{R:L([[60,1,1],[62,1,2],[64,1,3],[65,1,4],[64,2,3],[67,2,5],[60,.5,1],[62,.5,2],[64,.5,3],[65,.5,4],[67,.5,5],[65,.5,4],[64,.5,3],[62,.5,2],[60,4,1]],'R'),
+    L:L([[48,2,5],[55,2,1],[48,1,5],[52,1,3],[55,1,1],[52,1,3],[48,4,5],[55,1,1],[52,1,3],[50,1,4],[48,1,5]],'L')}}),
+  p17:()=>mkPiece({bpm:84,tracks:{R:L(q([60,62,64,65,67,65,64,62,67,69,71,72,74,72,71,69,60],[1,2,3,4,5,4,3,2,1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4]),'R')}}),
+  p18:()=>mkPiece({bpm:80,tracks:{R:L(q([60,62,64,65,67,69,71,72,72,71,69,67,65,64,62,60],[1,2,3,1,2,3,4,5,5,4,3,2,1,3,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]),'R')}}),
+  p19:()=>mkPiece({bpm:80,tracks:{R:[...L(q([67,69,71,72,74,76,78,79,79,78,76,74,72,71,69,67],[1,2,3,1,2,3,4,5,5,4,3,2,1,3,2,1]),'R',0),
+    ...L([[65,1,1],[67,1,2],[69,1,3],[70,1,4,{sp:'b'}],[72,1,1],[74,1,2],[76,1,3],[77,1,4]],'R',16),
+    ...L(q([62,64,66,67,69,71,73,74],[1,2,3,1,2,3,4,5]),'R',24)]}}),
+  p21:()=>mkPiece({bpm:80,tracks:{R:[...L(q([69,71,72,74,76,77,79,81],[1,2,3,1,2,3,4,5]),'R',0),...L(q([64,66,67,69,71,72,74,76],[1,2,3,1,2,3,4,5]),'R',8)]}}),
+  p22:()=>mkPiece({bpm:80,tracks:{R:L(q([60,64,67,72,67,64,60,57,60,64,69,64,60,57,65,69,72,77,72,69,65,60],[1,2,3,5,3,2,1,1,2,3,5,3,2,1,1,2,3,5,3,2,1,1],[1,1,1,1,1,1,2,1,1,1,1,1,1,2,1,1,1,1,1,1,2,4]),'R')}}),
+  p23:()=>{const base=[[60,62,64,65,67],[62,64,65,67,69],[64,65,67,69,71],[65,67,69,71,72],[67,69,71,72,74]];const it=[];base.forEach(b=>[0,1,2,3,4,3,2,1].forEach((k,i)=>it.push([b[k],.5,[1,2,3,4,5,4,3,2][i]])));it.push([60,4,1]);return mkPiece({bpm:70,tracks:{R:L(it,'R')}})},
+  p24:()=>mkPiece({bpm:72,tracks:{R:L(chordsRoot(['C','C','F','F','G','G','C'],2).concat([[ [60,64,67],2,[1,3,5],{lab:'C'}]]),'R')}}),
+  p25:()=>mkPiece({bpm:72,tracks:{R:L(chordsRoot(['Am','Am','Dm','Dm','Em','Em','Am','Am'],2),'R')}}),
+  p26:()=>mkPiece({bpm:72,tracks:{R:L(chordsR(['C','F','G','C','C','F','G','C'],2),'R')}}),
+  p28:()=>mkPiece({bpm:72,tracks:{R:L(chordsR(['C','F','G','C','C','Am','F','G','C'],[2,2,2,2,2,2,2,2,4].length?2:2).map((x,i,a)=>i===a.length-1?[x[0],4,x[2],x[3]]:x),'R')}}),
+  p29:()=>mkPiece({bpm:66,tracks:{R:L(chordsR(['Dm7','G7','C7M','Am7','Dm7','G7','C7M','C7M'],4),'R')}}),
+  p30:()=>{const bars=['C','C','G','C','C','C','G','C'];return mkPiece({bpm:80,tracks:{R:L(MARY,'R'),L:L(bars.map(s=>[LV[s][0],4,LV[s][1],{lab:s}]),'L')}})}
+};
+
+/* =========================================================
+   LIÇÕES (8 módulos, 46 lições)
+   ========================================================= */
+const MODULES=[
+ {n:'Módulo 1 · Fundamentos',d:'Postura, mapa do teclado, pulso e primeiras melodias',ls:[
+  {t:'Postura, mão e números dos dedos',obj:'Sentar e posicionar as mãos corretamente e saber o número de cada dedo nas duas mãos.',
+   exp:['Sente-se de frente para o meio do teclado. Os cotovelos ficam um pouco à frente do corpo, na altura das teclas, e os ombros soltos.',
+        'A mão fica curvada, como se segurasse uma laranja. Toque com a ponta dos dedos, nunca com o dedo esticado.',
+        'Os dedos são numerados de 1 a 5 nas duas mãos: <b>1 polegar, 2 indicador, 3 médio, 4 anelar, 5 mindinho</b>. Na partitura e neste app, o número junto da nota diz qual dedo usar.',
+        'Cada dedo tem uma cor fixa no app: <b style="color:#ff6b6b">1</b> vermelho, <b style="color:#ffa94d">2</b> laranja, <b style="color:#ffd43b">3</b> amarelo, <b style="color:#69db7c">4</b> verde e <b style="color:#4dabf7">5</b> azul. A tecla que você deve tocar acende na cor do dedo.'],
+   exd:'Guarde o número e a cor de cada dedo. Eles aparecem em todo o app.',ex:{type:'fingerinfo'}},
+  {t:'Mapa do teclado',obj:'Achar qualquer Dó do teclado em menos de 2 segundos.',
+   exp:['As teclas pretas aparecem em grupos de <b>2</b> e de <b>3</b>, sempre alternando. É assim que você se localiza sem decorar tecla por tecla.',
+        'O <b>Dó</b> é a tecla branca logo à esquerda do grupo de 2 pretas.',
+        'O Dó do meio do teclado se chama <b>Dó central</b> (ponto azul no teclado da tela). Ele é a referência para as duas mãos.',
+        'O desenho de 12 teclas (7 brancas e 5 pretas) se repete por todo o teclado. Cada repetição é uma <b>oitava</b>.'],
+   exd:'Ache e toque todos os Dós do teclado da tela.',ex:{type:'findall',pc:0}},
+  {t:'As 7 notas brancas',obj:'Dar nome a qualquer tecla branca na hora.',
+   exp:['As teclas brancas são, em ordem: <b>Dó Ré Mi Fá Sol Lá Si</b>, e depois recomeça.',
+        'Na cifra elas viram letras: <b>C D E F G A B</b> (Dó = C, Ré = D, Mi = E, Fá = F, Sol = G, Lá = A, Si = B).',
+        'Atalhos: o <b>Ré</b> fica no meio do grupo de 2 pretas. O <b>Fá</b> fica à esquerda do grupo de 3. Mi e Si não têm tecla preta à direita.'],
+   exd:'O app sorteia 12 notas. Toque cada uma o mais rápido que puder.',ex:{type:'find',pool:[0,2,4,5,7,9,11],rounds:12}},
+  {t:'Pulso e metrônomo',obj:'Tocar junto com o metrônomo sem adiantar nem atrasar.',
+   exp:['<b>Pulso</b> é a batida constante da música, como o coração ou o passo de quem caminha.',
+        'O <b>metrônomo</b> marca o pulso. O número (por exemplo, 60) é quantas batidas por minuto.',
+        'O primeiro clique de cada grupo é mais forte: ele marca o começo do compasso.',
+        'Dica: conte em voz alta “1, 2, 3, 4” junto com o clique antes de tocar.'],
+   exd:'Depois de 4 cliques de preparação, toque qualquer tecla junto com cada clique (8 vezes).',ex:{type:'rhythm',bpm:60,bpb:4,pattern:[1,1,1,1,1,1,1,1]}},
+  {t:'Duração das notas',obj:'Saber quanto tempo dura cada figura e manter a tecla apertada o tempo certo.',
+   exp:['<b>Semibreve</b> (bolinha aberta, sem haste) = 4 tempos.','<b>Mínima</b> (bolinha aberta, com haste) = 2 tempos.','<b>Semínima</b> (bolinha cheia, com haste) = 1 tempo.','<b>Colcheia</b> (cheia, com bandeirinha) = meio tempo.',
+        'O som deve durar o tempo todo da figura: aperte no clique e só solte no clique em que a próxima nota começa.'],
+   exd:'Toque o ritmo mostrado junto com o metrônomo: 1 semibreve, 2 mínimas e 4 semínimas.',ex:{type:'rhythm',bpm:72,bpb:4,pattern:[4,2,2,1,1,1,1]}},
+  {t:'Posição de Dó (duas mãos)',obj:'Colocar cada mão na posição de Dó e tocar 5 notas seguidas com o dedo certo.',
+   exp:['<b>Mão direita:</b> polegar (1) no Dó central e um dedo em cada tecla até o Sol (5).',
+        '<b>Mão esquerda:</b> mindinho (5) no Dó uma oitava abaixo e polegar (1) no Sol.',
+        'Repare que os números se invertem: na mão esquerda, subir é 5-4-3-2-1.',
+        'Regra de ouro: <b>um dedo por tecla</b>. A mão não pula; só os dedos se mexem.'],
+   exd:'Toque Dó-Ré-Mi-Fá-Sol e volte, primeiro com a direita e depois com a esquerda.',ex:{type:'play',piece:'p6',user:['R','L']}},
+  {t:'Primeiras melodias',obj:'Tocar uma melodia completa com a mão direita, sem olhar para as mãos.',
+   exp:['Melodia: <i>Mary tinha um carneirinho</i> (folclórica, domínio público), toda na posição de Dó.',
+        'Notas repetidas: solte a tecla e toque de novo com o mesmo dedo.',
+        'Olhe para a tela, não para as mãos. Isso treina a mão a “sentir” o teclado e é o que faz você evoluir.'],
+   exd:'Toque a melodia inteira com a mão direita.',ex:{type:'play',piece:'p7',user:['R']}}
+ ]},
+ {n:'Módulo 2 · Leitura de partitura',d:'Clave de sol, clave de fá, ritmo e compasso',ls:[
+  {t:'Pauta e clave de sol',obj:'Ler as notas da clave de sol entre o Dó central e o Sol de cima.',
+   exp:['A <b>pauta</b> tem 5 linhas e 4 espaços, contados de baixo para cima. Quanto mais alta a nota na pauta, mais aguda ela é.',
+        'A <b>clave de sol</b> diz que a 2ª linha é a nota Sol (o Sol acima do Dó central). A partir dela, cada linha e cada espaço é a nota seguinte.',
+        'O <b>Dó central</b> fica numa linha pequena (suplementar) logo abaixo da pauta.',
+        'Truque: os 4 espaços, de baixo para cima, formam <b>Fá – Lá – Dó – Mi</b>.'],
+   exd:'Uma nota aparece na pauta. Toque a tecla dela (10 notas).',ex:{type:'read',clef:'treble',pool:[60,62,64,65,67,69,71,72,74,76,77,79],rounds:10}},
+  {t:'Clave de fá',obj:'Ler as notas da mão esquerda.',
+   exp:['A <b>clave de fá</b> diz que a 4ª linha é a nota Fá (o Fá abaixo do Dó central). Ela é usada para a mão esquerda.',
+        'Linhas, de baixo para cima: <b>Sol – Si – Ré – Fá – Lá</b>. Espaços: <b>Lá – Dó – Mi – Sol</b>.',
+        'O Dó central fica numa linha suplementar logo acima da pauta de fá.'],
+   exd:'Uma nota aparece na clave de fá. Toque a tecla dela (10 notas).',ex:{type:'read',clef:'bass',pool:[43,45,47,48,50,52,53,55,57,59,60],rounds:10}},
+  {t:'Leitura relâmpago',obj:'Reconhecer notas das duas claves em até 3 segundos.',
+   exp:['Não soletre “linha 1, linha 2…”: isso é lento demais para tocar.',
+        'Use <b>notas âncora</b>: Dó central, o Sol da clave de sol (2ª linha) e o Fá da clave de fá (4ª linha). Descubra as outras contando a partir da âncora mais próxima.',
+        'Leia pela <b>distância</b>: linha para o espaço vizinho é a nota ao lado; linha para a linha seguinte pula uma nota.'],
+   exd:'15 notas misturadas nas duas claves, 3 segundos para cada.',ex:{type:'read',clef:'both',pool:[45,48,50,53,55,57,60,62,64,67,69,72,74,77],rounds:15,limit:3}},
+  {t:'Pausas, colcheias, ponto e ligadura',obj:'Tocar ritmos com silêncios e notas curtas.',
+   exp:['<b>Pausa</b> é silêncio com duração: pausa de semínima = 1 tempo sem tocar.',
+        '<b>Colcheia</b> vale meio tempo. Conte “1 e 2 e 3 e 4 e”: o número cai no clique e o “e” fica entre dois cliques.',
+        '<b>Ponto</b> depois da nota aumenta metade do valor: semínima pontuada = 1 tempo e meio.',
+        '<b>Ligadura</b> entre duas notas iguais soma as durações: toque uma vez só e segure.'],
+   exd:'Toque o ritmo mostrado. Nas pausas, não toque.',ex:{type:'rhythm',bpm:66,bpb:4,pattern:[1,.5,.5,{r:1},1,1.5,.5,{r:1},1,.5,.5,.5,.5,2]}},
+  {t:'Compassos 2/4, 3/4 e 4/4',obj:'Reconhecer os compassos lendo e ouvindo.',
+   exp:['O número de <b>cima</b> diz quantos tempos tem cada compasso. O de <b>baixo</b> diz qual figura vale um tempo (4 = semínima).',
+        '<b>2/4</b>: dois tempos, comum em frevo, baião, samba e marchas. <b>3/4</b>: três tempos, a valsa. <b>4/4</b>: quatro tempos, a maioria das baladas e músicas pop.',
+        'O tempo 1 é o mais forte. Ouvir onde cai o tempo forte é a forma mais fácil de descobrir o compasso.'],
+   exd:'Quiz: perguntas sobre compasso e 3 trechos para ouvir e reconhecer.',ex:{type:'quiz',set:'compasso'}}
+ ]},
+ {n:'Módulo 3 · Duas mãos',d:'Coordenação e independência entre as mãos',ls:[
+  {t:'Mãos alternadas',obj:'Passar a melodia de uma mão para a outra sem parar.',
+   exp:['Antes de tocar com as duas mãos ao mesmo tempo, o cérebro precisa aprender a “passar a vez” entre elas.',
+        'Deixe as duas mãos já posicionadas na posição de Dó antes de começar. Assim, a mão que espera já está pronta.'],
+   exd:'A direita toca 3 notas, a esquerda responde com 3, e assim por diante.',ex:{type:'play',piece:'p13',user:['R','L']}},
+  {t:'Nota longa na esquerda, melodia na direita',obj:'Segurar uma nota na esquerda enquanto a direita anda.',
+   exp:['É o primeiro passo da independência: uma mão parada, a outra em movimento.',
+        'A esquerda toca no tempo 1 e <b>continua apertada</b> durante o compasso inteiro, enquanto a direita toca 4 notas.'],
+   exd:'Melodia na direita com notas longas de Dó e Sol na esquerda.',ex:{type:'play',piece:'p14',user:['R','L']}},
+  {t:'Baixo simples (bordão)',obj:'Tocar uma melodia conhecida com baixo repetido na esquerda.',
+   exp:['<b>Bordão</b> é um baixo simples que se repete, dando base para a melodia.',
+        'Aqui a esquerda toca Dó ou Sol a cada 2 tempos, enquanto a direita faz o começo da Ode à Alegria.'],
+   exd:'Ode à Alegria (compassos 1 a 4) com bordão na esquerda.',ex:{type:'play',piece:'p15',user:['R','L']}},
+  {t:'Independência: ritmos diferentes',obj:'Tocar ritmos diferentes em cada mão ao mesmo tempo.',
+   exp:['Agora cada mão tem seu próprio ritmo: a direita em semínimas e a esquerda em mínimas, depois o contrário, e por fim colcheias contra semibreve.',
+        'Comece com o modo espera ligado e velocidade baixa. Quando acertar, desligue o modo espera.'],
+   exd:'4 compassos com combinações de ritmos entre as mãos.',ex:{type:'play',piece:'p16',user:['R','L']}},
+  {t:'Mudança de posição sem olhar',obj:'Trocar a mão de lugar rapidamente, sem perder o tempo.',
+   exp:['Músicas reais não ficam numa posição só. A mão precisa “saltar” para uma nova posição.',
+        'Aqui a direita vai da posição de Dó (Dó a Sol) para a posição de Sol (Sol a Ré) e volta.',
+        'O segredo é olhar a próxima posição <b>antes</b> de terminar a anterior.'],
+   exd:'Cinco notas na posição de Dó, salto para a posição de Sol e volta.',ex:{type:'play',piece:'p17',user:['R']}}
+ ]},
+ {n:'Módulo 4 · Técnica e escalas',d:'Passagem do polegar, escalas, sustenidos e arpejos',ls:[
+  {t:'Passagem do polegar e escala de Dó maior',obj:'Tocar 8 notas seguidas com uma mão usando a passagem do polegar.',
+   exp:['Uma mão tem 5 dedos e a escala tem 8 notas. A solução é <b>passar o polegar por baixo</b> da mão.',
+        'Subindo, mão direita: <b>1-2-3</b>, o polegar passa por baixo, <b>1-2-3-4-5</b>.',
+        'Descendo: <b>5-4-3-2-1</b>, o dedo 3 passa por cima do polegar, <b>3-2-1</b>.',
+        'Mantenha o pulso parado: quem se move é o polegar.'],
+   exd:'Escala de Dó maior subindo e descendo com a mão direita.',ex:{type:'play',piece:'p18',user:['R']}},
+  {t:'Escalas de Sol, Fá e Ré maior',obj:'Tocar escalas que usam teclas pretas.',
+   exp:['Toda escala maior segue o mesmo desenho de distâncias: tom, tom, semitom, tom, tom, tom, semitom.',
+        '<b>Sol maior</b> tem um sustenido: Fá#. <b>Fá maior</b> tem um bemol: Si♭ (e o polegar passa depois do dedo 4). <b>Ré maior</b> tem dois: Fá# e Dó#.'],
+   exd:'Sol maior (sobe e desce), Fá maior e Ré maior subindo.',ex:{type:'play',piece:'p19',user:['R']}},
+  {t:'Sustenidos e bemóis',obj:'Dar nome às teclas pretas.',
+   exp:['<b>Sustenido (#)</b> = a tecla logo acima (à direita). Dó# é a preta à direita do Dó.',
+        '<b>Bemol (♭)</b> = a tecla logo abaixo (à esquerda). Ré♭ é a preta à esquerda do Ré.',
+        'Por isso a mesma tecla preta tem dois nomes: Dó# = Ré♭, Fá# = Sol♭, e assim por diante.'],
+   exd:'O app pede teclas pretas ora como sustenido, ora como bemol (12 rodadas).',ex:{type:'find',pool:[1,3,6,8,10],rounds:12,mixSp:true}},
+  {t:'Escalas menores',obj:'Ouvir e tocar o som “triste” das escalas menores.',
+   exp:['A escala <b>menor natural</b> muda a ordem das distâncias: tom, semitom, tom, tom, semitom, tom, tom.',
+        '<b>Lá menor</b> usa só teclas brancas, de Lá a Lá. <b>Mi menor</b> tem um sustenido (Fá#).',
+        'Compare: Dó maior e Lá menor têm as mesmas notas, mas o ponto de partida muda tudo.'],
+   exd:'Escalas de Lá menor e Mi menor subindo.',ex:{type:'play',piece:'p21',user:['R']}},
+  {t:'Arpejos',obj:'Tocar as notas de um acorde uma de cada vez.',
+   exp:['<b>Arpejo</b> é o acorde “desmontado”: em vez de tocar as notas juntas, toque uma depois da outra.',
+        'É muito usado em introduções e em músicas lentas, como a Gymnopédie.',
+        'Arpejo de Dó: Dó-Mi-Sol-Dó com os dedos 1-2-3-5.'],
+   exd:'Arpejos de Dó, Lá menor e Fá, subindo e descendo.',ex:{type:'play',piece:'p22',user:['R']}},
+  {t:'Aquecimento diário',obj:'Ter uma rotina de 5 minutos para ganhar agilidade e força nos dedos.',
+   exp:['Antes de estudar músicas, aqueça os dedos com um padrão que sobe pelo teclado.',
+        'Padrão 1-2-3-4-5-4-3-2, começando em Dó, depois em Ré, Mi, Fá e Sol.',
+        'Toque leve e por igual: todos os dedos com o mesmo volume, inclusive o 4 e o 5, que são mais fracos.'],
+   exd:'O padrão de aquecimento subindo pelas 5 posições.',ex:{type:'play',piece:'p23',user:['R']}}
+ ]},
+ {n:'Módulo 5 · Acordes e cifras',d:'Tríades, inversões, cifra e acompanhamento',ls:[
+  {t:'Acordes maiores: Dó, Fá e Sol',obj:'Montar e tocar os três acordes maiores mais usados.',
+   exp:['<b>Acorde</b> é a combinação de 3 ou mais notas tocadas juntas.',
+        'O acorde maior básico (tríade) usa a 1ª, a 3ª e a 5ª nota a partir da fundamental: toque uma, pule uma, toque uma, pule uma, toque uma.',
+        '<b>Dó</b> = Dó-Mi-Sol. <b>Fá</b> = Fá-Lá-Dó. <b>Sol</b> = Sol-Si-Ré. Dedos 1-3-5.'],
+   exd:'Toque Dó, Fá e Sol em posição fundamental.',ex:{type:'play',piece:'p24',user:['R']}},
+  {t:'Acordes menores: Lá m, Ré m e Mi m',obj:'Montar os acordes menores e ouvir a diferença para os maiores.',
+   exp:['O acorde menor tem a nota do meio meio tom mais baixa que o maior. Isso dá o som mais triste.',
+        '<b>Lá menor</b> = Lá-Dó-Mi. <b>Ré menor</b> = Ré-Fá-Lá. <b>Mi menor</b> = Mi-Sol-Si.'],
+   exd:'Toque Lá menor, Ré menor e Mi menor.',ex:{type:'play',piece:'p25',user:['R']}},
+  {t:'Inversões',obj:'Trocar de acorde movendo a mão o mínimo possível.',
+   exp:['<b>Inversão</b> é o mesmo acorde com as notas em outra ordem. Fá pode ser Dó-Fá-Lá em vez de Fá-Lá-Dó.',
+        'Com inversões, a mão fica quase parada: de Dó (Dó-Mi-Sol) para Fá (Dó-Fá-Lá), o Dó nem sai do lugar.',
+        'É assim que os pianistas acompanham músicas como Let It Be.'],
+   exd:'Dó → Fá → Sol → Dó usando inversões.',ex:{type:'play',piece:'p26',user:['R']}},
+  {t:'Leitura de cifra',obj:'Ver uma cifra e tocar o acorde certo.',
+   exp:['<b>Cifra</b> é o nome do acorde em letras: C = Dó, D = Ré, E = Mi, F = Fá, G = Sol, A = Lá, B = Si.',
+        'Um <b>m</b> minúsculo indica menor: Am = Lá menor. Um <b>7</b> indica sétima: G7 = Sol com sétima.',
+        'Nesta lição vale qualquer posição do acorde. O app confere se as notas certas foram tocadas.'],
+   exd:'O app mostra uma cifra e você toca o acorde (8 rodadas). O botão Dica mostra as teclas.',ex:{type:'cifra',list:['C','G','Am','F','Dm','Em','G7','C']}},
+  {t:'Progressões mais usadas',obj:'Tocar as sequências de acordes que aparecem em milhares de músicas.',
+   exp:['<b>I–IV–V–I</b>: em Dó, C–F–G–C. É a base de forró, rock e música folclórica.',
+        '<b>I–vi–IV–V</b>: em Dó, C–Am–F–G. É a base de inúmeras baladas e músicas pop.',
+        'Saber essas progressões de cor faz você tirar muita música de ouvido.'],
+   exd:'C–F–G–C e C–Am–F–G–C com inversões.',ex:{type:'play',piece:'p28',user:['R']}},
+  {t:'Acordes com sétima',obj:'Tocar acordes de 4 notas, com som de MPB e bossa nova.',
+   exp:['A <b>sétima</b> acrescenta uma 4ª nota ao acorde e deixa o som mais rico.',
+        '<b>G7</b> (Sol com sétima) pede para voltar ao Dó. <b>C7M</b> (sétima maior) soa suave, típico da bossa nova. <b>Dm7</b> e <b>Am7</b> são menores com sétima.'],
+   exd:'Dm7 → G7 → C7M → Am7, a sequência mais clássica da bossa nova.',ex:{type:'play',piece:'p29',user:['R']}},
+  {t:'Acompanhar uma melodia pela cifra',obj:'Acompanhar uma melodia tocando só os acordes indicados na cifra.',
+   exp:['É assim que se acompanha alguém cantando: você lê a cifra e toca o acorde na hora certa.',
+        'Aqui o app toca a melodia de <i>Mary tinha um carneirinho</i> e você faz os acordes de Dó e Sol com a mão esquerda, um por compasso.'],
+   exd:'Acordes na mão esquerda enquanto o app toca a melodia.',ex:{type:'play',piece:'p30',user:['L'],auto:['R']}}
+ ]},
+ {n:'Módulo 6 · Recursos do teclado arranjador',d:'Timbres, ritmo automático, introdução, virada e final',ls:[
+  {t:'Timbres e divisão do teclado (split)',obj:'Escolher sons diferentes para cada mão.',
+   exp:['Teclados arranjadores têm centenas de <b>timbres</b> (piano, órgão, cordas, flauta…).',
+        'Com o <b>split</b>, o teclado se divide em dois: a parte de baixo toca um timbre (por exemplo, baixo) e a de cima outro (por exemplo, piano).',
+        'No seu teclado, procure botões como <i>Split</i>, <i>Voice</i> ou <i>Tone</i>. Aqui você testa a ideia no teclado da tela.'],
+   exd:'Escolha um timbre para cada lado do teclado e toque à vontade.',ex:{type:'sandbox'}},
+  {t:'Acompanhamento automático',obj:'Fazer o teclado tocar bateria, baixo e acordes a partir do acorde da mão esquerda.',
+   exp:['No modo de acompanhamento automático (<i>Accomp</i>, <i>ACMP</i> ou <i>Auto Accompaniment</i>), a mão esquerda só indica o acorde e o teclado faz a banda.',
+        'Modo de <b>um dedo</b>: aperte só a nota do acorde (Dó = acorde de Dó maior). Modo <b>dedilhado</b>: toque o acorde inteiro (Lá-Dó-Mi = Lá menor).',
+        'Aqui, tudo abaixo do Dó central funciona como a zona de acordes.'],
+   exd:'Ligue o ritmo e troque os acordes com a mão esquerda: um dedo ou acorde completo.',ex:{type:'autoacc',mode:'detect'}},
+  {t:'Introdução, virada e final',obj:'Começar, variar e terminar uma música como um tecladista.',
+   exp:['<b>Intro</b>: o teclado toca uma introdução antes do ritmo principal.',
+        '<b>Virada (Fill-in)</b>: uma variação curta da bateria que marca a passagem para outra parte da música, como do verso para o refrão.',
+        '<b>Final (Ending)</b>: termina a música com um fechamento, sem cortar o som de repente.'],
+   exd:'Use os botões Intro, Virada e Final enquanto troca os acordes.',ex:{type:'autoacc',mode:'detect',buttons:true}},
+  {t:'Música inteira com ritmo automático',obj:'Seguir uma sequência de acordes no tempo, com o ritmo tocando.',
+   exp:['Agora é como tocar numa banda: o ritmo não espera você.',
+        'Olhe o acorde destacado e troque <b>um pouco antes</b> do começo do compasso.',
+        'O app conta em quantos compassos você estava com o acorde certo.'],
+   exd:'Siga a cifra destacada trocando o acorde com a mão esquerda.',ex:{type:'autoacc',mode:'chart',chart:['C','G','Am','F','C','G','F','C']}}
+ ]},
+ {n:'Módulo 7 · Estilos e levadas',d:'As levadas mais tocadas no Brasil',ls:[
+  {t:'Balada e pop',obj:'Tocar a levada de balada e a de pop com as duas mãos.',
+   exp:['<b>Balada</b>: baixo em notas longas e acordes nos 4 tempos, calmo e regular.',
+        '<b>Pop</b>: mais animado, com o acorde “antecipado” (entra antes do tempo, no contratempo).',
+        'Sequência usada: C–G–Am–F, a progressão mais comum do pop.'],
+   exd:'Ouça a levada de balada e depois pratique as duas mãos.',ex:{type:'style',style:'balada',alt:'pop'}},
+  {t:'Valsa',obj:'Sentir e tocar o 3/4.',
+   exp:['A valsa tem 3 tempos: <b>baixo no 1</b> e <b>acorde no 2 e no 3</b> (“tum-pá-pá”).',
+        'A mão esquerda faz o baixo e a direita os acordes. É a mesma base da Gymnopédie, só que mais rápida.'],
+   exd:'Ouça e pratique o “tum-pá-pá”.',ex:{type:'style',style:'valsa'}},
+  {t:'Baião e forró',obj:'Tocar a levada do baião no teclado.',
+   exp:['O baião está em 2/4. O baixo imita a zabumba: <b>“tum… tum-tum”</b>, com a 2ª nota caindo antes do tempo 2.',
+        'A direita faz acordes curtos nos contratempos (entre os tempos), como a sanfona.',
+        'Sequência típica: C–F–G7–C.'],
+   exd:'Ouça a levada de baião e pratique com as duas mãos.',ex:{type:'style',style:'baiao'}},
+  {t:'Frevo',obj:'Tocar uma levada rápida de frevo.',
+   exp:['O frevo é rápido e em 2/4. O baixo alterna fundamental e quinta nos tempos 1 e 2.',
+        'Os acordes da direita entram nos contratempos, imitando os metais.',
+        'Comece devagar (60% a 70%) e vá acelerando aos poucos.'],
+   exd:'Ouça o frevo e pratique a levada.',ex:{type:'style',style:'frevo'}},
+  {t:'Bossa nova',obj:'Tocar a levada da bossa nova com acordes de sétima.',
+   exp:['O baixo alterna fundamental e quinta, como o violão de João Gilberto.',
+        'Os acordes da direita são sincopados: entram fora dos tempos fortes.',
+        'Sequência: Dm7–G7–C7M, a mesma da lição de acordes com sétima.'],
+   exd:'Ouça a bossa e pratique a levada.',ex:{type:'style',style:'bossa'}},
+  {t:'Samba e MPB',obj:'Tocar uma levada de samba no teclado.',
+   exp:['No samba, o tempo forte é o <b>2</b> (o surdo). O baixo faz uma nota curta no 1 e uma longa no 2.',
+        'A direita “picota” os acordes em semicolcheias, imitando o tamborim e o cavaquinho.',
+        'Sequência: C–A7–Dm–G7, muito comum no samba.'],
+   exd:'Ouça o samba e pratique a levada.',ex:{type:'style',style:'samba'}}
+ ]},
+ {n:'Módulo 8 · Ouvido e criatividade',d:'Percepção, tirar música de ouvido e improviso',ls:[
+  {t:'Agudo ou grave',obj:'Perceber se uma nota é mais aguda ou mais grave que a outra.',
+   exp:['Esta é a base para tirar música de ouvido: saber se a melodia <b>sobe</b> ou <b>desce</b>.',
+        'No começo as notas ficam bem distantes. A cada rodada elas se aproximam, e fica mais difícil.'],
+   exd:'Ouça duas notas e diga se a segunda é mais aguda ou mais grave (8 rodadas).',ex:{type:'earhl'}},
+  {t:'Ditado melódico',obj:'Ouvir uma pequena melodia e tocá-la de volta.',
+   exp:['O app toca 3 ou 4 notas entre Dó e Sol. Você repete no teclado.',
+        'A primeira nota sempre aparece acesa para ajudar. Depois disso é com o seu ouvido.',
+        'Dica: cante baixinho antes de tocar. Se a voz acerta, as mãos acertam.'],
+   exd:'5 melodias curtas para ouvir e repetir.',ex:{type:'eardict'}},
+  {t:'Maior ou menor',obj:'Reconhecer de ouvido se um acorde é maior ou menor.',
+   exp:['O acorde <b>maior</b> soa alegre e aberto. O <b>menor</b> soa triste e fechado.',
+        'Isso ajuda muito a tirar a cifra de músicas: depois de achar a nota do baixo, você só precisa descobrir se o acorde é maior ou menor.'],
+   exd:'Ouça o acorde e responda: maior ou menor (8 rodadas).',ex:{type:'earmm'}},
+  {t:'Tirar música de ouvido',obj:'Descobrir sozinho as notas de um trecho de música.',
+   exp:['Método em 4 passos: (1) cante o trecho; (2) ache a primeira nota no teclado, testando; (3) descubra se a próxima sobe ou desce; (4) teste a nota seguinte até soar igual.',
+        'Use trechos curtos, de 3 a 5 notas. Ninguém tira uma música inteira de uma vez.',
+        'Aqui os trechos são de músicas em domínio público que você já conhece do app.'],
+   exd:'Ouça trechos de Ode à Alegria, Mary e Brilha brilha estrelinha e repita.',ex:{type:'earphrase'}},
+  {t:'Improviso com a escala pentatônica',obj:'Improvisar sem medo de errar.',
+   exp:['A escala <b>pentatônica</b> de Dó tem 5 notas: Dó, Ré, Mi, Sol e Lá. Quase qualquer combinação delas soa bem sobre a base.',
+        'As teclas da pentatônica ficam azuis. Toque frases curtas, repita ideias e deixe espaços de silêncio.',
+        'O app toca uma base (C–Am–F–G) e mostra quanto do que você tocou ficou dentro da escala.'],
+   exd:'Ligue a base e improvise com as teclas azuis.',ex:{type:'improv'}},
+  {t:'Criar sua introdução e seu final',obj:'Compor uma introdução curta e um final para tocar antes e depois das músicas.',
+   exp:['Uma introdução simples: toque a progressão da música (por exemplo, C–G–Am–F) em arpejos, uma vez.',
+        'Um final clássico: <b>F – G – C</b>, segurando o último acorde. É a cadência que “fecha” a música.',
+        'Grave, ouça e ajuste. Compor é tentar várias vezes e escolher a melhor.'],
+   exd:'Grave sua introdução ou seu final e ouça o resultado.',ex:{type:'record'}}
+ ]}
+];
+const LESSONS=[];MODULES.forEach((M,mi)=>M.ls.forEach(l=>{l.mod=mi;l.n=LESSONS.length+1;LESSONS.push(l)}));
+
+/* =========================================================
+   EXERCÍCIOS
+   ========================================================= */
+function resultBox(box,acc,detail,again){
+  const stars=acc>=95?3:acc>=80?2:1;saveScore(CURKEY,stars,acc);
+  box.innerHTML=`<div class="result"><div class="stars">${starStr(stars)}</div><div class="pct">${acc}%</div><p class="muted">${detail}</p><button class="btn primary" id="again">Repetir exercício</button></div>`;
+  $('#again').onclick=again;
+}
+const EX={};
+
+EX.fingers=(box)=>{
+  let r=0,ok=0,err=0,cur=null;const N=8;
+  box.innerHTML=`<div class="exhead"><b>Qual é o número do dedo aceso?</b><span class="cnt" id="cnt"></span></div><div class="handsbig">${handsSVG('q')}</div><div class="opts">${[1,2,3,4,5].map(n=>`<button class="opt" data-v="${n}">${n}</button>`).join('')}</div><div class="fb" id="fb"></div>`;
+  const next=()=>{if(r>=N)return resultBox(box,Math.round(ok/(ok+err)*100),`${ok} acertos e ${err} erros`,()=>EX.fingers(box));
+    cur={h:Math.random()<.5?'L':'R',f:1+Math.floor(Math.random()*5)};setHands('q',[cur]);$('#cnt').textContent=`${r+1} de ${N}`;$('#fb').className='fb';$('#fb').textContent=`Mão ${cur.h==='L'?'esquerda':'direita'}`};
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(+b.dataset.v===cur.f){ok++;r++;$('#fb').className='fb ok';$('#fb').textContent=`Isso! Dedo ${cur.f} = ${FNAME[cur.f]}`;setTimeout(next,700)}else{err++;$('#fb').className='fb bad';$('#fb').textContent='Não é esse. Conte a partir do polegar (1).'}});
+  next();
+};
+EX.fingerinfo=(box)=>{
+  box.innerHTML=`<div class="handsbig">${handsSVG('fi')}</div>
+   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px">${[1,2,3,4,5].map(f=>`<div style="background:${FC[f]};border-radius:12px;padding:8px 4px;text-align:center;color:#111"><div style="font-size:24px;font-weight:800">${f}</div><div style="font-size:11.5px;font-weight:800">${FNAME[f]}</div></div>`).join('')}</div>
+   <p class="muted small" style="margin-top:10px">A numeração é igual nas duas mãos: o polegar é sempre 1 e o mindinho é sempre 5.</p>`;
+  const all=[];['L','R'].forEach(h=>[1,2,3,4,5].forEach(f=>all.push({h,f})));setHands('fi',all);saveScore(CURKEY,3,100);
+};
+EX.findall=(box,cfg)=>{
+  const tg=[];for(let m=KB.lo;m<=KB.hi;m++)if(mod(m,12)===cfg.pc)tg.push(m);const found=new Set();let err=0;const t0=performance.now();
+  box.innerHTML=`<div class="prompt">Ache e toque todos os<span class="big">${nn(cfg.pc)}</span><span id="cnt">0 de ${tg.length}</span></div><div class="fb" id="fb"></div>`;
+  HANDLER=(m,src)=>{const mm=src==='mic'?tg.find(x=>mod(x,12)===mod(m,12)&&!found.has(x))??m:m;
+    if(tg.includes(mm)&&!found.has(mm)){found.add(mm);KB.els[mm].classList.add('found');$('#cnt').textContent=`${found.size} de ${tg.length}`;
+      if(found.size===tg.length){const s=((performance.now()-t0)/1000).toFixed(1);HANDLER=null;setTimeout(()=>{clearMarks();resultBox(box,Math.round(tg.length/(tg.length+err)*100),`Todos os ${tg.length} achados em ${s} s, com ${err} erro(s)`,()=>EX.findall(box,cfg))},600)}}
+    else if(!tg.includes(mm)){err++;flashKey(m,'bad');$('#fb').className='fb bad';$('#fb').textContent='Essa é '+nn(m)+'. Procure o grupo de 2 pretas.'}};
+};
+EX.find=(box,cfg)=>{
+  let r=0,err=0,cur=null,miss=0;const N=cfg.rounds,t0=performance.now();
+  box.innerHTML=`<div class="exhead"><span></span><span class="cnt" id="cnt"></span></div><div class="prompt">Toque<span class="big" id="tg"></span></div><div class="fb" id="fb"></div>`;
+  const next=()=>{clearMarks();if(r>=N){HANDLER=null;const s=((performance.now()-t0)/1000/N).toFixed(1);return resultBox(box,Math.round(N/(N+err)*100),`${err} erro(s) · média de ${s} s por nota`,()=>EX.find(box,cfg))}
+    let pc;do{pc=rnd(cfg.pool)}while(cur&&pc===cur.pc&&cfg.pool.length>1);
+    cur={pc,sp:cfg.mixSp?(Math.random()<.5?'b':''):''};miss=0;$('#tg').textContent=nn(pc,cur.sp);$('#cnt').textContent=`${r+1} de ${N}`;$('#fb').textContent=''};
+  HANDLER=m=>{if(mod(m,12)===cur.pc){r++;flashKey(m,'ok');$('#fb').className='fb ok';$('#fb').textContent='Certo!';setTimeout(next,350)}
+    else{err++;miss++;flashKey(m,'bad');$('#fb').className='fb bad';$('#fb').textContent='Essa é '+nn(m)+(miss>=2?'. Veja a dica no teclado.':'');if(miss>=2)markKeys(k=>mod(k,12)===cur.pc,'mark')}};
+  next();
+};
+EX.read=(box,cfg)=>{
+  let r=0,err=0,ok=0,cur=null,timer=null;const N=cfg.rounds;
+  box.innerHTML=`<div class="exhead"><span class="muted small">${cfg.limit?'Rápido: '+cfg.limit+' s por nota':'Toque a nota mostrada'}</span><span class="cnt" id="cnt"></span></div><div class="staffbox" id="rs"></div><div class="fb" id="fb"></div>`;
+  addClean(()=>clearTimeout(timer));
+  const next=()=>{clearTimeout(timer);if(r>=N){HANDLER=null;return resultBox(box,Math.round(ok/(ok+err||1)*100),`${ok} de ${N} certas, ${err} erro(s)`,()=>EX.read(box,cfg))}
+    let m;do{m=rnd(cfg.pool)}while(cur&&m===cur.m);let clef=cfg.clef;if(clef==='both')clef=m<60?'bass':'treble';if(m===60&&cfg.clef==='both')clef=rnd(['bass','treble']);
+    cur={m,clef};$('#cnt').textContent=`${r+1} de ${N}`;
+    $('#rs').innerHTML=staffSVG([{notes:[{m,d:1,h:clef==='bass'?'L':'R'}]}],-1,260,{clef:cfg.clef==='both'?undefined:clef,sp:120,nofingers:true});
+    if(cfg.limit)timer=setTimeout(()=>{err++;r++;$('#fb').className='fb bad';$('#fb').textContent='Tempo! Era '+nn(cur.m)+oct(cur.m);flashKey(cur.m,'ok');setTimeout(next,900)},cfg.limit*1000)};
+  HANDLER=(m,src)=>{const okk=src==='mic'?mod(m,12)===mod(cur.m,12):m===cur.m;
+    if(okk){ok++;r++;flashKey(cur.m,'ok');$('#fb').className='fb ok';$('#fb').textContent=nn(cur.m)+' ✓';setTimeout(next,400)}
+    else{err++;flashKey(m,'bad');$('#fb').className='fb bad';$('#fb').textContent=mod(m,12)===mod(cur.m,12)?'Nome certo, mas na oitava errada. Repare no Dó central (ponto azul).':'Essa é '+nn(m)+'. Tente de novo.'}};
+  next();
+};
+EX.rhythm=(box,cfg)=>{
+  const pat=cfg.pattern.map(p=>typeof p==='number'?{d:p}:{d:p.r,r:true});
+  const total=pat.reduce((a,p)=>a+p.d,0);let pos=0;const ons=pat.map(p=>{const o={t:pos,d:p.d,r:p.r};pos+=p.d;return o});
+  const draw=(stat)=>{const SPx=Math.min(56,(box.clientWidth-30)/Math.max(total,4));let x=18,s='',W=Math.max(300,total*SPx+40);
+    s+=`<line x1="6" y1="50" x2="${W-6}" y2="50" stroke="#666"/>`;
+    ons.forEach((o,i)=>{const col=stat?(stat[i]==='good'?'#1a9e64':stat[i]==='ok'?'#c48a00':stat[i]==='miss'?'#d33':'#333'):'#333';
+      const cx=x+8;if(mod(o.t,cfg.bpb)===0&&o.t>0)s+=`<line x1="${x-6}" y1="30" x2="${x-6}" y2="70" stroke="#999"/>`;
+      s+=o.r?restGlyph(cx,50,o.d,col):glyph(cx,[50],o.d,col,true);x+=Math.max(26,o.d*SPx)});
+    $('#rsvg').innerHTML=`<svg viewBox="0 0 ${W} 90" width="100%" style="display:block">${s}</svg>`};
+  box.innerHTML=`<div class="exhead"><span class="muted small">${cfg.bpm} batidas por minuto · ${cfg.bpb} tempos por compasso</span></div><div class="staffbox" id="rsvg" style="padding:6px"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="rhear">▶ Ouvir o ritmo</button><button class="btn primary" id="rgo">Começar</button></div><div class="fb" id="fb"></div>`;
+  draw(null);
+  const sched=(withNotes,cb)=>{newSession();const c=ac(),bps=cfg.bpm/60,t0=c.currentTime+.3+cfg.bpb/bps;
+    for(let k=0;k<cfg.bpb;k++)drum(k===0?'accent':'click',t0-(cfg.bpb-k)/bps);
+    for(let bt=0;bt<total;bt++)drum(mod(bt,cfg.bpb)===0?'accent':'click',t0+bt/bps,.8);
+    if(withNotes)ons.forEach(o=>{if(!o.r)tone(60,t0+o.t/bps,o.d/bps*.9)});return{t0,bps}};
+  $('#rhear').onclick=()=>{sched(true);$('#fb').className='fb';$('#fb').textContent='Ouça e conte junto…'};
+  $('#rgo').onclick=()=>{const{t0,bps}=sched(false);const taps=[];$('#fb').className='fb';$('#fb').textContent='Prepare-se: 4 cliques e comece…';
+    HANDLER=()=>taps.push(AC.currentTime);
+    const id=setTimeout(()=>{HANDLER=null;const stat=[],used=new Set();let good=0,okk=0,n=0;
+      ons.forEach((o,i)=>{if(o.r){stat.push('rest');return}n++;const te=t0+o.t/bps;let bi=-1,bd=9;taps.forEach((t,k)=>{if(used.has(k))return;const d=Math.abs(t-te);if(d<bd){bd=d;bi=k}});
+        if(bi>=0&&bd<.3){used.add(bi);if(bd<.12){good++;stat.push('good')}else{okk++;stat.push('ok')}}else stat.push('miss')});
+      const extra=taps.length-used.size;draw(stat);
+      const acc=Math.max(0,Math.round((good+okk*.6-extra*.5)/n*100));
+      $('#fb').className='fb';$('#fb').innerHTML=`Verde = no tempo · Amarelo = quase · Vermelho = errou${extra?` · ${extra} toque(s) a mais`:''}`;
+      const stars=acc>=95?3:acc>=80?2:1;saveScore(CURKEY,stars,acc);box.insertAdjacentHTML('beforeend',`<div class="result" id="rres"><div class="stars">${starStr(stars)}</div><div class="pct">${acc}% no ritmo</div></div>`);
+      const old=box.querySelectorAll('#rres');if(old.length>1)old[0].remove();
+    },(t0-AC.currentTime+total/bps+.5)*1000);addClean(()=>clearTimeout(id))};
+};
+const QUIZ={compasso:[
+  {q:'Num compasso 4/4, quantos tempos cabem?',o:['2','3','4','6'],a:2},
+  {q:'No 4/4, qual figura vale 1 tempo?',o:['Semibreve','Mínima','Semínima','Colcheia'],a:2},
+  {q:'A valsa é em qual compasso?',o:['2/4','3/4','4/4'],a:1},
+  {q:'Frevo, baião e samba costumam ser escritos em:',o:['2/4','3/4','6/8'],a:0},
+  {q:'Qual é o tempo mais forte do compasso?',o:['O 1º','O 2º','O último'],a:0},
+  {q:'Ouça e diga o compasso.',o:['2/4','3/4','4/4'],a:1,play:3},
+  {q:'Ouça e diga o compasso.',o:['2/4','3/4','4/4'],a:2,play:4},
+  {q:'Ouça e diga o compasso.',o:['2/4','3/4','4/4'],a:0,play:2}
+]};
+function playMeter(n){newSession();const c=ac(),t=c.currentTime+.1,bps=110/60;for(let k=0;k<n*4;k++){const s=k%n===0;drum(s?'kick':'hat',t+k/bps,s?1:.9);if(s)tone(48,t+k/bps,.3,{timbre:'bass',vel:.35});else tone(60,t+k/bps,.15,{timbre:'epiano',vel:.12})}}
+EX.quiz=(box,cfg)=>{
+  const Q=QUIZ[cfg.set];let i=0,ok=0,err=0,tried=false;
+  const show=()=>{if(i>=Q.length)return resultBox(box,Math.round(ok/Q.length*100),`${ok} de ${Q.length} certas na primeira tentativa`,()=>EX.quiz(box,cfg));
+    const qq=Q[i];tried=false;box.innerHTML=`<div class="exhead"><b>${qq.q}</b><span class="cnt">${i+1} de ${Q.length}</span></div>${qq.play?'<div class="row" style="justify-content:center;margin:8px 0"><button class="btn" id="qp">▶ Ouvir</button></div>':''}<div class="opts">${qq.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join('')}</div><div class="fb" id="fb"></div>`;
+    if(qq.play){$('#qp').onclick=()=>playMeter(qq.play)}
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(k===qq.a){b.classList.add('right');if(!tried)ok++;i++;setTimeout(show,700)}else{b.classList.add('wrong');tried=true;err++}})};
+  show();
+};
+EX.cifra=(box,cfg)=>{
+  let i=0,err=0,got=new Map(),cur=null;const N=cfg.list.length;
+  box.innerHTML=`<div class="exhead"><span class="muted small">Vale qualquer posição do acorde</span><span class="cnt" id="cnt"></span></div><div class="prompt">Toque o acorde<span class="big" id="cs"></span><span id="cpt"></span></div><div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm" id="chint">💡 Dica</button><button class="btn sm" id="chear">🔊 Ouvir</button></div><div class="fb" id="fb"></div>`;
+  const next=()=>{setTargets([]);if(i>=N){HANDLER=null;return resultBox(box,Math.round(N/(N+err)*100),`${err} nota(s) errada(s)`,()=>EX.cifra(box,cfg))}
+    cur=chordInfo(cfg.list[i]);got=new Map();$('#cs').textContent=cur.sym;$('#cpt').textContent=cur.pt;$('#cnt').textContent=`${i+1} de ${N}`;$('#fb').textContent=''};
+  $('#chint').onclick=()=>setTargets(cur.v.map((m,k)=>({m,f:cur.f[k]})));
+  $('#chear').onclick=()=>playChordNow(cur.v);
+  HANDLER=m=>{const pc=mod(m,12),now=performance.now();for(const[k,t]of got)if(now-t>2500)got.delete(k);
+    if(cur.pcs.includes(pc)){got.set(pc,now);flashKey(m,'ok');if(cur.pcs.every(p=>got.has(p))){i++;$('#fb').className='fb ok';$('#fb').textContent=cur.sym+' ✓';setTimeout(next,600)}else{$('#fb').className='fb';$('#fb').textContent=`${got.size} de ${cur.pcs.length} notas`}}
+    else{err++;flashKey(m,'bad');got.clear();$('#fb').className='fb bad';$('#fb').textContent=nn(m)+' não faz parte de '+cur.sym}};
+  next();
+};
+EX.play=(box,cfg)=>{const pc=PIECES[cfg.piece]();{const ms=Object.values(pc.tracks).flat().map(n=>n.m);if(ms.some(m=>m<pc.range[0]||m>pc.range[1]))pc.range=autoRange(ms)}showKB(true,pc.range[0],pc.range[1]);playSetup(box,pc,{levels:false,user:cfg.user,auto:cfg.auto,key:CURKEY})};
+EX.sandbox=(box)=>{
+  const st={L:'bass',R:'piano',split:60};
+  const opts=k=>Object.keys(TIMBRES).map(t=>`<button data-z="${k}" data-t="${t}" class="${st[k]===t?'on':''}">${TNAME[t]}</button>`).join('');
+  const render=()=>{box.innerHTML=`<div class="setg"><h3>Lado esquerdo (abaixo do Dó central)</h3><div class="seg">${opts('L')}</div></div><div class="setg"><h3>Lado direito (do Dó central para cima)</h3><div class="seg">${opts('R')}</div></div><p class="muted small">Toque as duas partes do teclado. Experimente baixo na esquerda e piano ou flauta na direita.</p>`;
+    box.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{st[b.dataset.z]=b.dataset.t;render()});
+    markKeys(m=>m<st.split,'mark')};
+  touchTimbre=m=>m<st.split?st.L:st.R;render();saveScore(CURKEY,3,100);
+};
+EX.autoacc=(box,cfg)=>{
+  let style='balada',bpm=STYLES.balada.bpm,hits=0,bars=0,recent=[];
+  const chart=cfg.chart;let ci=0;
+  box.innerHTML=`<div class="ctl"><label>Estilo <select id="asty">${Object.entries(STYLES).filter(([k])=>k[0]!=='_').map(([k,s])=>`<option value="${k}">${s.n}</option>`).join('')}</select></label>
+    <label>Andamento <input type="range" id="abpm" min="50" max="160" value="${bpm}"><b id="abpmv" style="width:40px;text-align:right">${bpm}</b></label></div>
+    ${chart?`<div class="chart" id="achart">${chart.map((c,i)=>`<span data-i="${i}">${c}</span>`).join('')}</div>`:''}
+    <div class="prompt" style="margin-top:8px">Acorde atual<span class="big chordnow" id="anow">C</span><span id="apt" class="small"></span></div>
+    <div class="row" style="justify-content:center;margin-top:8px"><button class="btn primary" id="ago">▶ Ligar ritmo</button>${cfg.buttons?'<button class="btn" id="aint">Intro</button><button class="btn" id="afill">Virada</button><button class="btn" id="aend">Final</button>':''}</div>
+    <div class="fb" id="fb">Zona de acordes: teclas azuis (abaixo do Dó central)</div>`;
+  markKeys(m=>m<60,'mark');
+  touchTimbre=m=>m<60?'epiano':'piano';
+  const setChord=sym=>{ACC.chord=sym;const i=chordInfo(sym);$('#anow').textContent=sym;$('#apt').textContent=i?i.pt:''};
+  $('#asty').onchange=e=>{style=e.target.value;bpm=STYLES[style].bpm;$('#abpm').value=bpm;$('#abpmv').textContent=bpm;if(ACC.on){ACC.o.style=style;ACC.o.bpm=bpm}};
+  $('#abpm').oninput=e=>{bpm=+e.target.value;$('#abpmv').textContent=bpm;if(ACC.on)ACC.o.bpm=bpm};
+  const hl=i=>{if(!chart)return;box.querySelectorAll('#achart span').forEach(s=>s.classList.toggle('cur',+s.dataset.i===i))};
+  $('#ago').onclick=()=>{if(ACC.on){accStop();endSession();$('#ago').textContent='▶ Ligar ritmo';return}
+    hits=0;bars=0;ci=0;
+    accStart({style,bpm,mode:'detect',chart,onBar:(n,t)=>{if(!chart)return;const delay=Math.max(0,(t-AC.currentTime)*1000);setTimeout(()=>{if(!ACC.on)return;
+        if(n>0){bars++;if(ACC.chord===chart[(n-1)%chart.length])hits++;$('#fb').textContent=`Compassos com o acorde certo: ${hits} de ${bars}`;
+          if(bars>=chart.length){accStop();endSession();$('#ago').textContent='▶ Ligar ritmo';const acc=Math.round(hits/bars*100);saveScore(CURKEY,acc>=95?3:acc>=80?2:1,acc);$('#fb').textContent=`Fim: ${hits} de ${bars} compassos certos (${acc}%)`;hl(-1);return}}
+        hl(n%chart.length)},delay)}});
+    if(!chart)saveScore(CURKEY,3,100);
+    if(cfg.buttons){ACC.queued='intro'}
+    $('#ago').textContent='■ Parar'};
+  if(cfg.buttons){$('#aint').onclick=()=>{ACC.queued='intro'};$('#afill').onclick=()=>{ACC.queued='fill'};$('#aend').onclick=()=>{ACC.queued='end';ACC.o.onEnd=()=>{$('#ago').textContent='▶ Ligar ritmo'}}}
+  HANDLER=m=>{if(m>=60)return;const now=performance.now();recent=recent.filter(r=>now-r.t<700);recent.push({p:mod(m,12),t:now,m});
+    const sym=detectChord(recent.map(r=>r.p));if(sym&&chordInfo(sym))setChord(sym)};
+  setChord(chart?chart[0]:'C');
+};
+EX.style=(box,cfg)=>{
+  const keys=[cfg.style].concat(cfg.alt?[cfg.alt]:[]);let cur=cfg.style;
+  const render=()=>{const sty=STYLES[cur];
+    box.innerHTML=`${keys.length>1?`<div class="seg" style="margin-bottom:10px">${keys.map(k=>`<button data-k="${k}" class="${k===cur?'on':''}">${STYLES[k].n}</button>`).join('')}</div>`:''}
+      <p class="muted small">${sty.bpb}/4 · sequência ${sty.prog.join(' – ')}</p>
+      <div class="row"><button class="btn" id="shear">▶ Ouvir a levada com banda</button></div><h3 style="margin-top:14px">Praticar a levada</h3><div id="spl"></div>`;
+    box.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{accStop();cur=b.dataset.k;render()});
+    $('#shear').onclick=()=>{if(ACC.on){accStop();endSession();$('#shear').textContent='▶ Ouvir a levada com banda';return}accStart({style:cur,mode:'demo'});$('#shear').textContent='■ Parar'};
+    const pc=stylePiece(cur);showKB(true,pc.range[0],pc.range[1]);playSetup($('#spl'),pc,{levels:false,user:['R','L'],key:CURKEY})};
+  render();
+};
+EX.earhl=(box)=>{
+  let r=0,ok=0,cur=null;const N=8;
+  box.innerHTML=`<div class="exhead"><b>A segunda nota é…</b><span class="cnt" id="cnt"></span></div><div class="row" style="justify-content:center"><button class="btn" id="ehear">🔊 Ouvir de novo</button></div><div class="opts"><button class="opt" data-v="up">⬆ Mais aguda</button><button class="opt" data-v="down">⬇ Mais grave</button></div><div class="fb" id="fb"></div>`;
+  const play=()=>playSeqNow([cur.a,cur.b],.7,.6);
+  const next=()=>{if(r>=N)return resultBox(box,Math.round(ok/N*100),`${ok} de ${N} certas`,()=>EX.earhl(box));
+    const gap=Math.max(1,12-Math.floor(r*1.5)),a=55+Math.floor(Math.random()*14),dir=Math.random()<.5?1:-1;cur={a,b:a+dir*gap,dir};$('#cnt').textContent=`${r+1} de ${N}`;$('#fb').textContent='';play()};
+  $('#ehear').onclick=play;
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const right=(b.dataset.v==='up')===(cur.dir>0);if(right)ok++;r++;$('#fb').className='fb '+(right?'ok':'bad');$('#fb').textContent=right?'Certo!':(cur.dir>0?'Era mais aguda.':'Era mais grave.');setTimeout(next,900)});
+  setTimeout(next,300);
+};
+function dictation(box,phrases,again,label){
+  let r=0,okR=0,pos=0,cur=null,errs=0;const N=phrases.length;
+  box.innerHTML=`<div class="exhead"><b>${label}</b><span class="cnt" id="cnt"></span></div><div class="row" style="justify-content:center"><button class="btn" id="dhear">🔊 Ouvir de novo</button><button class="btn sm" id="dskip">Pular</button></div><div class="prompt" id="dprog" style="margin-top:10px;font-size:22px;letter-spacing:4px"></div><div class="fb" id="fb"></div>`;
+  const prog=()=>$('#dprog').textContent=cur.map((m,i)=>i<pos?nn(m):'•').join('  ');
+  const play=()=>playSeqNow(cur,.55,.5);
+  const next=()=>{setTargets([]);if(r>=N){HANDLER=null;return resultBox(box,Math.round(okR/N*100),`${okR} de ${N} sem nenhum erro`,again)}
+    cur=phrases[r];pos=0;errs=0;$('#cnt').textContent=`${r+1} de ${N}`;$('#fb').textContent='Ouça e repita. A primeira nota está acesa.';setTargets([{m:cur[0]}]);prog();play()};
+  $('#dhear').onclick=play;$('#dskip').onclick=()=>{r++;next()};
+  HANDLER=m=>{if(mod(m,12)===mod(cur[pos],12)){flashKey(m,'ok');pos++;setTargets([]);prog();if(pos>=cur.length){if(!errs)okR++;r++;$('#fb').className='fb ok';$('#fb').textContent='Perfeito!';setTimeout(next,900)}}
+    else{errs++;flashKey(m,'bad');$('#fb').className='fb bad';$('#fb').textContent='Não é essa. Ouça de novo e tente.'}};
+  setTimeout(next,300);
+}
+EX.eardict=(box)=>{const W=[60,62,64,65,67];const ph=[3,3,3,4,4].map(n=>{const a=[60];for(let i=1;i<n;i++)a.push(rnd(W));return a});dictation(box,ph,()=>EX.eardict(box),'Ouça e toque de volta')};
+EX.earphrase=(box)=>dictation(box,[[64,64,65,67],[67,65,64,62],[64,62,60,62,64],[60,60,67,67,69,69,67],[65,65,64,64,62,62,60]],()=>EX.earphrase(box),'Tire o trecho de ouvido');
+EX.earmm=(box)=>{
+  let r=0,ok=0,cur=null;const N=8;
+  box.innerHTML=`<div class="exhead"><b>Este acorde é…</b><span class="cnt" id="cnt"></span></div><div class="row" style="justify-content:center"><button class="btn" id="mhear">🔊 Ouvir de novo</button></div><div class="opts"><button class="opt" data-v="M">😊 Maior</button><button class="opt" data-v="m">😔 Menor</button></div><div class="fb" id="fb"></div>`;
+  const play=()=>{const v=[cur.root,cur.root+(cur.q==='M'?4:3),cur.root+7];playSeqNow(v,.35,.4);setTimeout(()=>playChordNow(v,1.3),1200)};
+  const next=()=>{if(r>=N)return resultBox(box,Math.round(ok/N*100),`${ok} de ${N} certas`,()=>EX.earmm(box));cur={root:55+Math.floor(Math.random()*10),q:Math.random()<.5?'M':'m'};$('#cnt').textContent=`${r+1} de ${N}`;$('#fb').textContent='';play()};
+  $('#mhear').onclick=play;
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const right=b.dataset.v===cur.q;if(right)ok++;r++;$('#fb').className='fb '+(right?'ok':'bad');$('#fb').textContent=right?'Certo!':(cur.q==='M'?'Era maior.':'Era menor.');setTimeout(next,1000)});
+  setTimeout(next,300);
+};
+EX.improv=(box)=>{
+  const PEN=[0,2,4,7,9];let inS=0,outS=0;
+  box.innerHTML=`<div class="row" style="justify-content:center"><button class="btn primary" id="igo">▶ Ligar a base</button></div><div class="chart" id="ich">${['C','Am','F','G'].map((c,i)=>`<span data-i="${i}">${c}</span>`).join('')}</div><div class="stats"><div class="stat"><b id="iin">0</b><span>notas na escala</span></div><div class="stat"><b id="iout">0</b><span>fora da escala</span></div><div class="stat"><b id="ipct">–</b><span>dentro da escala</span></div></div><p class="muted small" style="margin-top:8px">Teclas azuis = pentatônica de Dó (Dó, Ré, Mi, Sol, Lá).</p>`;
+  markKeys(m=>PEN.includes(mod(m,12)),'mark');
+  const sty={...STYLES.balada,prog:['C','Am','F','G']};STYLES._imp=sty;
+  $('#igo').onclick=()=>{if(ACC.on){accStop();endSession();$('#igo').textContent='▶ Ligar a base';return}
+    accStart({style:'_imp',mode:'demo',onBar:(n,t)=>setTimeout(()=>box.querySelectorAll('#ich span').forEach(s=>s.classList.toggle('cur',+s.dataset.i===n%4)),Math.max(0,(t-AC.currentTime)*1000))});$('#igo').textContent='■ Parar'};
+  HANDLER=m=>{if(PEN.includes(mod(m,12)))inS++;else{outS++;flashKey(m,'bad')}$('#iin').textContent=inS;$('#iout').textContent=outS;const p=Math.round(inS/(inS+outS)*100);$('#ipct').textContent=p+'%';if(inS+outS>=30)saveScore(CURKEY,p>=95?3:p>=80?2:1,p)};
+};
+EX.record=(box)=>{
+  let rec=null,take=null;
+  box.innerHTML=`<div class="row" style="justify-content:center"><button class="btn primary" id="rrec">● Gravar</button><button class="btn" id="rplay" disabled>▶ Ouvir minha gravação</button></div>
+    <div class="fb" id="fb">Toque sua introdução ou seu final no teclado da tela.</div>
+    <h3 style="margin-top:12px">Ideias para ouvir</h3><div class="row"><button class="btn sm" id="rid1">Final F – G – C</button><button class="btn sm" id="rid2">Intro em arpejos C–G–Am–F</button></div>`;
+  $('#rrec').onclick=()=>{if(rec){take=rec;rec=null;$('#rrec').textContent='● Gravar';$('#rplay').disabled=!take.length;$('#fb').textContent=`Gravado: ${take.length} notas.`;if(take.length>=4)saveScore(CURKEY,3,100);return}
+    rec=[];rec.t0=performance.now();$('#rrec').innerHTML='■ Parar';$('#fb').innerHTML='<span class="rec"></span>Gravando…'};
+  $('#rplay').onclick=()=>{newSession();const c=ac();take.forEach(n=>tone(n.m,c.currentTime+.1+n.t/1000,.6))};
+  $('#rid1').onclick=()=>{newSession();const c=ac();[['F',0],['G',1],['C',2]].forEach(([s,i])=>chordInfo(s).v.forEach(m=>tone(m,c.currentTime+.1+i*.9,i===2?2.2:.8,{vel:.2})));[41,43,48].forEach((m,i)=>tone(m,c.currentTime+.1+i*.9,i===2?2.2:.8,{vel:.3}))};
+  $('#rid2').onclick=()=>{newSession();const c=ac();let t=c.currentTime+.1;['C','G','Am','F'].forEach(s=>{const v=chordInfo(s).v;[...v,v[1]].forEach(m=>{tone(m,t,.5);t+=.28})})};
+  HANDLER=m=>{if(rec)rec.push({m,t:performance.now()-rec.t0})};
+};
+
+/* =========================================================
+   TELAS
+   ========================================================= */
+function lessonsDone(){return LESSONS.filter((l,i)=>PROG['l'+(i+1)]).length}
+function viewHomeOld(){
+  title('Aprenda teclado',false);showKB(false);
+  const sd=SONGS.reduce((a,s)=>a+LEVELS.filter((_,i)=>PROG['s:'+s.id+':'+i]).length,0);
+  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Lições curtas, exercícios que conferem o que você toca e músicas em 5 níveis.</p>
+   <div class="card"><div class="stats"><div class="stat"><b>${streak()}</b><span>dias seguidos</span></div><div class="stat"><b>${lessonsDone()}/${LESSONS.length}</b><span>lições feitas</span></div><div class="stat"><b>${Object.keys(PROG).filter(k=>/^x[rlb]\d/.test(k)).length}/90</b><span>exercícios</span></div><div class="stat"><b>${sd}/${SONGS.length*5}</b><span>níveis de música</span></div></div></div>
+   <div class="grid2">
+    <button class="tile" id="hL"><span class="ic">📚</span><b>Lições</b><span>${MODULES.length} módulos · ${LESSONS.length} lições</span></button>
+    <button class="tile" id="hX"><span class="ic">💪</span><b>Exercícios progressivos</b><span>30 mão direita · 30 mão esquerda · 30 duas mãos</span></button>
+    <button class="tile" id="hS"><span class="ic">🎵</span><b>Músicas para aprender</b><span>${SONGS.length} músicas · 5 níveis cada</span></button>
+    <button class="tile" id="hF"><span class="ic">🎹</span><b>Modo livre</b><span>Toque e veja o nome e a nota na pauta</span></button>
+    <button class="tile" id="hC"><span class="ic">⚙️</span><b>Configurações</b><span>Notação, nomes das notas, microfone, USB</span></button>
+   </div>
+   <div class="note" style="margin-top:12px">Dica: use o celular <b>deitado</b>. O teclado da tela fica maior e mais fácil de tocar.</div>`;
+  $('#hL').onclick=()=>go(viewLessons);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);$('#hF').onclick=()=>go(viewFree);$('#hC').onclick=()=>go(viewSettings);
+}
+function viewLessons(){
+  title('Lições');showKB(false);
+  V().innerHTML=MODULES.map((M,mi)=>`<div class="mod"><div class="modh"><b>${M.n}</b></div><p class="muted small" style="margin-top:-4px">${M.d}</p>${M.ls.map(l=>{const p=PROG['l'+l.n];
+    return `<button class="li${p?' done':''}" data-n="${l.n}"><div class="n">${p?'✓':l.n}</div><div><div class="t">${l.t}</div><div class="d">${l.obj}</div></div><div class="st">${p?starStr(p.stars):''}</div></button>`}).join('')}</div>`).join('');
+  V().querySelectorAll('.li').forEach(b=>b.onclick=()=>go(viewLesson,+b.dataset.n));
+}
+function viewLesson(n){
+  const l=LESSONS[n-1];CURKEY='l'+n;title(`Lição ${n} de ${LESSONS.length}`);showKB(true,48,84);
+  V().innerHTML=`<span class="tag">${MODULES[l.mod].n}</span><h1 style="font-size:21px;margin-top:8px">${l.t}</h1>
+   <div class="card obj"><h3>🎯 Objetivo</h3><p>${l.obj}</p></div>
+   <div class="card exp"><h3>📖 Explicação</h3>${l.exp.map(p=>`<p>${p}</p>`).join('')}</div>
+   <div class="card"><h3>${l.ex.type==='fingerinfo'?'✋ Os dedos':'🎹 Exercício'}</h3><p class="muted">${l.exd}</p><div id="ex"><button class="btn primary" id="exgo">Começar exercício</button></div></div>
+   <div class="row" style="justify-content:space-between"><button class="btn sm" id="prv" ${n===1?'disabled':''}>← Lição ${n-1}</button><button class="btn sm" id="nxt" ${n===LESSONS.length?'disabled':''}>Lição ${n+1} →</button></div>`;
+  $('#exgo').onclick=()=>{ac();EX[l.ex.type]($('#ex'),l.ex)};
+  if(l.ex.type==='fingerinfo')EX.fingerinfo($('#ex'));
+  $('#prv').onclick=()=>{HIST.pop();go(viewLesson,n-1)};$('#nxt').onclick=()=>{HIST.pop();go(viewLesson,n+1)};
+}
+function viewSongs(){
+  title('Músicas para aprender');showKB(false);
+  V().innerHTML=`<p class="muted">Cada música tem 5 níveis. Comece pelo 1 e só avance quando tiver 2 ou 3 estrelas.</p>`+SONGS.map(s=>{const st=LEVELS.map((_,i)=>PROG['s:'+s.id+':'+i]?PROG['s:'+s.id+':'+i].stars:0);
+    return `<button class="li" data-id="${s.id}"><div class="n">♪</div><div><div class="t">${s.title}</div><div class="d">${s.sub}</div><div class="d" style="color:var(--accent)">${st.map((x,i)=>`N${i+1} ${x?'★'.repeat(x):'–'}`).join(' · ')}</div></div></button>`}).join('');
+  V().querySelectorAll('.li').forEach(b=>b.onclick=()=>go(viewSong,b.dataset.id));
+}
+function viewSong(id,lv){
+  const s=SONGS.find(x=>x.id===id);title(s.title);showKB(true,s.range[0],s.range[1]);
+  V().innerHTML=`<h1 style="font-size:21px">${s.title}</h1><p class="muted small">${s.sub}</p><div class="card"><p>${s.info}</p></div><div class="card" id="ps"></div>`;
+  playSetup($('#ps'),s,{levels:true,key:'s:'+s.id,lv:lv||0});
+}
+function viewFree(){
+  title('Modo livre');showKB(true,48,84);
+  V().innerHTML=`<div class="card"><div class="prompt">Você tocou<span class="big" id="fn">–</span><span id="fo"></span></div><div class="staffbox" id="fs" style="margin-top:8px"></div>
+    <div style="height:8px;background:var(--card2);border-radius:9px;overflow:hidden;margin-top:10px"><i id="fm" style="display:block;height:100%;width:0;background:var(--blue)"></i></div><p class="muted small" style="margin-top:6px">Com o microfone ligado, a barra azul mostra o volume captado.</p></div>`;
+  const show=(m,f)=>{$('#fn').textContent=nn(m);$('#fo').textContent=`${nn(m)}${oct(m)}${f?' · '+f.toFixed(0)+' Hz':''}`;$('#fs').innerHTML=staffSVG([{notes:[{m,d:1,h:m<60?'L':'R'}]}],-1,260,{sp:120,nofingers:true})};
+  HANDLER=(m)=>show(m);MICVIEW=(f,rms)=>{const el=$('#fm');if(el)el.style.width=Math.min(100,rms*600)+'%'};
+  $('#fs').innerHTML=staffSVG([],-1,260,{});
+}
+function viewSettings(){
+  title('Configurações');showKB(false);
+  const seg=(k,opts)=>`<div class="seg">${opts.map(([v,t])=>`<button data-k="${k}" data-v="${v}" class="${S[k]===v?'on':''}">${t}</button>`).join('')}</div>`;
+  V().innerHTML=`
+   <div class="card setg"><h3>Como ver as notas</h3>${seg('notation',[['falling','Notas caindo'],['staff','Partitura'],['names','Nome das notas'],['fingers','Número dos dedos']])}
+     <p class="muted small" style="margin-top:8px">Em todas as formas, a tecla que você deve tocar acende na cor do dedo, com o número do dedo.</p></div>
+   <div class="card setg"><h3>Tema</h3>${seg('theme',[['light','☀️ Claro'],['dark','🌙 Escuro']])}</div>
+   <div class="card setg"><h3>Nome das notas</h3>${seg('names',[['solfa','Dó Ré Mi'],['letters','C D E']])}</div>
+   <div class="card setg"><h3>Como o app ouve você</h3>${seg('input',[['touch','Tocar na tela'],['mic','Microfone'],['midi','Cabo USB (MIDI)']])}<div class="note" id="inmsg" style="margin-top:10px;display:none"></div>
+     <p class="muted small" style="margin-top:8px">Microfone: reconhece uma nota de cada vez; deixe o celular perto do teclado. Cabo USB (adaptador OTG): reconhece tudo, inclusive acordes. O teclado da tela continua funcionando sempre.</p></div>
+   <div class="card setg">
+     <label class="toggle"><span>Mostrar o desenho das mãos com o dedo que toca</span><input type="checkbox" id="tH" ${S.hands?'checked':''}></label>
+     <label class="toggle"><span>Mostrar o nome em todas as teclas brancas</span><input type="checkbox" id="tN" ${S.allNames?'checked':''}></label>
+     <label class="toggle"><span>Som ao tocar no teclado da tela</span><input type="checkbox" id="tS" ${S.keySound?'checked':''}></label>
+     <div class="row" style="margin:4px 0 8px"><button class="btn sm" id="gPlan">🧭 Meu plano de estudo</button><button class="btn sm" id="gTest">🎤 Teste seu teclado</button><button class="btn sm" id="gNotes">📝 Anotações</button></div>
+     <label class="toggle"><span>Estou usando fone de ouvido (o microfone não escuta o som do app)</span><input type="checkbox" id="tF" ${S.headphones?'checked':''}></label>
+   </div>`;
+  V().querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{const k=b.dataset.k,v=b.dataset.v;
+    if(k==='input'){const msg=$('#inmsg');msg.style.display='none';let err='';
+      if(v==='mic'){ac();err=await startMic()}else if(v==='midi'){err=await startMidi()}else{stopMic();S.input='touch';saveSettings();updChip()}
+      if(err){msg.textContent=err;msg.style.display='block'}
+      V().querySelectorAll('[data-k=input]').forEach(x=>x.classList.toggle('on',x.dataset.v===S.input));return}
+    S[k]=v;saveSettings();applyTheme();V().querySelectorAll(`[data-k=${k}]`).forEach(x=>x.classList.toggle('on',x.dataset.v===v));refreshKeys()});
+  $('#tH').onchange=e=>{S.hands=e.target.checked;saveSettings()};$('#tN').onchange=e=>{S.allNames=e.target.checked;saveSettings();refreshKeys()};
+  $('#gPlan').onclick=()=>go(viewPlan);$('#gTest').onclick=()=>go(viewTest);$('#gNotes').onclick=()=>go(viewNotes);
+  $('#tS').onchange=e=>{S.keySound=e.target.checked;saveSettings()};$('#tF').onchange=e=>{S.headphones=e.target.checked;saveSettings()};
+}
+
+
+/* =========================================================
+   EXERCÍCIOS PROGRESSIVOS (30 mão direita, 30 mão esquerda, 30 duas mãos)
+   ========================================================= */
+const mir=items=>items.map(([m,d,f,x])=>[m==null?null:(Array.isArray(m)?m.map(v=>v-12):m-12),d,f==null?f:(Array.isArray(f)?f.map(v=>6-v):6-f),x]);
+const qq=(ms,fs,d=1)=>ms.map((m,i)=>[m,Array.isArray(d)?d[i]:d,fs[i]]);
+const rep2=a=>a.concat(a);
+function autoRange(ms){let lo=Math.min(...ms)-2,hi=Math.max(...ms)+2;while(isBlack(lo))lo--;while(isBlack(hi))hi++;
+  const wc=()=>{let n=0;for(let m=lo;m<=hi;m++)if(!isBlack(m))n++;return n};
+  while(wc()<15){lo--;while(isBlack(lo))lo--;if(wc()<15){hi++;while(isBlack(hi))hi++}}return[lo,hi]}
+const up8=[1,2,3,1,2,3,4,5],dn8=[5,4,3,2,1,3,2,1],Lup8=[5,4,3,2,1,3,2,1],Ldn8=[1,2,3,1,2,3,4,5];
+const sc=(root,steps)=>{const a=[root];steps.forEach(s=>a.push(a[a.length-1]+s));return a};
+const MAJ=[2,2,1,2,2,2,1],MIN=[2,1,2,2,1,2,2];
+const updown=(notes,fu,fd,d=1)=>qq([...notes,...notes.slice().reverse()],[...fu,...fd],d);
+const Cs=sc(60,MAJ),Gs=sc(67,MAJ),Fs=sc(65,MAJ),Ams=sc(69,MIN);
+const SPB={70:'b',46:'b',58:'b',82:'b'};
+const fixSp=items=>items.map(it=>{const[m,d,f,x]=it;if(!Array.isArray(m)&&SPB[m])return[m,d,f,Object.assign({sp:'b'},x||{})];return it});
+
+// ---------- 30 exercícios de UMA MÃO (a esquerda é a versão espelhada ou com dedilhado próprio) ----------
+const ONE=[
+ {t:'Vizinhos: dedos 1-2 e 2-3',o:'Tocar notas vizinhas devagar, com o mesmo volume em cada dedo.',bpm:70,
+  R:[[60,2,1],[62,2,2],[60,2,1],[62,2,2],[62,2,2],[64,2,3],[62,2,2],[64,2,3],[60,4,1]]},
+ {t:'Três notas: sobe e desce',o:'Controlar três dedos seguidos sem olhar para a mão.',bpm:72,
+  R:qq([60,62,64,62,60,62,64,62,60],[1,2,3,2,1,2,3,2,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Cinco dedos: sobe e desce',o:'Usar os cinco dedos em sequência, um por tecla.',bpm:76,
+  R:qq([60,62,64,65,67,65,64,62,60],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Notas repetidas',o:'Repetir a mesma tecla soltando bem entre um toque e outro.',bpm:80,
+  R:qq([60,60,62,62,64,64,65,65,67,67,65,65,64,64,62,62,60],[1,1,2,2,3,3,4,4,5,5,4,4,3,3,2,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4])},
+ {t:'Saltos de terça',o:'Pular uma tecla mantendo a mão parada.',bpm:72,
+  R:qq([60,64,62,65,64,67,67,64,65,62,64,60],[1,3,2,4,3,5,5,3,4,2,3,1],[1,1,1,1,1,1,1,1,1,1,1,1]).concat([[60,4,1]])},
+ {t:'Saltos de quinta',o:'Ir do dedo 1 ao 5 sem tirar a mão da posição.',bpm:72,
+  R:qq([60,67,60,67,64,67,60,64,60],[1,5,1,5,3,5,1,3,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Dedos fracos: 3, 4 e 5',o:'Fortalecer o anelar e o mindinho, que são os mais fracos.',bpm:72,
+  R:qq([64,65,67,65,64,65,67,65,64,65,64,65,67],[3,4,5,4,3,4,5,4,3,4,3,4,5],[1,1,1,1,1,1,1,1,1,1,1,1,4])},
+ {t:'Primeiras colcheias',o:'Tocar duas notas por tempo com regularidade.',bpm:66,
+  R:rep2(qq([60,62,64,65,67,65,64,62],[1,2,3,4,5,4,3,2],.5)).concat([[60,4,1]])},
+ {t:'Ritmo pontuado',o:'Tocar o “longo-curto” da semínima pontuada com a colcheia.',bpm:70,
+  R:[[60,1.5,1],[62,.5,2],[64,1.5,3],[65,.5,4],[67,2,5],[65,1.5,4],[64,.5,3],[62,1.5,2],[60,.5,1],[62,2,2],[60,4,1]]},
+ {t:'Melodia na posição de Dó',o:'Juntar tudo numa pequena melodia, com notas de durações diferentes.',bpm:84,
+  R:[[64,1,3],[65,1,4],[67,2,5],[65,1,4],[64,1,3],[62,2,2],[60,1,1],[62,1,2],[64,1,3],[62,1,2],[60,4,1]]},
+ {t:'Posição de Sol',o:'Levar a mão para uma nova posição: de Sol a Ré.',bpm:80,
+  R:qq([67,69,71,72,74,72,71,69,67],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Posição de Fá (com Si♭)',o:'Usar a primeira tecla preta dentro de uma posição.',bpm:76,
+  R:fixSp(qq([65,67,69,70,72,70,69,67,65],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4]))},
+ {t:'Troca de posição: Dó ↔ Sol',o:'Saltar de uma posição para outra sem perder o tempo.',bpm:76,
+  R:qq([60,64,67,64,67,71,74,71,60,64,67,64,60],[1,3,5,3,1,3,5,3,1,3,5,3,1],[1,1,1,1,1,1,1,1,1,1,1,1,4])},
+ {t:'Posição de Ré (com Fá#)',o:'Tocar uma posição com tecla preta no meio.',bpm:80,
+  R:qq([62,64,66,67,69,67,66,64,62],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Posição de Lá menor',o:'Sentir o som menor dentro de uma posição de cinco dedos.',bpm:80,
+  R:qq([69,71,72,74,76,74,72,71,69],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Mão aberta (extensão)',o:'Abrir a mão para alcançar notas além de cinco teclas.',bpm:72,
+  R:[[60,1,1],[64,1,2],[67,1,4],[69,1,5],[67,1,4],[64,1,2],[60,2,1],[60,1,1],[65,1,2],[69,1,4],[72,1,5],[69,1,4],[65,1,2],[60,2,1]]},
+ {t:'Preparação da passagem do polegar',o:'Passar o polegar por baixo da mão sem mexer o pulso.',bpm:66,
+  R:rep2([[60,1,1],[62,1,2],[64,1,3],[65,1,1],[64,1,3],[62,1,2],[60,2,1]]),
+  L:rep2([[60,1,1],[59,1,2],[57,1,3],[55,1,1],[57,1,3],[59,1,2],[60,2,1]])},
+ {t:'Escala de Dó subindo',o:'Tocar uma oitava inteira com uma mão.',bpm:70,
+  R:qq(Cs,up8),L:qq(sc(48,MAJ),Lup8)},
+ {t:'Escala de Dó sobe e desce',o:'Fazer a passagem do polegar nas duas direções.',bpm:72,
+  R:updown(Cs,up8,dn8),L:updown(sc(48,MAJ),Lup8,Ldn8)},
+ {t:'Escala de Sol maior',o:'Escala com Fá#, subindo e descendo.',bpm:72,
+  R:updown(Gs,up8,dn8),L:updown(sc(43,MAJ),Lup8,Ldn8)},
+ {t:'Escala de Fá maior',o:'Escala com Si♭ e dedilhado diferente.',bpm:70,
+  R:fixSp(updown(Fs,[1,2,3,4,1,2,3,4],[4,3,2,1,4,3,2,1])),L:fixSp(updown(sc(41,MAJ),Lup8,Ldn8))},
+ {t:'Escala de Lá menor',o:'A escala menor natural, subindo e descendo.',bpm:72,
+  R:updown(Ams,up8,dn8),L:updown(sc(45,MIN),Lup8,Ldn8)},
+ {t:'Arpejo de Dó',o:'Tocar as notas do acorde de Dó uma de cada vez.',bpm:72,
+  R:rep2(qq([60,64,67,72,67,64,60],[1,2,3,5,3,2,1],[1,1,1,1,1,1,2])),L:rep2(qq([48,52,55,60,55,52,48],[5,4,2,1,2,4,5],[1,1,1,1,1,1,2]))},
+ {t:'Arpejos de Dó, Fá e Sol',o:'Mudar de arpejo levando a mão para a nova posição.',bpm:72,
+  R:[...qq([60,64,67,72,67,64,60],[1,2,3,5,3,2,1],[1,1,1,1,1,1,2]),...qq([65,69,72,77,72,69,65],[1,2,3,5,3,2,1],[1,1,1,1,1,1,2]),...qq([67,71,74,79,74,71,67],[1,2,3,5,3,2,1],[1,1,1,1,1,1,2]),[60,4,1]],
+  L:[...qq([48,52,55,60,55,52,48],[5,4,2,1,2,4,5],[1,1,1,1,1,1,2]),...qq([41,45,48,53,48,45,41],[5,4,2,1,2,4,5],[1,1,1,1,1,1,2]),...qq([43,47,50,55,50,47,43],[5,4,2,1,2,4,5],[1,1,1,1,1,1,2]),[48,4,5]]},
+ {t:'Escala de Dó em colcheias',o:'Tocar a escala no dobro da velocidade, com regularidade.',bpm:66,
+  R:rep2(updown(Cs,up8,dn8,.5)),L:rep2(updown(sc(48,MAJ),Lup8,Ldn8,.5))},
+ {t:'Acordes de Dó, Fá e Sol',o:'Tocar três notas juntas, com o mesmo volume.',bpm:66,
+  R:[['C',[60,64,67]],['C',[60,64,67]],['F',[65,69,72]],['F',[65,69,72]],['G',[67,71,74]],['G',[67,71,74]],['C',[60,64,67]],['C',[60,64,67]]].map(([s,v])=>[v,2,[1,3,5],{lab:s}]),
+  L:[['C',[48,52,55]],['C',[48,52,55]],['F',[41,45,48]],['F',[41,45,48]],['G',[43,47,50]],['G',[43,47,50]],['C',[48,52,55]],['C',[48,52,55]]].map(([s,v])=>[v,2,[5,3,1],{lab:s}])},
+ {t:'Acordes com inversões',o:'Trocar de acorde movendo a mão o mínimo possível.',bpm:66,
+  R:rep2([['C',[60,64,67],[1,3,5]],['F',[60,65,69],[1,3,5]],['G',[59,62,67],[1,2,5]],['C',[60,64,67],[1,3,5]]].map(([s,v,f])=>[v,2,f,{lab:s}])),
+  L:rep2([['C',[48,52,55],[5,3,1]],['F',[48,53,57],[5,2,1]],['G',[47,50,55],[5,3,1]],['C',[48,52,55],[5,3,1]]].map(([s,v,f])=>[v,2,f,{lab:s}]))},
+ {t:'Acorde quebrado (baixo de Alberti)',o:'Tocar o acorde desmontado em padrão contínuo.',bpm:60,
+  R:[[60,67,64,67],[60,69,65,69],[59,67,62,67],[60,67,64,67]].flatMap((g,i)=>rep2(qq(g,i===2?[1,5,2,5]:[1,5,3,5],.5))),
+  L:[[48,55,52,55],[48,57,53,57],[47,55,50,55],[48,55,52,55]].flatMap((g,i)=>rep2(qq(g,i===1?[5,1,2,1]:[5,1,3,1],.5)))},
+ {t:'Agilidade: trinados',o:'Alternar dois dedos rapidamente, par a par.',bpm:60,
+  R:[...qq([60,62,60,62,60,62,60,62],[1,2,1,2,1,2,1,2],.5),...qq([62,64,62,64,62,64,62,64],[2,3,2,3,2,3,2,3],.5),...qq([64,65,64,65,64,65,64,65],[3,4,3,4,3,4,3,4],.5),...qq([65,67,65,67,65,67,65,67],[4,5,4,5,4,5,4,5],.5),[60,4,1]]},
+ {t:'Desafio final',o:'Melodia com colcheias, pontuado, troca de posição e salto de volta.',bpm:76,
+  R:[[60,.5,1],[62,.5,2],[64,1,3],[67,1,5],[64,1,3],[65,1.5,4],[64,.5,3],[62,2,2],[67,1,1],[71,1,3],[74,1,5],[72,.5,4],[71,.5,3],[72,1,4],[71,1,3],[69,1,2],[67,1,1],[64,1,3],[62,1,2],[60,2,1]]}
+];
+
+// ---------- 30 exercícios para AS DUAS MÃOS ----------
+const ODEH=['C','C','G','G','C','C','C','G','C','C','G','G','C','C','G','C','G','C','G','C','G','G','C','G*','C','C','G','G','C','C','G','C'];
+const ARP={C:[[48,52,55,52],[5,3,1,3]],G:[[47,50,55,50],[5,3,1,3]],'G*':[[43,47,50,47],[5,3,1,3]]};
+const arpL=hs=>hs.flatMap(c=>qq(ARP[c][0],ARP[c][1],.5));
+const blockL={C:[[48,52,55],[5,3,1]],F:[[48,53,57],[5,2,1]],G:[[47,50,55],[5,3,1]]};
+const melC=[[64,1,3],[65,1,4],[67,2,5],[65,1,4],[64,1,3],[62,2,2],[60,1,1],[62,1,2],[64,1,3],[62,1,2],[60,4,1]];
+const twR=[[60,1,1],[60,1,1],[67,1,4],[67,1,4],[69,1,5],[69,1,5],[67,2,4],[65,1,3],[65,1,3],[64,1,2],[64,1,2],[62,1,1],[62,1,1],[60,2,1],
+  [67,1,4],[67,1,4],[65,1,3],[65,1,3],[64,1,2],[64,1,2],[62,2,1],[67,1,4],[67,1,4],[65,1,3],[65,1,3],[64,1,2],[64,1,2],[62,2,1],
+  [60,1,1],[60,1,1],[67,1,4],[67,1,4],[69,1,5],[69,1,5],[67,2,4],[65,1,3],[65,1,3],[64,1,2],[64,1,2],[62,1,1],[62,1,1],[60,2,1]];
+const twH=['C','C','F','C','F','C','G','C','C','F','C','G','C','F','C','G','C','C','F','C','F','C','G','C'];
+const BOTH=[
+ {t:'Mãos alternadas',o:'Passar a vez de uma mão para a outra sem parar.',bpm:76,
+  R:[[60,1,1],[62,1,2],[64,1,3],[null,5],[64,1,3],[65,1,4],[67,1,5],[null,5],[60,4,1]],
+  L:[[null,4],[52,1,3],[50,1,4],[48,1,5],[null,5],[55,1,1],[53,1,2],[52,1,3],[null,1],[48,4,5]]},
+ {t:'Movimento contrário (3 notas)',o:'Mover as mãos em direções opostas, com os mesmos números de dedo.',bpm:72,
+  R:rep2([[60,1,1],[62,1,2],[64,1,3],[62,1,2],[60,4,1]]),L:rep2([[48,1,1],[47,1,2],[45,1,3],[47,1,2],[48,4,1]])},
+ {t:'Movimento contrário (5 notas)',o:'Abrir e fechar as mãos usando os cinco dedos.',bpm:72,
+  R:qq([60,62,64,65,67,65,64,62,60],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4]),L:qq([48,47,45,43,41,43,45,47,48],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4])},
+ {t:'Movimento paralelo (3 notas)',o:'Mover as mãos na mesma direção, com dedos diferentes.',bpm:68,
+  R:rep2([[60,1,1],[62,1,2],[64,1,3],[62,1,2],[60,4,1]]),L:rep2([[48,1,5],[50,1,4],[52,1,3],[50,1,4],[48,4,5]])},
+ {t:'Movimento paralelo (5 notas)',o:'Coordenar as duas mãos subindo e descendo juntas.',bpm:68,
+  R:qq([60,62,64,65,67,65,64,62,60],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4]),L:qq([48,50,52,53,55,53,52,50,48],[5,4,3,2,1,2,3,4,5],[1,1,1,1,1,1,1,1,4])},
+ {t:'Nota longa na esquerda',o:'Segurar a esquerda enquanto a direita faz a melodia.',bpm:80,
+  R:melC,L:[[48,4,5],[55,4,1],[48,4,5],[48,4,5]]},
+ {t:'Nota longa na direita',o:'Agora o contrário: a melodia vai para a esquerda.',bpm:76,
+  R:[[64,4,3],[67,4,5],[64,4,3],[60,4,1]],L:mir(melC)},
+ {t:'Bordão na esquerda',o:'Manter um baixo simples de 2 em 2 tempos sob a melodia.',bpm:80,
+  R:[[60,1,1],[64,1,3],[62,1,2],[65,1,4],[64,1,3],[67,1,5],[64,2,3],[65,1,4],[64,1,3],[62,1,2],[60,1,1],[62,2,2],[60,2,1]],
+  L:[[48,2,5],[55,2,1],[48,2,5],[52,2,3],[53,2,2],[48,2,5],[55,2,1],[48,2,5]]},
+ {t:'Esquerda em semínimas, direita em mínimas',o:'Primeiro passo da independência rítmica.',bpm:72,
+  R:[[64,2,3],[67,2,5],[65,2,4],[62,2,2],[64,2,3],[62,2,2],[60,4,1]],
+  L:[...qq([48,52,55,52,48,50,52,53,55,53,52,50],[5,3,1,3,5,4,3,2,1,2,3,4]),[48,4,5]]},
+ {t:'Direita em semínimas, esquerda em mínimas',o:'Inverter os papéis entre as mãos.',bpm:72,
+  R:[...qq([60,62,64,65,67,65,64,62,64,65,67,65],[1,2,3,4,5,4,3,2,3,4,5,4]),[60,4,1]],
+  L:[[48,2,5],[55,2,1],[48,2,5],[55,2,1],[52,2,3],[55,2,1],[48,4,5]]},
+ {t:'Mãos juntas em décimas',o:'Tocar as duas mãos juntas, nota contra nota.',bpm:70,
+  R:rep2([[64,1,3],[65,1,4],[67,1,5],[65,1,4],[64,1,3],[62,1,2],[64,2,3]]),L:rep2([[48,1,5],[50,1,4],[52,1,3],[50,1,4],[48,1,5],[50,1,4],[48,2,5]])},
+ {t:'Melodia com acordes na esquerda',o:'Tocar uma melodia com um acorde por compasso na esquerda.',bpm:80,
+  R:MARY,L:['C','C','G','C','C','C','G','C'].map(s=>[blockL[s][0],4,blockL[s][1],{lab:s}])},
+ {t:'Ode à Alegria com baixo',o:'Tocar 8 compassos da Ode com o baixo na esquerda.',bpm:84,
+  R:[...odeA,...odeEnd1,...odeA,...odeEnd2],L:[[48,4,2],[43,4,5],[48,4,2],[48,2,2],[43,2,5],[48,4,2],[43,4,5],[48,4,2],[43,2,5],[48,2,2]]},
+ {t:'Acordes em bloco: Brilha, brilha',o:'Trocar acordes na esquerda a cada 2 tempos.',bpm:80,
+  R:twR,L:twH.map(s=>[blockL[s][0],2,blockL[s][1],{lab:s}])},
+ {t:'Valsa: tum-pá-pá',o:'Baixo e acorde na esquerda em 3 tempos, melodia longa na direita.',bpm:96,bpb:3,
+  R:[[64,3,3],[67,3,5],[65,2,4],[64,1,3],[62,3,2],[62,3,2],[65,3,4],[64,2,3],[62,1,2],[60,3,1]],
+  L:['C','C','G7','G7','G7','G7','C','C'].flatMap(s=>s==='C'?[[48,1,5],[[52,55],1,[3,1]],[[52,55],1,[3,1]]]:[[43,1,5],[[47,53],1,[3,1]],[[47,53],1,[3,1]]])},
+ {t:'Colcheias na direita',o:'Direita em colcheias contra semínimas na esquerda.',bpm:66,
+  R:[...rep2(qq([60,62,64,65,67,65,64,62],[1,2,3,4,5,4,3,2],.5)),...qq([64,65,67,65,64,62,60,62],[3,4,5,4,3,2,1,2],.5),[60,2,1]],
+  L:[...qq([48,52,55,52,48,52,55,52,48,52,55,52],[5,3,1,3,5,3,1,3,5,3,1,3]),[48,2,5]]},
+ {t:'Colcheias na esquerda',o:'Agora a esquerda corre e a direita marca o tempo.',bpm:66,
+  R:[...qq([64,67,64,67,64,67,64,67,64,67,64,67],[3,5,3,5,3,5,3,5,3,5,3,5]),[60,2,1]],
+  L:[...rep2(qq([48,50,52,53,55,53,52,50],[5,4,3,2,1,2,3,4],.5)),...qq([52,53,55,53,52,50,48,50],[3,2,1,2,3,4,5,4],.5),[48,2,5]]},
+ {t:'Posição de Sol nas duas mãos',o:'Levar as duas mãos para uma nova posição.',bpm:76,
+  R:qq([67,69,71,72,74,72,71,69,67],[1,2,3,4,5,4,3,2,1],[1,1,1,1,1,1,1,1,4]),L:qq([43,45,47,48,50,48,47,45,43],[5,4,3,2,1,2,3,4,5],[1,1,1,1,1,1,1,1,4])},
+ {t:'Troca de posição nas duas mãos',o:'Saltar com as duas mãos ao mesmo tempo.',bpm:72,
+  R:qq([60,64,67,64,67,71,74,71,60,64,67,64,60],[1,3,5,3,1,3,5,3,1,3,5,3,1],[1,1,1,1,1,1,1,1,1,1,1,1,4]),L:[[48,4,5],[43,4,5],[48,4,5],[48,4,5]]},
+ {t:'Baixo de Alberti com melodia',o:'Acorde quebrado contínuo na esquerda com melodia na direita.',bpm:60,
+  R:[[64,2,3],[67,2,5],[65,2,4],[62,2,2],[64,2,3],[60,2,1],[62,4,2],[60,4,1]],
+  L:['C','G','C','G','C'].flatMap((c,i)=>{const g=c==='C'?[48,55,52,55]:[47,55,50,55];return rep2(qq(g,[5,1,3,1],.5))})},
+ {t:'Escala de Dó em movimento contrário',o:'Escala com as duas mãos se afastando, com os mesmos dedos.',bpm:66,
+  R:updown(Cs,up8,dn8),L:updown([48,47,45,43,41,40,38,36],up8,dn8)},
+ {t:'Escala de Dó em movimento paralelo',o:'A escala com as duas mãos subindo juntas.',bpm:60,
+  R:updown(Cs,up8,dn8),L:updown(sc(48,MAJ),Lup8,Ldn8)},
+ {t:'Arpejos alternados entre as mãos',o:'A esquerda começa o arpejo e a direita continua.',bpm:76,
+  R:[[null,3],[60,1,1],[64,1,2],[67,1,3],[72,1,5],[67,1,3],[64,1,2],[60,1,1],[null,3],[60,1,1],[64,1,2],[67,1,3],[72,4,5]],
+  L:[[48,1,5],[52,1,3],[55,1,1],[null,7],[48,1,5],[52,1,3],[55,1,1],[null,3],[48,4,5]]},
+ {t:'Acordes e baixo: I–IV–V–I',o:'Acordes na direita com o baixo na esquerda.',bpm:72,
+  R:rep2([['C',[60,64,67],[1,3,5]],['F',[60,65,69],[1,3,5]],['G',[59,62,67],[1,2,5]],['C',[60,64,67],[1,3,5]]].map(([s,v,f])=>[v,4,f,{lab:s}])),
+  L:rep2([[48,4,1],[41,4,5],[43,4,4],[48,4,1]])},
+ {t:'Inversões com baixo que desce',o:'O acompanhamento de balada: acordes na direita e baixo descendo.',bpm:72,
+  R:rep2([['C',[60,64,67],[1,3,5]],['G',[59,62,67],[1,2,5]],['Am',[60,64,69],[1,2,5]],['F',[60,65,69],[1,3,5]]].map(([s,v,f])=>[v,2,f,{lab:s}])),
+  L:rep2([[48,2,1],[47,2,2],[45,2,3],[41,2,5]])},
+ {t:'Ritmo pontuado nas duas mãos',o:'Tocar o longo-curto com as mãos juntas.',bpm:66,
+  R:[[64,1.5,3],[65,.5,4],[67,2,5],[65,1.5,4],[64,.5,3],[62,2,2],[64,1.5,3],[62,.5,2],[60,2,1]],
+  L:[[48,1.5,5],[55,.5,1],[48,2,5],[47,1.5,5],[55,.5,1],[47,2,5],[48,1.5,5],[55,.5,1],[48,2,5]]},
+ {t:'Síncope: levada de baião',o:'Baixo de zabumba na esquerda e acordes no contratempo.',style:'baiao'},
+ {t:'Acordes com sétima: bossa nova',o:'Baixo alternado e acordes sincopados com sétima.',style:'bossa'},
+ {t:'Ode à Alegria com arpejos',o:'Melodia na direita com arpejos em colcheias na esquerda.',bpm:72,
+  R:[...odeA,...odeEnd1],L:arpL(ODEH.slice(0,8))},
+ {t:'Desafio final: Ode à Alegria completa',o:'A Ode inteira, com arpejos na esquerda do começo ao fim.',bpm:76,
+  R:[...odeA,...odeEnd1,...odeA,...odeEnd2,...odeBridge,...odeA,...odeEnd2],L:arpL(ODEH)}
+];
+function xPiece(kind,n){
+  const e=(kind==='b'?BOTH:ONE)[n-1];
+  if(e.style){const p=stylePiece(e.style);return p}
+  const tracks={};
+  if(kind==='r')tracks.R=L(e.R,'R');
+  else if(kind==='l')tracks.L=L(e.L||mir(e.R),'L');
+  else{tracks.R=L(e.R,'R');tracks.L=L(e.L,'L')}
+  const ms=Object.values(tracks).flat().map(n=>n.m);
+  return mkPiece({bpm:e.bpm,bpb:e.bpb||4,range:autoRange(ms),tracks});
+}
+const XK={r:{n:'Mão direita',ic:'🫱'},l:{n:'Mão esquerda',ic:'🫲'},b:{n:'Duas mãos',ic:'🙌'}};
+function xInfo(kind,n){const e=(kind==='b'?BOTH:ONE)[n-1];return{t:e.t,o:e.o,stage:n<=10?'Básico':n<=20?'Intermediário':'Avançado'}}
+function viewExList(kind){
+  kind=kind||'r';title('Exercícios progressivos');showKB(false);
+  V().innerHTML=`<div class="seg" style="margin-bottom:12px">${Object.entries(XK).map(([k,x])=>`<button data-k="${k}" class="${k===kind?'on':''}">${x.ic} ${x.n}</button>`).join('')}</div>
+   <p class="muted small">30 exercícios em ordem crescente de dificuldade: 1–10 básico, 11–20 intermediário, 21–30 avançado. Todos ficam liberados.</p>
+   ${[1,11,21].map(st=>`<div class="modh"><b>${xInfo(kind,st).stage}</b><span>exercícios ${st}–${st+9}</span></div>`+Array.from({length:10},(_,i)=>st+i).map(n=>{const x=xInfo(kind,n),p=PROG['x'+kind+n];
+     return `<button class="li${p?' done':''}" data-n="${n}"><div class="n">${p?'✓':n}</div><div><div class="t">${x.t}</div><div class="d">${x.o}</div></div><div class="st">${p?starStr(p.stars):''}</div></button>`}).join('')).join('')}`;
+  V().querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{HIST.pop();go(viewExList,b.dataset.k)});
+  V().querySelectorAll('.li').forEach(b=>b.onclick=()=>go(viewEx,kind,+b.dataset.n));
+}
+function viewEx(kind,n){
+  const x=xInfo(kind,n),pc=xPiece(kind,n);CURKEY='x'+kind+n;title(`${XK[kind].n} · ${n} de 30`);showKB(true,pc.range[0],pc.range[1]);
+  V().innerHTML=`<span class="tag">${XK[kind].ic} ${XK[kind].n}</span><span class="tag">${x.stage}</span><h1 style="font-size:21px;margin-top:8px">${n}. ${x.t}</h1>
+   <div class="card obj"><h3>🎯 Objetivo</h3><p>${x.o}</p><p class="muted small">Comece com o modo espera ligado. Quando tiver 3 estrelas, desligue o modo espera e aumente a velocidade.</p></div>
+   <div class="card" id="xbox"></div>
+   <div class="row" style="justify-content:space-between"><button class="btn sm" id="prv" ${n===1?'disabled':''}>← Exercício ${n-1}</button><button class="btn sm" id="nxt" ${n===30?'disabled':''}>Exercício ${n+1} →</button></div>`;
+  playSetup($('#xbox'),pc,{levels:false,user:Object.keys(pc.tracks),key:CURKEY});
+  $('#prv').onclick=()=>{HIST.pop();go(viewEx,kind,n-1)};$('#nxt').onclick=()=>{HIST.pop();go(viewEx,kind,n+1)};
+}
+
+
+/* =========================================================
+   7 NOVAS MÚSICAS (domínio público)
+   ========================================================= */
+const LB={C:[[48,52,55],[5,3,1]],F:[[48,53,57],[5,2,1]],G:[[47,50,55],[5,3,1]],G7:[[47,53,55],[5,2,1]],
+  Am:[[45,48,52],[5,3,1]],GG:[[43,47,50],[5,3,1]],D7:[[42,48,50],[5,2,1]],D:[[42,45,50],[5,4,1]]};
+const BR={C:[48,1],F:[41,5],G:[43,4],G7:[43,4],Am:[45,3],GG:[43,5],D7:[42,5],D:[42,5]};
+const chTrack=(list,d)=>list.map(s=>{const k=Array.isArray(s)?s[0]:s,dd=Array.isArray(s)?s[1]:d;return k?[LB[k][0],dd,LB[k][1],{lab:k.replace('GG','G')}]:[null,dd]});
+const bsTrack=(list,d)=>list.map(s=>{const k=Array.isArray(s)?s[0]:s,dd=Array.isArray(s)?s[1]:d;return k?[BR[k][0],dd,BR[k][1]]:[null,dd]});
+function song(o){const tr={R:L(fixSp(o.R),'R'),L:L(o.L,'L'),Ls:L(o.Ls,'L')};return mkPiece(Object.assign({},o,{tracks:tr}))}
+
+// Für Elise (Beethoven) — parte A. Unidade de tempo: colcheia (3 por compasso).
+const FE=(()=>{
+  const m1=[[76,.5,5],[75,.5,4],[76,.5,5],[71,.5,2],[74,.5,4],[72,.5,3]];
+  const m2=[[69,1,1],[null,.5],[60,.5,1],[64,.5,2],[69,.5,3]];
+  const m3=[[71,1,4],[null,.5],[64,.5,1],[68,.5,3],[71,.5,4]];
+  const m4=[[72,1,5],[null,.5],[64,.5,1],[76,.5,5],[75,.5,4]];
+  const m7=[[71,1,4],[null,.5],[64,.5,1],[72,.5,5],[71,.5,4]];
+  const R=[[null,2],[76,.5,5],[75,.5,4],...m1,...m2,...m3,...m4,...m1,...m2,...m7,[69,2,3],[76,.5,5],[75,.5,4],...m1,...m2,...m3,...m4,...m1,...m2,...m7,[69,3,3]];
+  const A=[[45,.5,5],[52,.5,2],[57,.5,1],[null,1.5]],E=[[40,.5,5],[52,.5,2],[56,.5,1],[null,1.5]],Z=[[null,3]];
+  const half=[...Z,...A,...E,...A,...Z,...A,...E,...A];
+  const Lf=[[null,3],...half,...half];
+  const hs=['','A','E','A','','A','E','A'],bs={A:[45,3,5],E:[40,3,5]};
+  const Ls=[[null,3],...[...hs,...hs].map(k=>k?bs[k]:[null,3])];
+  return song({dscale:.5,id:'fe',title:'Für Elise',sub:'Beethoven · domínio público · parte A (o tema famoso)',bpm:110,bpb:3,range:[40,77],R,L:Lf,Ls,
+    sections:[['Tema (1ª vez)',0,27],['Tema (2ª vez)',27,51]],
+    info:'Compasso 3/8: aqui cada tempo é uma colcheia. A mão direita alterna Mi e Ré# com o 5 e o 4. A esquerda faz arpejos curtos de Lá menor e Mi maior, e a direita completa o arpejo logo depois. A mão esquerda é a original, só que sem as pausas de colcheia.'});
+})();
+
+// Canon em Ré (Pachelbel) — arranjo simplificado
+const CANON=(()=>{
+  const prog=['D','A','Bm','F#m','G','D','G','A'];
+  const RT={D:[[62,66,69],[1,3,5]],A:[[61,64,69],[1,2,5]],Bm:[[62,66,71],[1,3,5]],'F#m':[[61,66,69],[1,3,5]],G:[[62,67,71],[1,3,5]]};
+  const DY={D:[50,57],A:[45,52],Bm:[47,54],'F#m':[42,49],G:[43,50]},BS={D:[50,1],A:[45,4],Bm:[47,3],'F#m':[42,5],G:[43,4]};
+  const mel=[[78,2,5],[76,2,4],[74,2,3],[73,2,2],[71,2,1],[69,2,1],[71,2,2],[73,2,3]];
+  const R=[...prog.map(s=>[RT[s][0],2,RT[s][1],{lab:s}]),...mel,...mel,...mel,[[62,66,69],4,[1,3,5],{lab:'D'}]];
+  const cyc=k=>prog.map((s,i)=>{const lowD=s==='D'&&i===5;return[lowD?[38,45]:DY[s],2,[5,1],{lab:s}]});
+  const Lf=[...cyc(),...cyc(),...cyc(),...cyc(),[[50,57],4,[5,1]]];
+  const Ls=[...[0,1,2,3].flatMap(()=>prog.map((s,i)=>s==='D'&&i===5?[38,2,5]:[BS[s][0],2,BS[s][1]])),[50,4,1]];
+  return song({id:'canon',title:'Canon em Ré',sub:'Pachelbel · domínio público · arranjo simplificado',bpm:60,bpb:4,range:[38,79],R,L:Lf,Ls,
+    sections:[['Acordes (ciclo 1)',0,16],['Melodia (ciclos 2–4)',16,64]],
+    info:'A esquerda repete o famoso baixo que desce (Ré, Lá, Si, Fá#, Sol, Ré, Sol, Lá), com a quinta por cima. No primeiro ciclo, a direita faz os acordes; depois entra a melodia em notas longas, como os violinos.'});
+})();
+
+// Noite Feliz (Franz Gruber, 1818)
+const NOITE=(()=>{
+  const a=[[67,1.5,3],[69,.5,4],[67,1,3],[64,3,1]];
+  const b=[[69,2,2],[69,1,2],[72,1.5,4],[71,.5,3],[69,1,2],[67,1.5,3],[69,.5,4],[67,1,3],[64,3,1]];
+  const R=[...a,...a,[74,2,5],[74,1,5],[71,3,3],[72,2,4],[72,1,4],[67,3,1],...b,...b,
+    [74,2,4],[74,1,4],[77,1.5,5],[74,.5,4],[71,1,2],[72,3,3],[76,3,5],[72,1,4],[67,1,2],[64,1,1],[67,1.5,3],[65,.5,2],[62,1,1],[60,6,1]];
+  const ch=['C','C','C','C','G7','G7','C','C','F','F','C','C','F','F','C','C','G7','G7','C','C','C','G7',['C',6]];
+  return song({id:'noite',title:'Noite Feliz',sub:'Franz Gruber (1818) · domínio público · melodia completa',bpm:72,bpb:3,range:[41,79],R,L:chTrack(ch,3),Ls:bsTrack(ch,3),
+    sections:[['Primeira parte',0,24],['Parte do meio',24,48],['Final',48,72]],
+    info:'Valsa lenta em 3 tempos. Repare no ritmo “longo-curto-normal” (semínima pontuada, colcheia, semínima) que se repete. A esquerda faz um acorde por compasso: Dó, Sol com sétima e Fá.'});
+})();
+
+// Bate o Sino / Jingle Bells (James Pierpont, 1857) — refrão
+const SINO=(()=>{
+  const p1=[[64,1,3],[64,1,3],[64,2,3],[64,1,3],[64,1,3],[64,2,3],[64,1,3],[67,1,5],[60,1.5,1],[62,.5,2],[64,4,3],
+    [65,1,4],[65,1,4],[65,1.5,4],[65,.5,4],[65,1,4],[64,1,3],[64,1,3],[64,.5,3],[64,.5,3]];
+  const R=[...p1,[64,1,3],[62,1,2],[62,1,2],[64,1,3],[62,2,2],[67,2,5],...p1,[67,1,5],[67,1,5],[65,1,4],[62,1,2],[60,4,1]];
+  const ch=['C','C','C','C','F','C','G','G7','C','C','C','C','F','C','G7','C'];
+  return song({id:'sino',title:'Bate o Sino',sub:'Jingle Bells · James Pierpont (1857) · domínio público · refrão',bpm:108,bpb:4,range:[40,72],R,L:chTrack(ch,4),Ls:bsTrack(ch,4),
+    sections:[['Primeira metade',0,32],['Segunda metade',32,64]],
+    info:'Toda a melodia cabe na posição de Dó (Dó a Sol), sem mudar a mão de lugar. É ótima para treinar notas repetidas e o ritmo animado.'});
+})();
+
+// Parabéns pra Você (melodia: irmãs Hill, 1893) — domínio público, sem letra
+const PARAB=(()=>{
+  const R=[[null,2],[67,.75,1],[67,.25,1],[69,1,2],[67,1,1],[72,1,4],[71,2,3],[67,.75,1],[67,.25,1],[69,1,2],[67,1,1],[74,1,5],[72,2,4],[67,.75,1],[67,.25,1],
+    [79,1,5],[76,1,3],[72,1,1],[71,1,2],[69,1,1],[77,.75,5],[77,.25,5],[76,1,4],[72,1,2],[74,1,3],[72,3,2]];
+  const ch=[null,'C','G7','G7','C','C','F','G7','C'];
+  return song({id:'parab',title:'Parabéns pra Você',sub:'Melodia de 1893 · domínio público · sem letra',bpm:100,bpb:3,range:[41,81],R,L:chTrack(ch,3),Ls:bsTrack(ch,3),
+    sections:[['Música inteira',0,27]],
+    info:'Começa com duas notas de “anacruse” (antes do primeiro tempo forte). No 3º verso a melodia salta uma oitava: prepare a mão antes do salto. A esquerda faz um acorde por compasso.'});
+})();
+
+// Minueto em Sol (BWV Anh. 114, atribuído a Christian Petzold) — melodia original, esquerda simplificada
+const MINU=(()=>{
+  const m1=[[74,1,5],[67,.5,1],[69,.5,2],[71,.5,3],[72,.5,4]],m2=[[74,1,5],[67,1,1],[67,1,1]];
+  const m3=[[76,1,3],[72,.5,1],[74,.5,2],[76,.5,3],[78,.5,4]],m4=[[79,1,5],[67,1,1],[67,1,1]];
+  const m5=[[72,1,4],[74,.5,5],[72,.5,4],[71,.5,3],[69,.5,2]],m6=[[71,1,3],[72,.5,4],[71,.5,3],[69,.5,2],[67,.5,1]];
+  const R=[...m1,...m2,...m3,...m4,...m5,...m6,[66,1,1],[67,.5,2],[69,.5,3],[71,.5,4],[67,.5,2],[69,3,3],
+    ...m1,...m2,...m3,...m4,...m5,...m6,[69,1,3],[71,.5,4],[69,.5,3],[67,.5,2],[66,.5,1],[67,3,2]];
+  const ch=['GG','GG','C','GG','Am','GG','D7','D','GG','GG','C','GG','Am','GG','D7','GG'];
+  return song({id:'minu',title:'Minueto em Sol',sub:'Atribuído a Bach/Petzold · domínio público · esquerda simplificada',bpm:100,bpb:3,range:[41,81],R,L:chTrack(ch,3),Ls:bsTrack(ch,3),
+    sections:[['Primeira frase',0,24],['Segunda frase',24,48]],
+    info:'A melodia da direita é a original, com muitas colcheias seguidas. A esquerda foi simplificada para um acorde por compasso. Atenção à mudança de posição da direita nos compassos 3 e 4 (subindo até o Sol) e no 7 (descendo até o Fá#).'});
+})();
+
+// Marcha Nupcial (Wagner) — frase de abertura, a entrada da noiva
+const MARCHA=(()=>{
+  const a=[[67,1,1],[72,.75,4],[72,.25,4],[72,2,4]],b=[[67,1,1],[74,.75,5],[71,.25,3],[72,2,4]];
+  const R=[...a,...b,...a,...b,[[64,67,72],4,[1,2,5],{lab:'C'}]];
+  const ch=['C',['G',2],['C',2],'C',['G',2],['C',2],'C'];
+  return song({id:'marcha',title:'Marcha Nupcial',sub:'Wagner · domínio público · frase de abertura (entrada da noiva)',bpm:66,bpb:4,range:[41,77],R,L:chTrack(ch,4),Ls:bsTrack(ch,4),
+    sections:[['Frase de abertura',0,20]],
+    info:'A frase mais conhecida da marcha, tocada duas vezes, com final em acorde. Toque devagar e com solenidade. Repare no ritmo pontuado (semicolcheia antes do tempo).'});
+})();
+SONGS.push(FE,CANON,NOITE,SINO,PARAB,MINU,MARCHA);
+
+/* =========================================================
+   MÓDULO 9 · INTRODUÇÕES MARCANTES (exercícios originais)
+   ========================================================= */
+const ARP3={C:[[60,64,67],[1,3,5]],Am:[[60,64,69],[1,2,5]],F:[[60,65,69],[1,3,5]],G:[[59,62,67],[1,2,5]]};
+const p332=s=>{const[v,f]=ARP3[s];const o=[0,1,2,0,1,2,0,1];return o.map((k,i)=>[v[k],.5,f[k],i===0?{lab:s}:undefined])};
+const OST=[[67,.5,1],[72,.5,3],[74,.5,4],[72,.5,3],[67,.5,1],[72,.5,3],[74,.5,4],[76,.5,5]];
+const CONT={Am:[[64,69,72,69],[1,3,5,3]],F:[[65,69,72,69],[1,3,5,3]],C:[[64,67,72,67],[1,2,5,2]],G:[[62,67,71,67],[1,3,5,3]]};
+const cont=s=>{const[v,f]=CONT[s];return[0,1,2,3,0,1,2,3].map((k,i)=>[v[k],.5,f[k],i===0?{lab:s}:undefined])};
+const OCT={Am:[45,57],F:[41,53],C:[48,60],G:[43,55]};
+const BASS1={C:[48,1],Am:[45,3],F:[41,5],G:[43,4]};
+const prog4=['C','Am','F','G'],prog4b=['Am','F','C','G'];
+Object.assign(PIECES,{
+  i1:()=>mkPiece({bpm:66,tracks:{R:L([...p332('C'),...p332('C'),...p332('C'),[[60,64,67],4,[1,3,5]]],'R')}}),
+  i2:()=>mkPiece({bpm:72,tracks:{R:L([...prog4.flatMap(p332),...prog4.flatMap(p332),[[60,64,67],4,[1,3,5]]],'R')}}),
+  i3:()=>mkPiece({bpm:80,tracks:{R:L([...prog4.flatMap(p332),...prog4.flatMap(p332),[[60,64,67],4,[1,3,5]]],'R'),L:L([...prog4,...prog4,'C'].map(s=>[BASS1[s][0],4,BASS1[s][1]]),'L')}}),
+  i4:()=>mkPiece({bpm:72,tracks:{R:L([...OST,...OST,...OST,...OST,[67,4,1]],'R')}}),
+  i5:()=>mkPiece({bpm:72,tracks:{R:L([...OST,...OST,...OST,...OST,[67,4,1]],'R'),L:L([...prog4,'C'].map(s=>[BASS1[s][0],4,BASS1[s][1],{lab:s}]),'L')}}),
+  i6:()=>mkPiece({bpm:80,tracks:{R:L([...OST,...OST,...OST,...OST,...OST,...OST,...OST,...OST,[67,4,1]],'R'),L:L([...prog4,...prog4,'C'].map(s=>[BASS1[s][0],4,BASS1[s][1],{lab:s}]),'L')}}),
+  i7:()=>mkPiece({bpm:72,tracks:{R:L([...prog4b.flatMap(cont),...prog4b.flatMap(cont),[[64,67,72],4,[1,2,5]]],'R')}}),
+  i8:()=>mkPiece({bpm:72,tracks:{R:L([...prog4b.flatMap(cont),[[64,67,72],4,[1,2,5]]],'R'),L:L([...prog4b,'C'].map(s=>[OCT[s],4,[5,1],{lab:s}]),'L')}}),
+  i9:()=>mkPiece({bpm:84,tracks:{R:L([...prog4b.flatMap(cont),...prog4b.flatMap(cont),[[64,67,72],4,[1,2,5]]],'R'),L:L([...prog4b,...prog4b,'C'].map(s=>[OCT[s],4,[5,1],{lab:s}]),'L')}}),
+  i10:()=>mkPiece({bpm:80,tracks:{
+    R:L([...prog4.flatMap(p332),...OST,...OST,...OST,...OST,...prog4b.flatMap(cont),[[64,67,72],4,[1,2,5],{lab:'C'}]],'R'),
+    L:L([...prog4.map(s=>[BASS1[s][0],4,BASS1[s][1]]),...prog4.map(s=>[OCT[s],4,[5,1]]),...prog4b.map(s=>[OCT[s],4,[5,1]]),[[48,60],4,[5,1]]],'L')}})
+});
+MODULES.push({n:'Módulo 9 · Introduções marcantes',d:'Arpejos 3+3+2, ostinato e padrão contínuo sobre baixo em oitavas',ls:[
+  {t:'Arpejo 3 + 3 + 2 num acorde',obj:'Tocar 8 colcheias agrupadas em 3 + 3 + 2, com o acento no início de cada grupo.',
+   exp:['Muitas introduções famosas do pop e do rock usam esta ideia: 8 colcheias por compasso divididas em grupos de <b>3 + 3 + 2</b>.',
+        'Aqui o desenho é Dó-Mi-Sol, Dó-Mi-Sol, Dó-Mi. Conte em voz alta “<b>1</b>-2-3, <b>1</b>-2-3, <b>1</b>-2” e toque um pouco mais forte cada “1”.',
+        'O resultado é um balanço que parece “tropeçar” de propósito. É esse efeito que deixa a introdução hipnótica.'],
+   exd:'O desenho 3 + 3 + 2 no acorde de Dó, 3 vezes.',ex:{type:'play',piece:'i1',user:['R']}},
+  {t:'Arpejo 3 + 3 + 2 trocando de acorde',obj:'Manter o desenho 3 + 3 + 2 enquanto os acordes mudam.',
+   exp:['Agora o mesmo desenho passa por Dó, Lá menor, Fá e Sol, a progressão mais usada do pop.',
+        'Os acordes estão em inversões próximas: o polegar quase não sai do Dó. Só os dedos de cima mudam.'],
+   exd:'Dó – Lá m – Fá – Sol em arpejos 3 + 3 + 2.',ex:{type:'play',piece:'i2',user:['R']}},
+  {t:'Arpejo 3 + 3 + 2 com baixo',obj:'Manter o arpejo na direita enquanto a esquerda segura o baixo.',
+   exp:['A esquerda toca só uma nota longa por compasso: Dó, Lá, Fá e Sol.',
+        'Comece com o modo espera ligado. Depois desligue e tente manter o arpejo sem parar quando a esquerda entra.'],
+   exd:'Arpejo na direita com baixo na esquerda, 2 vezes a progressão.',ex:{type:'play',piece:'i3',user:['R','L']}},
+  {t:'Ostinato na direita',obj:'Repetir um pequeno desenho melódico sem variação.',
+   exp:['<b>Ostinato</b> é um desenho curto que se repete muitas vezes, quase sem mudar.',
+        'Este ostinato usa Sol, Dó, Ré e Mi. Mantenha a mão parada sobre essas teclas e deixe os dedos repetirem o movimento.',
+        'O segredo é a regularidade: todas as colcheias com a mesma duração e o mesmo volume.'],
+   exd:'O ostinato 4 vezes, só com a direita.',ex:{type:'play',piece:'i4',user:['R']}},
+  {t:'O baixo muda sob o ostinato',obj:'Ouvir como o mesmo ostinato muda de cor quando o baixo muda.',
+   exp:['Aqui o app toca o ostinato e você faz o baixo com a esquerda: Dó, Lá, Fá e Sol, um por compasso.',
+        'Repare: a direita não muda nada, mas cada nota do baixo dá um “clima” diferente ao mesmo desenho.'],
+   exd:'Toque o baixo enquanto o app toca o ostinato.',ex:{type:'play',piece:'i5',user:['L'],auto:['R']}},
+  {t:'Ostinato com as duas mãos',obj:'Juntar o ostinato e o baixo sem perder a regularidade.',
+   exp:['Agora as duas partes são suas. A esquerda entra junto com a primeira nota de cada compasso.',
+        'Se travar, volte ao modo espera e à velocidade de 60%.'],
+   exd:'Ostinato na direita e baixo na esquerda, 2 vezes a progressão.',ex:{type:'play',piece:'i6',user:['R','L']}},
+  {t:'Padrão contínuo na direita',obj:'Tocar um padrão de 4 notas que não para, trocando de acorde.',
+   exp:['Outra marca de introduções de rock e pop ao piano: a direita repete um padrão de colcheias sem parar, como um motor.',
+        'Sequência: Lá menor, Fá, Dó e Sol. Cada acorde tem o desenho “baixo-meio-alto-meio”.'],
+   exd:'O padrão contínuo nos 4 acordes, 2 vezes.',ex:{type:'play',piece:'i7',user:['R']}},
+  {t:'Baixo em oitavas',obj:'Tocar oitavas firmes na esquerda, com o 5 e o 1.',
+   exp:['<b>Oitava</b> é a mesma nota tocada em duas alturas, com o mindinho (5) embaixo e o polegar (1) em cima.',
+        'Mantenha a mão aberta no formato da oitava e mova o braço inteiro de uma oitava para a outra.',
+        'Aqui você toca as oitavas com a direita fazendo o padrão contínuo junto.'],
+   exd:'Padrão contínuo na direita com oitavas na esquerda, 1 vez.',ex:{type:'play',piece:'i8',user:['R','L']}},
+  {t:'Padrão contínuo e oitavas: andamento real',obj:'Tocar o padrão com oitavas num andamento de banda.',
+   exp:['Mesmo exercício, mais longo e mais rápido.',
+        'Quando tiver 3 estrelas com o modo espera, desligue-o e ligue o metrônomo: é assim que se toca numa banda.'],
+   exd:'Padrão contínuo com oitavas, 2 vezes a progressão.',ex:{type:'play',piece:'i9',user:['R','L']}},
+  {t:'Introdução completa (original)',obj:'Tocar uma introdução de 12 compassos que junta as três técnicas.',
+   exp:['Compassos 1–4: arpejo 3 + 3 + 2 com baixo simples.','Compassos 5–8: ostinato com oitavas na esquerda.','Compassos 9–12: padrão contínuo com oitavas, terminando no acorde de Dó.',
+        'Depois de dominar esta, você vai reconhecer essas técnicas em muitas introduções famosas e aprendê-las bem mais rápido.'],
+   exd:'A introdução completa com as duas mãos.',ex:{type:'play',piece:'i10',user:['R','L']}}
+]});
+MODULES[MODULES.length-1].ls.forEach(l=>{l.mod=MODULES.length-1;l.n=LESSONS.length+1;LESSONS.push(l)});
+
+
+/* =========================================================
+   PLANO DE ESTUDO, TREINO DO DIA, TESTE DO TECLADO E ANOTAÇÕES
+   ========================================================= */
+const today=()=>dayKey(new Date());
+const NIVEIS=[
+  {n:'Nunca toquei',d:'Começar do zero: postura, notas, ritmo e as primeiras melodias.',mods:[0],ex:{r:[1,10],l:[1,10]},songs:['sino','parab'],maxLv:1},
+  {n:'Acho as notas e toco com uma mão',d:'Leitura de partitura, primeiras músicas com as duas mãos.',mods:[1,2],ex:{r:[11,20],l:[11,20],b:[1,10]},songs:['ode','noite','marcha'],maxLv:2},
+  {n:'Toco devagar com as duas mãos',d:'Escalas, acordes, cifras e independência entre as mãos.',mods:[3,4],ex:{r:[21,30],l:[21,30],b:[11,20]},songs:['minu','canon','lib'],maxLv:3},
+  {n:'Já toco algumas músicas',d:'Teclado arranjador, estilos brasileiros, ouvido e introduções.',mods:[5,6,7,8],ex:{b:[21,30]},songs:['fe','gym','lib','canon'],maxLv:4}
+];
+const OBJ={musicas:'Tocar músicas',acordes:'Acompanhar com acordes',partitura:'Ler partitura'};
+const GOALMOD={acordes:4,partitura:1};
+const stars=k=>PROG[k]?PROG[k].stars:0;
+const doneToday=k=>PROG[k]&&PROG[k].d===today();
+function lessonPool(plan){const nv=NIVEIS[plan.level];let mods=[...nv.mods];const g=GOALMOD[plan.goal];if(g!=null&&plan.level>=1&&!mods.includes(g))mods.unshift(g);
+  return mods.flatMap(mi=>MODULES[mi].ls.map(l=>l.n))}
+function exPool(plan){const nv=NIVEIS[plan.level],out=[];const ks=Object.keys(nv.ex);const len=Math.max(...ks.map(k=>nv.ex[k][1]-nv.ex[k][0]+1));
+  for(let i=0;i<len;i++)ks.forEach(k=>{const n=nv.ex[k][0]+i;if(n<=nv.ex[k][1])out.push({k,n})});return out}
+function buildSession(plan){
+  const items=[];const nv=NIVEIS[plan.level];
+  // aquecimento
+  const warm=plan.level===0?{k:'r',n:1}:plan.level===1?{k:'r',n:3}:{k:'r',n:29};
+  items.push({kind:'ex',k:warm.k,n:warm.n,role:'Aquecimento',min:3});
+  // lição: primeira sem 3 estrelas
+  const lp=lessonPool(plan);const ln=lp.find(n=>stars('l'+n)<3)||lp[lp.length-1];
+  items.push({kind:'lesson',n:ln,role:'Lição',min:plan.mins===10?4:7});
+  // exercícios
+  const ep=exPool(plan).filter(e=>stars('x'+e.k+e.n)<3&&!(e.k===warm.k&&e.n===warm.n));
+  const nEx=plan.mins===10?0:plan.mins===20?1:2;
+  ep.slice(0,nEx).forEach(e=>items.push({kind:'ex',k:e.k,n:e.n,role:'Exercício',min:5}));
+  // revisão (30 min): algo com 1 estrela
+  if(plan.mins===30){const rev=Object.keys(PROG).find(k=>PROG[k].stars===1&&!doneToday(k));
+    if(rev){if(rev[0]==='l')items.push({kind:'lesson',n:+rev.slice(1),role:'Revisão',min:5});else if(rev[0]==='x')items.push({kind:'ex',k:rev[1],n:+rev.slice(2),role:'Revisão',min:5})}}
+  // música: menor nível ainda sem 2 estrelas
+  let pick=null;for(let lv=0;lv<=nv.maxLv&&!pick;lv++)for(const id of nv.songs){if(stars('s:'+id+':'+lv)<2){pick={id,lv};break}}
+  if(!pick)pick={id:nv.songs[0],lv:nv.maxLv};
+  items.push({kind:'song',id:pick.id,lv:pick.lv,role:'Música',min:plan.mins===10?3:5});
+  return items;
+}
+function getSession(){const plan=ST.get('plan',null);if(!plan)return null;let s=ST.get('session',null);
+  if(!s||s.date!==today()||s.sig!==JSON.stringify(plan)){s={date:today(),sig:JSON.stringify(plan),items:buildSession(plan)};ST.set('session',s)}return s}
+function itemKey(it){return it.kind==='lesson'?'l'+it.n:it.kind==='ex'?'x'+it.k+it.n:'s:'+it.id+':'+it.lv}
+function itemLabel(it){if(it.kind==='lesson'){const l=LESSONS[it.n-1];return`Lição ${it.n}: ${l.t}`}
+  if(it.kind==='ex'){const x=xInfo(it.k,it.n);return`${XK[it.k].n} ${it.n}: ${x.t}`}
+  const s=SONGS.find(x=>x.id===it.id);return`${s.title} · nível ${it.lv+1} (${LEVELS[it.lv].t})`}
+function openItem(it){ac();if(it.kind==='lesson')go(viewLesson,it.n);else if(it.kind==='ex')go(viewEx,it.k,it.n);else go(viewSong,it.id,it.lv)}
+function levelComplete(plan){const lp=lessonPool(plan),ep=exPool(plan);return lp.every(n=>stars('l'+n)>=2)&&ep.every(e=>stars('x'+e.k+e.n)>=2)}
+
+function viewPlan(){
+  title('Meu plano de estudo');showKB(false);
+  const p=ST.get('plan',{level:0,mins:20,goal:'musicas'});
+  const seg=(k,opts,cur)=>`<div class="seg">${opts.map(([v,t])=>`<button data-k="${k}" data-v="${v}" class="${String(cur)===String(v)?'on':''}">${t}</button>`).join('')}</div>`;
+  V().innerHTML=`<p class="muted">Responda 3 perguntas. O app monta o seu treino de cada dia e avança de acordo com as estrelas que você ganhar.</p>
+   <div class="card setg"><h3>1. Qual é o seu nível hoje?</h3>${NIVEIS.map((nv,i)=>`<div class="lv${p.level===i?' on':''}" data-lv="${i}"><i>${i+1}</i><div><b>${nv.n}</b><span>${nv.d}</span></div></div>`).join('')}</div>
+   <div class="card setg"><h3>2. Quanto tempo por dia?</h3>${seg('mins',[[10,'10 min'],[20,'20 min'],[30,'30 min']],p.mins)}</div>
+   <div class="card setg"><h3>3. Qual é o seu objetivo principal?</h3>${seg('goal',Object.entries(OBJ),p.goal)}</div>
+   <button class="btn primary" id="psave" style="width:100%;padding:14px">Salvar e ver o treino de hoje</button>`;
+  V().querySelectorAll('[data-lv]').forEach(el=>el.onclick=()=>{p.level=+el.dataset.lv;V().querySelectorAll('[data-lv]').forEach(e=>e.classList.toggle('on',e===el))});
+  V().querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;p[k]=k==='mins'?+b.dataset.v:b.dataset.v;V().querySelectorAll(`[data-k=${k}]`).forEach(x=>x.classList.toggle('on',x===b))});
+  $('#psave').onclick=()=>{ST.set('plan',p);ST.set('session',null);HIST.pop();go(viewToday)};
+}
+function viewToday(){
+  const s=getSession();if(!s)return viewPlan();
+  title('Treino do dia');showKB(false);const plan=ST.get('plan');
+  const done=s.items.filter(it=>doneToday(itemKey(it))).length,all=s.items.length,tot=s.items.reduce((a,i)=>a+i.min,0);
+  const nxt=s.items.find(it=>!doneToday(itemKey(it)));
+  if(done===all)markDay();
+  V().innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><div><b>Nível ${plan.level+1} · ${NIVEIS[plan.level].n}</b><div class="muted small">${tot} minutos · objetivo: ${OBJ[plan.goal]}</div></div><button class="btn sm" id="tplan">Mudar plano</button></div>
+     <div style="height:10px;background:var(--card2);border-radius:9px;overflow:hidden;margin-top:12px"><i style="display:block;height:100%;width:${done/all*100}%;background:var(--ok)"></i></div><div class="muted small" style="margin-top:4px">${done} de ${all} concluídos hoje</div></div>
+   ${done===all?`<div class="note" style="background:rgba(62,207,142,.12);border-color:var(--ok);color:inherit">🎉 <b>Treino de hoje concluído!</b> Volte amanhã para manter a sequência de dias. Se quiser, repita a música para ganhar mais estrelas.</div>`:''}
+   ${levelComplete(plan)&&plan.level<3?`<div class="note">Você concluiu o nível ${plan.level+1} com 2 estrelas ou mais em tudo. <button class="btn sm primary" id="tup" style="margin-left:6px">Passar para o nível ${plan.level+2}</button></div>`:''}
+   ${s.items.map((it,i)=>{const k=itemKey(it),ok=doneToday(k);return `<button class="li${ok?' done':''}" data-i="${i}"><div class="n">${ok?'✓':i+1}</div><div><div class="d" style="color:var(--accent);font-weight:800">${it.role} · ${it.min} min</div><div class="t">${itemLabel(it)}</div></div><div class="st">${stars(k)?starStr(stars(k)):''}</div></button>`}).join('')}
+   ${nxt?`<button class="btn primary" id="tgo" style="width:100%;padding:14px;margin-top:6px">▶ Continuar: ${nxt.role.toLowerCase()}</button>`:''}
+   <p class="muted small" style="margin-top:10px">Cada item conta como feito quando você chega ao resultado final (estrelas). Itens com 1 estrela voltam como revisão nos treinos de 30 minutos.</p>`;
+  $('#tplan').onclick=()=>go(viewPlan);
+  if($('#tup'))$('#tup').onclick=()=>{plan.level++;ST.set('plan',plan);ST.set('session',null);HIST.pop();go(viewToday)};
+  V().querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>openItem(s.items[+b.dataset.i]));
+  if(nxt)$('#tgo').onclick=()=>openItem(nxt);
+}
+
+/* ---------- Teste seu teclado ---------- */
+function viewTest(){
+  title('Teste seu teclado');showKB(true,48,84);
+  const targets=[60,64,67,72,55,48];let i=0,hits=0,last=null;
+  V().innerHTML=`<div class="card"><h3>1. Escolha como o app vai ouvir</h3>
+     <div class="seg"><button data-in="mic" class="${S.input==='mic'?'on':''}">🎤 Microfone</button><button data-in="midi" class="${S.input==='midi'?'on':''}">🔌 Cabo USB</button><button data-in="touch" class="${S.input==='touch'?'on':''}">👆 Só a tela</button></div>
+     <div class="note" id="tmsg" style="display:none;margin-top:10px"></div></div>
+   <div class="card"><h3>2. Toque as notas pedidas no seu teclado</h3>
+     <div class="prompt">Toque<span class="big" id="tt"></span><span id="tsub"></span></div>
+     <div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm" id="tskip">Pular esta nota</button><button class="btn sm" id="trst">Recomeçar</button></div>
+     <div class="stats" style="margin-top:12px"><div class="stat"><b id="theard">–</b><span>o app ouviu</span></div><div class="stat"><b id="thz">–</b><span>frequência</span></div><div class="stat"><b id="tok">0/6</b><span>reconhecidas</span></div></div>
+     <div style="height:10px;background:var(--card2);border-radius:9px;overflow:hidden;margin-top:10px"><i id="tvol" style="display:block;height:100%;width:0;background:var(--blue)"></i></div><div class="muted small" style="margin-top:4px">Volume que chega ao microfone (o ideal é passar da metade ao tocar)</div>
+     <div class="fb" id="tfb"></div></div>
+   <div class="card exp"><h3>Dicas para o microfone</h3><ul>
+     <li>Deixe o celular a uns 30–50 cm do teclado, de preferência apoiado no próprio teclado ou na estante.</li>
+     <li>Use um volume médio no teclado e um som de <b>piano</b>. Desligue ritmos, efeitos e acompanhamento automático.</li>
+     <li>Toque uma nota de cada vez e solte antes da próxima. O microfone não reconhece acordes com segurança.</li>
+     <li>Ambiente silencioso ajuda muito. TV e conversa atrapalham.</li>
+     <li>Se o som do app atrapalhar, use fone de ouvido e marque essa opção nas Configurações.</li>
+     <li>Com cabo USB + adaptador OTG, nada disso importa: o reconhecimento é exato, inclusive com acordes.</li></ul></div>`;
+  const show=()=>{if(i>=targets.length){$('#tt').textContent='✓';$('#tsub').textContent='';const ok=hits>=5;$('#tfb').className='fb '+(ok?'ok':'bad');
+      $('#tfb').textContent=ok?`Tudo certo: ${hits} de 6 notas reconhecidas. Pode estudar com este modo.`:`Só ${hits} de 6 reconhecidas. Veja as dicas abaixo e teste de novo. Se continuar falhando, anote o problema (botão 📝).`;HANDLER=null;return}
+    const m=targets[i];$('#tt').textContent=nn(m);$('#tsub').textContent=m===60?'o Dó central (ponto azul)':m<60?'abaixo do Dó central':'acima do Dó central';setTargets([{m}])};
+  const reset=()=>{i=0;hits=0;$('#tok').textContent='0/6';$('#tfb').textContent='';setup();show()};
+  const setup=()=>{HANDLER=(m,src)=>{last=m;$('#theard').textContent=nn(m)+oct(m);if(src!=='mic')$('#thz').textContent=src==='midi'?'USB':'tela';
+      if(i<targets.length&&mod(m,12)===mod(targets[i],12)){hits++;$('#tok').textContent=hits+'/6';flashKey(m,'ok');i++;setTargets([]);setTimeout(show,500)}
+      else if(i<targets.length){$('#tfb').className='fb bad';$('#tfb').textContent=`Ouvi ${nn(m)}, mas o pedido era ${nn(targets[i])}.`}}};
+  MICVIEW=(f,rms)=>{const v=$('#tvol');if(v)v.style.width=Math.min(100,rms*600)+'%';if(f>60&&f<2100&&$('#thz'))$('#thz').textContent=f.toFixed(0)+' Hz'};
+  V().querySelectorAll('[data-in]').forEach(b=>b.onclick=async()=>{const v=b.dataset.in,msg=$('#tmsg');msg.style.display='none';let err='';
+    if(v==='mic'){ac();err=await startMic()}else if(v==='midi'){err=await startMidi()}else{stopMic();S.input='touch';saveSettings();updChip()}
+    if(err){msg.textContent=err;msg.style.display='block'}else if(v==='mic'){msg.textContent='Microfone ligado. Toque as notas no seu teclado.';msg.style.display='block'}
+    V().querySelectorAll('[data-in]').forEach(x=>x.classList.toggle('on',x.dataset.in===S.input));reset()});
+  $('#tskip').onclick=()=>{i++;setTargets([]);show()};$('#trst').onclick=reset;
+  reset();
+}
+
+/* ---------- Anotar problema ---------- */
+function openNote(){
+  const ctx=$('#ttl').textContent;let ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div class="card" style="width:100%;max-width:480px;margin:0"><h3>📝 Anotar problema</h3><p class="muted small">Tela: <b>${ctx}</b></p>
+    <textarea id="ntx" rows="4" style="width:100%;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);padding:10px;font:inherit" placeholder="Ex.: o microfone não reconheceu o Fá; a lição ficou difícil; faltou explicar..."></textarea>
+    <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="ncan">Cancelar</button><button class="btn primary" id="nsav">Salvar</button></div></div>`;
+  document.body.appendChild(ov);const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close()};$('#ncan').onclick=close;setTimeout(()=>$('#ntx').focus(),50);
+  $('#nsav').onclick=()=>{const t=$('#ntx').value.trim();if(t){const ns=ST.get('notes',[]);const d=new Date();ns.push({when:d.toLocaleString('pt-BR'),ctx,t,input:S.input});ST.set('notes',ns)}close()};
+}
+function viewNotes(){
+  title('Anotações do teste');showKB(false);const ns=ST.get('notes',[]);
+  const txt=()=>ns.map((n,i)=>`${i+1}. [${n.when}] (${n.ctx} · entrada: ${n.input}) ${n.t}`).join('\n');
+  V().innerHTML=`<p class="muted">Use o botão 📝 no topo de qualquer tela para anotar. Depois copie tudo e me mande na conversa.</p>
+   <div class="row" style="margin-bottom:12px"><button class="btn primary" id="ncopy" ${ns.length?'':'disabled'}>Copiar tudo</button><button class="btn" id="nnew">📝 Nova anotação</button><button class="btn" id="nclr" ${ns.length?'':'disabled'}>Apagar tudo</button></div>
+   <div class="fb" id="nfb"></div>
+   ${ns.length?ns.map((n,i)=>`<div class="card"><div class="muted small">${n.when} · ${n.ctx} · ${n.input}</div><p style="margin:6px 0 0">${n.t.replace(/</g,'&lt;')}</p><button class="btn sm" data-del="${i}" style="margin-top:8px">Apagar</button></div>`).join(''):'<div class="card muted">Nenhuma anotação ainda.</div>'}`;
+  $('#ncopy').onclick=async()=>{try{await navigator.clipboard.writeText(txt());$('#nfb').className='fb ok';$('#nfb').textContent='Copiado! Agora cole na conversa com o Claude.'}catch(e){
+    $('#nfb').className='fb';$('#nfb').innerHTML='Não consegui copiar automaticamente. Selecione e copie o texto abaixo:<textarea rows="6" style="width:100%;margin-top:6px">'+txt().replace(/</g,'&lt;')+'</textarea>'}};
+  $('#nnew').onclick=()=>{openNote();const iv=setInterval(()=>{if(!document.querySelector('#ntx')){clearInterval(iv);HIST.pop();go(viewNotes)}},300);addClean(()=>clearInterval(iv))};
+  $('#nclr').onclick=()=>{$('#nfb').innerHTML='Apagar todas as anotações? <button class="btn sm" id="nyes">Sim, apagar</button>';$('#nyes').onclick=()=>{ST.set('notes',[]);HIST.pop();go(viewNotes)}};
+  V().querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ns.splice(+b.dataset.del,1);ST.set('notes',ns);HIST.pop();go(viewNotes)});
+}
+
+/* ---------- Nova tela inicial ---------- */
+function viewHome(){
+  title('Aprenda teclado',false);showKB(false);
+  const plan=ST.get('plan',null),s=plan?getSession():null;
+  const sd=SONGS.reduce((a,x)=>a+LEVELS.filter((_,i)=>PROG['s:'+x.id+':'+i]).length,0);
+  const done=s?s.items.filter(it=>doneToday(itemKey(it))).length:0;
+  V().innerHTML=`<h1>🎹 Aprenda teclado</h1>
+   ${plan?`<button class="tile" id="hT" style="width:100%;min-height:0;margin:10px 0 12px;border:2px solid var(--accent)"><span class="ic">🗓️</span><b>Treino do dia</b><span>Nível ${plan.level+1} · ${plan.mins} min · ${done} de ${s.items.length} feitos hoje</span></button>`
+     :`<button class="tile" id="hP" style="width:100%;min-height:0;margin:10px 0 12px;border:2px solid var(--accent)"><span class="ic">🧭</span><b>Comece aqui: monte seu plano</b><span>3 perguntas rápidas e o app monta o seu treino de cada dia</span></button>`}
+   <div class="card"><div class="stats"><div class="stat"><b>${streak()}</b><span>dias seguidos</span></div><div class="stat"><b>${lessonsDone()}/${LESSONS.length}</b><span>lições</span></div><div class="stat"><b>${Object.keys(PROG).filter(k=>/^x[rlb]\d/.test(k)).length}/90</b><span>exercícios</span></div><div class="stat"><b>${sd}/${SONGS.length*5}</b><span>níveis de música</span></div></div></div>
+   <div class="grid2">
+    <button class="tile" id="hL"><span class="ic">📚</span><b>Lições</b><span>${MODULES.length} módulos · ${LESSONS.length} lições</span></button>
+    <button class="tile" id="hX"><span class="ic">💪</span><b>Exercícios progressivos</b><span>30 mão direita · 30 esquerda · 30 duas mãos</span></button>
+    <button class="tile" id="hS"><span class="ic">🎵</span><b>Músicas para aprender</b><span>${SONGS.length} músicas · 5 níveis cada</span></button>
+    <button class="tile" id="hK"><span class="ic">🎤</span><b>Teste seu teclado</b><span>Confira se o microfone ou o cabo USB reconhecem as notas</span></button>
+    <button class="tile" id="hF"><span class="ic">🎹</span><b>Modo livre</b><span>Toque e veja o nome e a nota na pauta</span></button>
+    <button class="tile" id="hN"><span class="ic">📝</span><b>Anotações do teste</b><span>${ST.get('notes',[]).length} anotação(ões) · copiar e enviar</span></button>
+   </div>
+   <div class="note" style="margin-top:12px">Dica: use o celular <b>deitado</b>. O teclado da tela fica maior e mais fácil de tocar.</div>`;
+  if(plan)$('#hT').onclick=()=>go(viewToday);else $('#hP').onclick=()=>go(viewPlan);
+  $('#hL').onclick=()=>go(viewLessons);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);
+  $('#hK').onclick=()=>go(viewTest);$('#hF').onclick=()=>go(viewFree);$('#hN').onclick=()=>go(viewNotes);
+}
+
+/* início */
+if(S.input==='mic'||S.input==='midi'){S.input='touch';saveSettings()} // pede permissão de novo a cada uso
+function applyTheme(){document.body.classList.toggle('dark',S.theme==='dark');const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=S.theme==='dark'?'#14161c':'#f6f3ee'}
+applyTheme();updChip();go(viewHome);
+
+</script>
+</body>
+</html>
