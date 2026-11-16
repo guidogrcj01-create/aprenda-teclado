@@ -143,6 +143,7 @@ p{line-height:1.5;margin:0 0 8px}
   <button class="ib" id="backBtn">←</button>
   <div class="ttl" id="ttl">Aprenda teclado</div>
   <span id="inChip">👆 Tela</span>
+  <button class="ib" id="aboutBtn" title="Sobre">ℹ️</button>
   <button class="ib" id="noteBtn" title="Anotar problema">📝</button>
   <button class="ib" id="setBtn">⚙</button>
 </div>
@@ -314,7 +315,8 @@ async function startMidi(){
   return midiCount?'':'Nenhum teclado USB encontrado. Ligue o cabo OTG e o teclado; ele aparece aqui automaticamente.';
 }
 function updChip(){const c=$('#inChip');
-  if(S.input==='mic'&&micStream){c.textContent='🎤 Microfone';c.classList.add('on')}
+  if(S.input==='mic'&&micStream&&AC&&AC.state!=='running'){c.textContent='🎤 Toque na tela';c.classList.remove('on')}
+  else if(S.input==='mic'&&micStream){c.textContent='🎤 Microfone';c.classList.add('on')}
   else if(S.input==='midi'&&midiAcc){c.textContent=midiCount?'🔌 USB ligado':'🔌 USB: nenhum';c.classList.toggle('on',midiCount>0)}
   else{c.textContent='👆 Tela';c.classList.remove('on')}}
 
@@ -398,6 +400,7 @@ function back(){if(HIST.length>1){HIST.pop();const[fn,args]=HIST[HIST.length-1];
 $('#backBtn').onclick=back;
 $('#setBtn').onclick=()=>go(viewSettings);
 $('#noteBtn').onclick=()=>openNote();
+$('#aboutBtn').onclick=()=>go(viewAbout);
 $('#inChip').onclick=()=>go(viewSettings);
 function title(t,showBack=true){$('#ttl').textContent=t;$('#backBtn').style.visibility=showBack?'visible':'hidden'}
 const V=()=>$('#view');
@@ -1267,17 +1270,18 @@ function viewSettings(){
      <label class="toggle"><span>Mostrar o desenho das mãos com o dedo que toca</span><input type="checkbox" id="tH" ${S.hands?'checked':''}></label>
      <label class="toggle"><span>Mostrar o nome em todas as teclas brancas</span><input type="checkbox" id="tN" ${S.allNames?'checked':''}></label>
      <label class="toggle"><span>Som ao tocar no teclado da tela</span><input type="checkbox" id="tS" ${S.keySound?'checked':''}></label>
-     <div class="row" style="margin:4px 0 8px"><button class="btn sm" id="gPlan">🧭 Meu plano de estudo</button><button class="btn sm" id="gTest">🎤 Teste seu teclado</button><button class="btn sm" id="gNotes">📝 Anotações</button></div>
+     <div class="row" style="margin:4px 0 8px"><button class="btn sm" id="gPlan">🧭 Meu plano de estudo</button><button class="btn sm" id="gTest">🎤 Teste seu teclado</button><button class="btn sm" id="gNotes">📝 Anotações</button><button class="btn sm" id="gAbout">ℹ️ Sobre</button></div>
      <label class="toggle"><span>Estou usando fone de ouvido (o microfone não escuta o som do app)</span><input type="checkbox" id="tF" ${S.headphones?'checked':''}></label>
    </div>`;
   V().querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{const k=b.dataset.k,v=b.dataset.v;
     if(k==='input'){const msg=$('#inmsg');msg.style.display='none';let err='';
+      S.userTouch=(v==='touch');
       if(v==='mic'){ac();err=await startMic()}else if(v==='midi'){err=await startMidi()}else{stopMic();S.input='touch';saveSettings();updChip()}
       if(err){msg.textContent=err;msg.style.display='block'}
       V().querySelectorAll('[data-k=input]').forEach(x=>x.classList.toggle('on',x.dataset.v===S.input));return}
     S[k]=v;saveSettings();applyTheme();V().querySelectorAll(`[data-k=${k}]`).forEach(x=>x.classList.toggle('on',x.dataset.v===v));refreshKeys()});
   $('#tH').onchange=e=>{S.hands=e.target.checked;saveSettings()};$('#tN').onchange=e=>{S.allNames=e.target.checked;saveSettings();refreshKeys()};
-  $('#gPlan').onclick=()=>go(viewPlan);$('#gTest').onclick=()=>go(viewTest);$('#gNotes').onclick=()=>go(viewNotes);
+  $('#gPlan').onclick=()=>go(viewPlan);$('#gTest').onclick=()=>go(viewTest);$('#gNotes').onclick=()=>go(viewNotes);$('#gAbout').onclick=()=>go(viewAbout);
   $('#tS').onchange=e=>{S.keySound=e.target.checked;saveSettings()};$('#tF').onchange=e=>{S.headphones=e.target.checked;saveSettings()};
 }
 
@@ -1813,15 +1817,54 @@ function viewHome(){
     <button class="tile" id="hK"><span class="ic">🎤</span><b>Teste seu teclado</b><span>Confira se o microfone ou o cabo USB reconhecem as notas</span></button>
     <button class="tile" id="hF"><span class="ic">🎹</span><b>Modo livre</b><span>Toque e veja o nome e a nota na pauta</span></button>
     <button class="tile" id="hN"><span class="ic">📝</span><b>Anotações do teste</b><span>${ST.get('notes',[]).length} anotação(ões) · copiar e enviar</span></button>
+    <button class="tile" id="hA"><span class="ic">ℹ️</span><b>Sobre</b><span>Como usar, versão e o que ainda falta</span></button>
    </div>
    <div class="note" style="margin-top:12px">Dica: use o celular <b>deitado</b>. O teclado da tela fica maior e mais fácil de tocar.</div>`;
   if(plan)$('#hT').onclick=()=>go(viewToday);else $('#hP').onclick=()=>go(viewPlan);
   $('#hL').onclick=()=>go(viewLessons);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);
-  $('#hK').onclick=()=>go(viewTest);$('#hF').onclick=()=>go(viewFree);$('#hN').onclick=()=>go(viewNotes);
+  $('#hK').onclick=()=>go(viewTest);$('#hA').onclick=()=>go(viewAbout);$('#hF').onclick=()=>go(viewFree);$('#hN').onclick=()=>go(viewNotes);
+}
+
+
+/* ---------- Sobre ---------- */
+const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
+const FEITAS=['56 lições em 9 módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)','10 músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro'];
+const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Avaliação do ritmo no modo espera','Importar partitura (MIDI ou MusicXML)','Tocar com a cifra','Funcionar sem internet, instalado como app','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
+function viewAbout(){
+  title('Sobre');showKB(false);
+  const f=FEITAS.length,t=f+FALTAM.length,pct=Math.round(f/t*100);
+  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 0.9 (em teste)</p>
+   <div class="card"><h3>O que é</h3><p>Um curso de teclado para iniciantes, com lições, exercícios e músicas. O app confere o que você toca, indica o dedo de cada nota e monta um treino diário de acordo com o seu nível.</p></div>
+   <div class="card exp"><h3>Duas formas de abrir o app</h3>
+     ${location.protocol==='https:'?'<p style="color:var(--ok);font-weight:800">✓ Você abriu pelo link: tudo funciona, inclusive microfone e cabo USB.</p>':'<p style="color:var(--bad);font-weight:800">Você abriu pelo arquivo: microfone e cabo USB provavelmente não vão funcionar. Use o link abaixo para isso.</p>'}
+     <ul>
+     <li><b>Pelo link (recomendado):</b> <a href="${LINK_APP}" style="color:var(--accent);font-weight:800;word-break:break-all">${LINK_APP}</a><br>Funciona tudo, inclusive <b>microfone</b> e <b>cabo USB</b>, e você sempre recebe a versão mais nova. O <b>microfone liga sozinho</b> ao abrir (na primeira vez o Chrome pede permissão; depois, basta tocar uma vez na tela).</li>
+     <li><b>Pelo arquivo</b> (aprenda-teclado.html, aberto no celular com o Chrome): funcionam as lições, os exercícios, as músicas e o teclado da tela. Microfone e cabo USB <b>não</b> funcionam, porque o navegador só libera esses recursos em endereços https.</li>
+     <li>O progresso (estrelas, plano e anotações) fica salvo <b>separado</b> em cada forma de abrir. Para não perder nada, escolha uma e use sempre ela.</li></ul></div>
+   <div class="card exp"><h3>Como usar</h3><ul>
+     <li>Abra no <b>Chrome do Android</b>. No iPhone o app funciona, mas o cabo USB (MIDI) não.</li>
+     <li>Comece por <b>🎤 Teste seu teclado</b> para ver se o microfone ou o cabo reconhecem as notas.</li>
+     <li>Depois toque em <b>🧭 Comece aqui</b> e responda 3 perguntas para montar o seu plano.</li>
+     <li>Para ter um atalho, no Chrome: menu ⋮ → <b>Adicionar à tela inicial</b>.</li>
+     <li>O progresso fica salvo só neste celular.</li></ul></div>
+   <div class="card exp"><h3>Como enviar sua opinião</h3><ul>
+     <li>Durante o uso, toque no <b>📝</b> no topo da tela para anotar qualquer problema ou sugestão.</li>
+     <li>No fim, abra <b>Anotações do teste → Copiar tudo</b> e mande para quem te enviou o link.</li></ul></div>
+   <div class="card"><h3>Em desenvolvimento</h3><p><b>${f} de ${t} funções prontas (${pct}%)</b></p>
+     <div style="height:12px;background:var(--card2);border-radius:9px;overflow:hidden;margin:6px 0 12px"><i style="display:block;height:100%;width:${pct}%;background:var(--ok)"></i></div>
+     <p style="margin-bottom:4px"><b>✅ Prontas (${f})</b></p><ul style="margin:0 0 10px;padding-left:18px;line-height:1.5">${FEITAS.map(x=>`<li>${x}</li>`).join('')}</ul>
+     <p style="margin-bottom:4px"><b>🔜 Faltam (${FALTAM.length})</b></p><ul style="margin:0;padding-left:18px;line-height:1.5">${FALTAM.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="card"><h3>Músicas e direitos autorais</h3><p>O app não reproduz a melodia nem a letra de músicas protegidas por direitos autorais. Nesses casos, inclui apenas um arranjo próprio de acompanhamento (acordes e baixo). Na versão atual, isso vale para <b>Let It Be</b> (The Beatles). As outras 9 músicas estão em domínio público.</p></div>
+   <div class="card" style="text-align:center"><p style="margin:0">Desenvolvido por <b>Guido Roberto do Rêgo Cavalcanti Júnior</b><br>usando o Claude (IA da Anthropic)</p></div>`;
 }
 
 /* início */
-if(S.input==='mic'||S.input==='midi'){S.input='touch';saveSettings()} // pede permissão de novo a cada uso
+/* entrada ao abrir: pelo link (https) liga o microfone sozinho; pelo arquivo usa a tela */
+const VIA_LINK=location.protocol==='https:';
+document.addEventListener('pointerdown',()=>{if(AC&&AC.state!=='running')AC.resume().then(updChip)},true);
+if(!VIA_LINK){if(S.input!=='touch'){S.input='touch';saveSettings()}}
+else if(S.input==='midi'){startMidi()}
+else if(!S.userTouch){ac();startMic().then(()=>{updChip();if(AC)AC.onstatechange=updChip})}
 function applyTheme(){document.body.classList.toggle('dark',S.theme==='dark');const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=S.theme==='dark'?'#14161c':'#f6f3ee'}
 applyTheme();updChip();go(viewHome);
 
