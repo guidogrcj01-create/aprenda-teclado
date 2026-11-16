@@ -1660,13 +1660,55 @@ MODULES[MODULES.length-1].ls.forEach(l=>{l.mod=MODULES.length-1;l.n=LESSONS.leng
 
 
 /* =========================================================
+   NOVAS MÚSICAS (lote 2) — Greensleeves e Prelúdio em Dó
+   ========================================================= */
+const WIDX=m=>{const pc=mod(m,12),o=Math.floor(m/12);return o*7+[0,0,1,1,2,3,3,4,4,5,5,6][pc]};
+function autoF(items,hand='R'){ // dedilhado automático: escolhe a posição de 5 dedos que atende mais notas seguintes
+  const ns=items.map((it,i)=>({i,m:it[0]})).filter(x=>x.m!=null&&!Array.isArray(x.m));let p=null;
+  ns.forEach((x,k)=>{const w=WIDX(x.m);if(p==null||w<p||w>p+4){let best=null,bs=-1;
+      for(let c=w-4;c<=w;c++){let s=0;for(let j=k;j<Math.min(ns.length,k+8);j++){const ww=WIDX(ns[j].m);if(ww>=c&&ww<=c+4)s++;else break}
+        const sc=s*10-(p==null?0:Math.abs(c-p));if(sc>bs){bs=sc;best=c}}p=best}
+    const off=w-p;items[x.i][2]=hand==='R'?off+1:5-off});
+  return items;
+}
+const GREEN=(()=>{
+  const v1=[[72,2],[74,1],[76,1.5],[77,.5],[76,1],[74,2],[71,1],[67,1.5],[69,.5],[71,1],[72,2],[69,1],[69,1.5],[68,.5],[69,1],[71,2],[68,1],[64,2],[69,1]];
+  const v2=[[72,2],[74,1],[76,1.5],[77,.5],[76,1],[74,2],[71,1],[67,1.5],[69,.5],[71,1],[72,1.5],[71,.5],[69,1],[68,1.5],[66,.5],[68,1],[69,3],[69,3]];
+  const c1=[[79,3],[79,1.5],[78,.5],[76,1],[74,2],[71,1],[67,1.5],[69,.5],[71,1],[72,2],[69,1],[69,1.5],[68,.5],[69,1],[71,2],[68,1],[64,3]];
+  const c2=[[79,3],[79,1.5],[78,.5],[76,1],[74,2],[71,1],[67,1.5],[69,.5],[71,1],[72,1.5],[71,.5],[69,1],[68,1.5],[66,.5],[68,1],[69,3],[69,3]];
+  const R=autoF([[null,2],[69,1],...v1,...v2,...c1,...c2].map(x=>x.slice()));
+  const GV={Am:[[45,48,52],[5,3,1]],C:[[48,52,55],[5,3,1]],G:[[43,47,50],[5,3,1]],Em:[[43,47,52],[5,3,1]],E:[[44,47,52],[5,3,1]]};
+  const GB={Am:[45,3],C:[48,1],G:[43,4],Em:[40,5],E:[40,5]};
+  const ch=[null,'Am','C','G','Em','Am','Am','E','E','Am','C','G','Em','Am','E','Am','Am','C','C','G','Em','Am','Am','E','E','C','C','G','Em','Am','E','Am','Am'];
+  const Lf=ch.map(s=>s?[GV[s][0],3,GV[s][1],{lab:s}]:[null,3]),Ls=ch.map(s=>s?[GB[s][0],3,GB[s][1]]:[null,3]);
+  return song({id:'green',title:'Greensleeves',sub:'Canção inglesa tradicional · domínio público · completa',bpm:84,bpb:3,range:[40,81],R,L:Lf,Ls,
+    sections:[['Primeira parte',0,51],['Refrão',51,99]],
+    info:'Melodia em Lá menor, em 3 tempos, com o ritmo “longo-curto” (semínima pontuada e colcheia) em quase todo compasso. Repare no Sol# (tecla preta) antes de voltar ao Lá. A esquerda faz um acorde por compasso: Lá menor, Dó, Sol, Mi menor e Mi.'});
+})();
+const PRELUDIO=(()=>{
+  const bars=[['C',[60,64,67,72,76]],['Dm7/C',[60,62,69,74,77]],['G7/B',[59,62,67,74,77]],['C',[60,64,67,72,76]],
+              ['Am/C',[60,64,69,76,81]],['D7/C',[60,62,66,69,74]],['G/B',[59,62,67,74,79]],['C7M/B',[59,60,64,67,72]]];
+  const R=[],Lf=[],Ls=[];
+  bars.forEach(([lab,n],b)=>[0,2].forEach(h=>{const t=b*4+h;
+    Lf.push({t,d:2,m:n[0],f:5,h:'L',lab:h===0?lab:undefined});Lf.push({t:t+.25,d:1.75,m:n[1],f:n[1]-n[0]>2?3:4,h:'L'});
+    Ls.push({t,d:2,m:n[0],f:5,h:'L'});
+    [2,3,4,2,3,4].forEach((k,i)=>R.push({t:t+.5+i*.25,d:.25,m:n[k],f:[1,3,5][k-2],h:'R'}))}));
+  const t=32;[60,64].forEach((m,i)=>{Lf.push({t:t+i*.25,d:4-i*.25,m,f:i?3:5,h:'L',lab:i?undefined:'C'})});Ls.push({t,d:4,m:60-12,f:5,h:'L'});
+  [67,72,76].forEach((m,i)=>R.push({t:t+.5+i*.25,d:3.5-i*.25,m,f:[1,3,5][i],h:'R'}));
+  return mkPiece({id:'prel',title:'Prelúdio em Dó',sub:'J. S. Bach (BWV 846) · domínio público · compassos 1 a 8',bpm:60,bpb:4,range:[43,84],tracks:{R,L:Lf,Ls},
+    sections:[['Compassos 1–4',0,16],['Compassos 5–8',16,36]],
+    info:'Cada meio compasso é o mesmo desenho: a esquerda toca duas notas e as segura, e a direita completa o arpejo duas vezes em semicolcheias. Só os acordes mudam. São os 8 primeiros compassos da peça; o último compasso (acorde de Dó) foi acrescentado para concluir o trecho.'});
+})();
+SONGS.push(GREEN,PRELUDIO);
+
+/* =========================================================
    PLANO DE ESTUDO, TREINO DO DIA, TESTE DO TECLADO E ANOTAÇÕES
    ========================================================= */
 const today=()=>dayKey(new Date());
 const NIVEIS=[
   {n:'Nunca toquei',d:'Começar do zero: postura, notas, ritmo e as primeiras melodias.',mods:[0],ex:{r:[1,10],l:[1,10]},songs:['sino','parab'],maxLv:1},
-  {n:'Acho as notas e toco com uma mão',d:'Leitura de partitura, primeiras músicas com as duas mãos.',mods:[1,2],ex:{r:[11,20],l:[11,20],b:[1,10]},songs:['ode','noite','marcha'],maxLv:2},
-  {n:'Toco devagar com as duas mãos',d:'Escalas, acordes, cifras e independência entre as mãos.',mods:[3,4],ex:{r:[21,30],l:[21,30],b:[11,20]},songs:['minu','canon','lib'],maxLv:3},
+  {n:'Acho as notas e toco com uma mão',d:'Leitura de partitura, primeiras músicas com as duas mãos.',mods:[1,2],ex:{r:[11,20],l:[11,20],b:[1,10]},songs:['ode','noite','marcha','green'],maxLv:2},
+  {n:'Toco devagar com as duas mãos',d:'Escalas, acordes, cifras e independência entre as mãos.',mods:[3,4],ex:{r:[21,30],l:[21,30],b:[11,20]},songs:['minu','canon','lib','prel'],maxLv:3},
   {n:'Já toco algumas músicas',d:'Teclado arranjador, estilos brasileiros, ouvido e introduções.',mods:[5,6,7,8],ex:{b:[21,30]},songs:['fe','gym','lib','canon'],maxLv:4}
 ];
 const OBJ={musicas:'Tocar músicas',acordes:'Acompanhar com acordes',partitura:'Ler partitura'};
@@ -1828,7 +1870,7 @@ function viewHome(){
 
 /* ---------- Sobre ---------- */
 const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
-const FEITAS=['56 lições em 9 módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)','10 músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro'];
+const FEITAS=['56 lições em 9 módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro'];
 const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Avaliação do ritmo no modo espera','Importar partitura (MIDI ou MusicXML)','Tocar com a cifra','Funcionar sem internet, instalado como app','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
 function viewAbout(){
   title('Sobre');showKB(false);
@@ -1854,7 +1896,7 @@ function viewAbout(){
      <div style="height:12px;background:var(--card2);border-radius:9px;overflow:hidden;margin:6px 0 12px"><i style="display:block;height:100%;width:${pct}%;background:var(--ok)"></i></div>
      <p style="margin-bottom:4px"><b>✅ Prontas (${f})</b></p><ul style="margin:0 0 10px;padding-left:18px;line-height:1.5">${FEITAS.map(x=>`<li>${x}</li>`).join('')}</ul>
      <p style="margin-bottom:4px"><b>🔜 Faltam (${FALTAM.length})</b></p><ul style="margin:0;padding-left:18px;line-height:1.5">${FALTAM.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-   <div class="card"><h3>Músicas e direitos autorais</h3><p>O app não reproduz a melodia nem a letra de músicas protegidas por direitos autorais. Nesses casos, inclui apenas um arranjo próprio de acompanhamento (acordes e baixo). Na versão atual, isso vale para <b>Let It Be</b> (The Beatles). As outras 9 músicas estão em domínio público.</p></div>
+   <div class="card"><h3>Músicas e direitos autorais</h3><p>O app não reproduz a melodia nem a letra de músicas protegidas por direitos autorais. Nesses casos, inclui apenas um arranjo próprio de acompanhamento (acordes e baixo). Na versão atual, isso vale para <b>Let It Be</b> (The Beatles). As outras ${SONGS.length-1} músicas estão em domínio público.</p></div>
    <div class="card" style="text-align:center"><p style="margin:0">Desenvolvido por <b>Guido Roberto do Rêgo Cavalcanti Júnior</b><br>usando o Claude (IA da Anthropic)</p></div>`;
 }
 
