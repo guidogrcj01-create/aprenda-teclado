@@ -1,0 +1,16 @@
+{
+  "name": "Aprenda teclado",
+  "short_name": "Teclado",
+  "description": "Curso de teclado para iniciantes: lições, exercícios e músicas que conferem o que você toca.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f3ee",
+  "theme_color": "#f6f3ee",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

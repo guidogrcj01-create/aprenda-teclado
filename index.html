@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#f6f3ee">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Aprenda teclado</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -167,7 +170,7 @@ let PROG=ST.get('prog',{}), DAYS=ST.get('days',[]);
 function dayKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function markDay(){const k=dayKey(new Date());if(!DAYS.includes(k)){DAYS.push(k);ST.set('days',DAYS)}}
 function streak(){const s=new Set(DAYS);let n=0;const d=new Date();if(!s.has(dayKey(d)))d.setDate(d.getDate()-1);while(s.has(dayKey(d))){n++;d.setDate(d.getDate()-1)}return n}
-function saveScore(key,stars,acc){if(!key)return;const p=PROG[key];if(!p||p.stars<stars||p.acc<acc)PROG[key]={stars:Math.max(stars,p?p.stars:0),acc:Math.max(acc,p?p.acc:0)};PROG[key].d=dayKey(new Date());ST.set('prog',PROG);markDay()}
+function saveScore(key,stars,acc){if(!key)return;const p=PROG[key];if(!p||p.stars<stars||p.acc<acc)PROG[key]={stars:Math.max(stars,p?p.stars:0),acc:Math.max(acc,p?p.acc:0)};PROG[key].d=dayKey(new Date());ST.set('prog',PROG);markDay();if(window.checkAch)setTimeout(checkAch,60)}
 const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 
 /* nomes das notas */
@@ -270,12 +273,12 @@ function showKB(on,lo=48,hi=84){$('#kbdock').classList.toggle('hidden',!on);docu
    ENTRADAS: TELA, MICROFONE, CABO USB (MIDI)
    ========================================================= */
 let HANDLER=null, LEFTZONE=null;
-function noteOn(m,src){
+function noteOn(m,src,vel){
   if(src==='touch'&&S.keySound)tone(m,0,.7,{timbre:touchTimbre(m)});
   if(src!=='touch'){const el=KB.els[m];if(el){el.classList.add('down');setTimeout(()=>el.classList.remove('down'),180)}}
-  if(HANDLER)HANDLER(m,src);
+  if(HANDLER)HANDLER(m,src,vel);
 }
-let micStream=null,analyser=null,abuf=null,micTimer=null,lastPc=-1,stableN=0,smRms=0,onsetAt=0,armed=true,accPc=-1,MICVIEW=null;
+let micPeak=0,PEDALCB=null,micStream=null,analyser=null,abuf=null,micTimer=null,lastPc=-1,stableN=0,smRms=0,onsetAt=0,armed=true,accPc=-1,MICVIEW=null;
 async function startMic(){
   stopMic();
   try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw 0;
@@ -299,18 +302,18 @@ function micTick(){
   analyser.getFloatTimeDomainData(abuf);const now=performance.now();
   if(now<micMuteUntil){stableN=0;lastPc=-1;smRms=0;return}
   const{f,rms}=autoCorr(abuf,AC.sampleRate);
-  if(rms>smRms*1.35&&rms>.015){onsetAt=now;armed=true}smRms=smRms*.7+rms*.3;
+  if(rms>smRms*1.35&&rms>.015){onsetAt=now;armed=true}smRms=smRms*.7+rms*.3;micPeak=Math.max(rms,micPeak*.85);
   if(MICVIEW)MICVIEW(f,rms);
   if(f<60||f>2100){stableN=0;lastPc=-1;return}
   const m=Math.round(69+12*Math.log2(f/440)),pc=mod(m,12);
   if(pc===lastPc)stableN++;else{stableN=1;lastPc=pc;if(pc!==accPc)armed=true}
-  if(stableN>=2&&armed&&(now-onsetAt<400||pc!==accPc)){armed=false;accPc=pc;noteOn(m,'mic')}
+  if(stableN>=2&&armed&&(now-onsetAt<400||pc!==accPc)){armed=false;accPc=pc;noteOn(m,'mic',micPeak)}
 }
 let midiAcc=null,midiCount=0;
 async function startMidi(){
   try{if(!navigator.requestMIDIAccess)throw 0;midiAcc=await navigator.requestMIDIAccess()}
   catch(e){return 'Este navegador não liberou o acesso USB/MIDI. Use o Chrome do Android abrindo o app por um endereço https.'}
-  const hook=()=>{midiCount=0;midiAcc.inputs.forEach(inp=>{midiCount++;inp.onmidimessage=ev=>{const[s,n,v]=ev.data;if((s&0xf0)===0x90&&v>0)noteOn(n,'midi')}});updChip()};
+  const hook=()=>{midiCount=0;midiAcc.inputs.forEach(inp=>{midiCount++;inp.onmidimessage=ev=>{const[s,n,v]=ev.data;if((s&0xf0)===0x90&&v>0)noteOn(n,'midi',v/127);else if((s&0xf0)===0xB0&&n===64&&PEDALCB)PEDALCB(v>=64)}});updChip()};
   midiAcc.onstatechange=hook;stopMic();S.input='midi';saveSettings();hook();
   return midiCount?'':'Nenhum teclado USB encontrado. Ligue o cabo OTG e o teclado; ele aparece aqui automaticamente.';
 }
@@ -490,7 +493,7 @@ function runPlay(stage,piece,cfg,demo){
   const steps=[];
   (demo?evs:evs.filter(e=>e.user)).forEach(e=>{let s=steps[steps.length-1];if(!s||Math.abs(s.t-e.t)>1e-6){s={t:e.t,notes:[],got:new Set(),bar:Math.floor(e.t/piece.bpb+1e-9)};steps.push(s)}s.notes.push(e);if(e.lab&&!s.label)s.label=e.lab});
   const bps=piece.bpm/60*cfg.speed/100;
-  P={piece,evs,steps,a,b,bps,demo,cfg,wait:!demo&&cfg.wait,idx:0,jidx:0,ph:a,phT:a,errors:0,hits:0,miss:{},dead:false,lastCur:-2,pre:false,done:false};
+  P={piece,evs,steps,a,b,bps,demo,cfg,rt:[],rtMsg:'',rtUntil:0,wait:!demo&&cfg.wait,idx:0,jidx:0,ph:a,phT:a,errors:0,hits:0,miss:{},dead:false,lastCur:-2,pre:false,done:false};
   newSession();
   stage.innerHTML=`<div class="pstatus"><span id="pinfo">${demo?'Ouvindo…':'Toque a nota indicada'}</span><span id="pscore"></span></div>
     <div id="nt">${S.notation==='falling'?'<canvas id="fall" class="bleed"></canvas>':S.notation==='staff'?'<div class="staffbox" id="staff"></div>':'<div class="lane" id="lane"></div>'}</div>
@@ -522,7 +525,7 @@ function runPlay(stage,piece,cfg,demo){
     else if(P.ph<P.phT){P.ph=Math.min(P.phT,P.ph+dt*bps)}
     if(P.wait&&cfg.metro&&!P.pre){while(P.metNext<=P.ph+1e-6){drum(mod(P.metNext,piece.bpb)===0?'accent':'click',0,.7);P.metNext++}}
     if(!P.wait&&P.ph<a)$('#pinfo').textContent='Prepare-se… '+Math.ceil(a-P.ph);
-    else if(!P.done&&!demo)$('#pinfo').textContent=P.wait?'Toque a nota indicada':'Tocando no tempo';
+    else if(!P.done&&!demo)$('#pinfo').textContent=P.wait?(P.rtUntil>performance.now()?P.rtMsg:'Toque a nota indicada'):'Tocando no tempo';
     renderPlay();P.raf=requestAnimationFrame(loop)};
   P.raf=requestAnimationFrame(loop);
 }
@@ -532,7 +535,7 @@ function playNote(m,src){
   if(!P||P.demo||P.done)return;const pc=mod(m,12);
   if(P.wait){if(P.pre)return;const s=P.steps[P.idx];if(!s)return;
     const n=s.notes.find(n=>mod(n.m,12)===pc&&!s.got.has(n));
-    if(n){s.got.add(n);flashKey(n.m,'ok');if(s.got.size>=s.notes.length){P.hits++;stepDone()}}
+    if(n){if(!s.firstT)s.firstT=AC.currentTime;s.got.add(n);flashKey(n.m,'ok');if(s.got.size>=s.notes.length){P.hits++;stepDone()}}
     else if(!s.notes.some(n=>mod(n.m,12)===pc)){P.errors++;s.notes.forEach(n=>P.miss[n.m]=(P.miss[n.m]||0)+1);flashKey(m,'bad')}
   }else{const tol=.28*P.bps;let best=null,bd=1e9;
     for(let k=P.jidx;k<P.steps.length;k++){const s=P.steps[k];if(s.t-P.ph>tol)break;if(s.done)continue;const d=Math.abs(s.t-P.ph);
@@ -543,6 +546,10 @@ function playNote(m,src){
 }
 function stepDone(){
   const s=P.steps[P.idx],nx=P.steps[P.idx+1],tEnd=nx?nx.t:P.b;
+  const pv=P.steps[P.idx-1];
+  if(pv&&pv.firstT&&s.firstT){const exp=(s.t-pv.t)/P.bps,act=s.firstT-pv.firstT,tol=Math.max(.15,exp*.25),dev=act-exp;
+    const k=Math.abs(dev)<=tol?'ok':dev<0?'cedo':'tarde';P.rt.push(k);
+    P.rtMsg=k==='ok'?'⏱ No tempo':k==='cedo'?'⏱ Adiantou':'⏱ Atrasou';P.rtUntil=performance.now()+700}
   const c=AC;P.evs.forEach(e=>{if(!e.user&&e.t>=s.t-1e-6&&e.t<tEnd-1e-6)tone(e.m,c.currentTime+.02+(e.t-s.t)/P.bps,e.d/P.bps*.95,{vel:.18})});
   P.idx++;if(!nx){setTimeout(()=>{if(P&&!P.dead)finishPlay($('#pstage')||document.body)},500)}else P.phT=nx.t;
 }
@@ -556,7 +563,13 @@ function finishPlay(stage){
   const tip=stars===3?(P.wait?'Ótimo! Agora tente desligar o modo espera ou aumentar a velocidade.':'Excelente! Música dominada neste nível.'):
     worst.length?`Mais erros em: ${worst.join(', ')}. Repita só o trecho difícil, mais devagar.`:'Repita mais uma vez, mais devagar.';
   $('#pinfo').textContent='Concluído';
-  const r=$('#pres');if(r)r.innerHTML=`<div class="card result"><div class="stars">${starStr(stars)}</div><div class="pct">${acc}% de precisão</div><p class="muted">${P.wait?`${P.errors} erro(s)`:`${P.hits} de ${tot} notas no tempo`}</p><p>${tip}</p></div>`;
+  let rtHtml='';
+  if(P.wait&&P.rt.length>=3){const ok=P.rt.filter(x=>x==='ok').length,ce=P.rt.filter(x=>x==='cedo').length,ta=P.rt.filter(x=>x==='tarde').length,rp=Math.round(ok/P.rt.length*100);
+    const tend=rp>=85?'Ritmo muito bom!':ta>ce*1.5?'Você tende a <b>atrasar</b>: diminua a velocidade e ligue o metrônomo para tocar sem parar.':ce>ta*1.5?'Você tende a <b>adiantar</b>: espere a duração completa de cada nota.':'Varia entre adiantar e atrasar: conte os tempos em voz alta.';
+    rtHtml=`<p><b>Ritmo: ${rp}% das notas no tempo</b> (velocidade ${P.cfg.speed}%) · ${ce} adiantadas · ${ta} atrasadas<br><span class="muted small">${tend}</span></p>`;
+    if(String(P.cfg.key).startsWith('s:')){const best=ST.get('rtbest',0);if(rp>best)ST.set('rtbest',rp)}}
+  const r=$('#pres');if(r)r.innerHTML=`<div class="card result"><div class="stars">${starStr(stars)}</div><div class="pct">${acc}% de precisão</div><p class="muted">${P.wait?`${P.errors} erro(s)`:`${P.hits} de ${tot} notas no tempo`}</p>${rtHtml}<p>${tip}</p></div>`;
+  if(window.checkAch)checkAch();
   r&&r.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function renderPlay(){
@@ -1239,14 +1252,24 @@ function viewLesson(n){
 }
 function viewSongs(){
   title('Músicas para aprender');showKB(false);
-  V().innerHTML=`<p class="muted">Cada música tem 5 níveis. Comece pelo 1 e só avance quando tiver 2 ou 3 estrelas.</p>`+SONGS.map(s=>{const st=LEVELS.map((_,i)=>PROG['s:'+s.id+':'+i]?PROG['s:'+s.id+':'+i].stars:0);
-    return `<button class="li" data-id="${s.id}"><div class="n">♪</div><div><div class="t">${s.title}</div><div class="d">${s.sub}</div><div class="d" style="color:var(--accent)">${st.map((x,i)=>`N${i+1} ${x?'★'.repeat(x):'–'}`).join(' · ')}</div></div></button>`}).join('');
+  const item=s=>{const st=LEVELS.map((_,i)=>PROG['s:'+s.id+':'+i]?PROG['s:'+s.id+':'+i].stars:0);
+    return `<button class="li" data-id="${s.id}"><div class="n">${s.imported?'📥':'♪'}</div><div><div class="t">${s.title}</div><div class="d">${s.sub}</div><div class="d" style="color:var(--accent)">${st.map((x,i)=>`N${i+1} ${x?'★'.repeat(x):'–'}`).join(' · ')}</div></div></button>`};
+  const base=SONGS.filter(s=>!s.imported),imp=SONGS.filter(s=>s.imported);
+  V().innerHTML=`<p class="muted">Cada música tem 5 níveis. Comece pelo 1 e só avance quando tiver 2 ou 3 estrelas.</p>
+   <div class="card"><h3>📥 Importar partitura</h3><p class="muted small">Inclua músicas a partir de arquivos <b>MIDI</b> (.mid) ou <b>MusicXML</b> (.musicxml, .xml, .mxl), como os do IMSLP ou do MuseScore. A música fica salva só neste celular, para uso pessoal, com os 5 níveis e dedilhado sugerido.</p>
+     <label class="btn primary" style="display:inline-block;cursor:pointer">Escolher arquivo<input type="file" id="impf" accept=".mid,.midi,.xml,.musicxml,.mxl" style="display:none"></label><div class="fb" id="impfb"></div></div>
+   ${imp.length?`<h2>Minhas músicas importadas</h2>${imp.map(item).join('')}`:''}
+   <h2>Músicas do app</h2>${base.map(item).join('')}`;
   V().querySelectorAll('.li').forEach(b=>b.onclick=()=>go(viewSong,b.dataset.id));
+  $('#impf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const fb=$('#impfb');fb.className='fb';fb.textContent='Lendo a partitura…';
+    try{const s=await importFile(f);checkAch();fb.className='fb ok';fb.textContent=`“${s.title}” importada: ${s.tracks.R.length} notas na direita e ${s.tracks.L.length} na esquerda.`;setTimeout(()=>{HIST.pop();go(viewSongs)},1200)}
+    catch(err){fb.className='fb bad';fb.textContent=err.message||String(err)}};
 }
 function viewSong(id,lv){
-  const s=SONGS.find(x=>x.id===id);title(s.title);showKB(true,s.range[0],s.range[1]);
-  V().innerHTML=`<h1 style="font-size:21px">${s.title}</h1><p class="muted small">${s.sub}</p><div class="card"><p>${s.info}</p></div><div class="card" id="ps"></div>`;
+  const s=SONGS.find(x=>x.id===id);if(!s)return back();title(s.title);showKB(true,s.range[0],s.range[1]);
+  V().innerHTML=`<h1 style="font-size:21px">${s.title}</h1><p class="muted small">${s.sub}</p><div class="card"><p>${s.info}</p>${s.imported?'<button class="btn sm" id="sdel">🗑 Apagar esta música importada</button><div class="fb" id="sdelfb"></div>':''}</div><div class="card" id="ps"></div>`;
   playSetup($('#ps'),s,{levels:true,key:'s:'+s.id,lv:lv||0});
+  if(s.imported)$('#sdel').onclick=()=>{$('#sdelfb').innerHTML='Apagar “'+s.title+'”? <button class="btn sm" id="sdy">Sim, apagar</button>';$('#sdy').onclick=()=>{deleteImported(s.id);back()}};
 }
 function viewFree(){
   title('Modo livre');showKB(true,48,84);
@@ -1702,13 +1725,245 @@ const PRELUDIO=(()=>{
 SONGS.push(GREEN,PRELUDIO);
 
 /* =========================================================
+   IMPORTAR PARTITURA (MIDI e MusicXML)
+   ========================================================= */
+function readVar(d,p){let v=0,b;do{b=d.getUint8(p.i++);v=(v<<7)|(b&127)}while(b&128);return v}
+function parseMidi(buf){
+  const d=new DataView(buf),p={i:0};const str=n=>{let s='';for(let k=0;k<n;k++)s+=String.fromCharCode(d.getUint8(p.i+k));p.i+=n;return s};
+  const u32=()=>{const v=d.getUint32(p.i);p.i+=4;return v},u16=()=>{const v=d.getUint16(p.i);p.i+=2;return v};
+  if(str(4)!=='MThd')throw new Error('Este arquivo não parece ser um MIDI válido.');
+  const hl=u32();u16();const nt=u16(),div=u16();p.i=8+hl;
+  if(div&0x8000)throw new Error('Formato de tempo do MIDI não suportado.');
+  let tempo=null,num=4,den=4,title='';const tracks=[];
+  for(let t=0;t<nt&&p.i<buf.byteLength;t++){
+    const id=str(4),len=u32(),end=p.i+len;if(id!=='MTrk'){p.i=end;continue}
+    let tick=0,run=0,tname='';const on={},notes=[];
+    while(p.i<end){
+      tick+=readVar(d,p);let st=d.getUint8(p.i);if(st&128){p.i++;if(st<0xf0)run=st}else st=run;
+      if(st===0xff){const mt=d.getUint8(p.i++),l=readVar(d,p);
+        if(mt===0x51&&l===3&&tempo==null)tempo=(d.getUint8(p.i)<<16)|(d.getUint8(p.i+1)<<8)|d.getUint8(p.i+2);
+        if(mt===0x58){num=d.getUint8(p.i);den=Math.pow(2,d.getUint8(p.i+1))}
+        if(mt===0x03){let s='';for(let k=0;k<l;k++)s+=String.fromCharCode(d.getUint8(p.i+k));tname=s}
+        p.i+=l}
+      else if(st===0xf0||st===0xf7){const l=readVar(d,p);p.i+=l}
+      else{const ty=st&0xf0,ch=st&15,a=d.getUint8(p.i++),b=(ty===0xc0||ty===0xd0)?0:d.getUint8(p.i++);
+        if(ch===9)continue;
+        const k=ch+':'+a;
+        if(ty===0x90&&b>0){(on[k]=on[k]||[]).push(tick)}
+        else if(ty===0x80||(ty===0x90&&b===0)){const s=on[k]&&on[k].shift();if(s!=null)notes.push({t:s/div,d:Math.max(.1,(tick-s)/div),m:a})}}
+    }
+    p.i=end;if(!title&&tname)title=tname;if(notes.length)tracks.push({name:tname,notes});
+  }
+  if(!tracks.length)throw new Error('Não encontrei notas neste MIDI.');
+  let R,Lh;
+  if(tracks.length>=2){R=tracks[0].notes;Lh=tracks[1].notes;if(/left|esq|bass|baixo/i.test(tracks[0].name)){[R,Lh]=[Lh,R]}
+    for(let k=2;k<tracks.length;k++)tracks[k].notes.forEach(n=>(n.m>=60?R:Lh).push(n))}
+  else{R=[];Lh=[];tracks[0].notes.forEach(n=>(n.m>=60?R:Lh).push(n))}
+  return{R,L:Lh,bpm:tempo?Math.round(60000000/tempo):90,bpb:num*4/den,title:''};
+}
+async function unzipMxl(buf){
+  const d=new DataView(buf);let e=-1;for(let i=buf.byteLength-22;i>=0;i--)if(d.getUint32(i,true)===0x06054b50){e=i;break}
+  if(e<0)throw new Error('Arquivo .mxl inválido.');
+  const n=d.getUint16(e+10,true);let p=d.getUint32(e+16,true);const files={};
+  for(let k=0;k<n;k++){const meth=d.getUint16(p+10,true),cs=d.getUint32(p+20,true),nl=d.getUint16(p+28,true),xl=d.getUint16(p+30,true),cl=d.getUint16(p+32,true),off=d.getUint32(p+42,true);
+    const name=new TextDecoder().decode(new Uint8Array(buf,p+46,nl));files[name]={meth,cs,off};p+=46+nl+xl+cl}
+  const read=async name=>{const f=files[name];const lnl=d.getUint16(f.off+26,true),lxl=d.getUint16(f.off+28,true);const data=new Uint8Array(buf,f.off+30+lnl+lxl,f.cs);
+    if(f.meth===0)return new TextDecoder().decode(data);
+    if(typeof DecompressionStream==='undefined')throw new Error('Este navegador não abre .mxl. Exporte como .musicxml.');
+    return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()};
+  let main=null;if(files['META-INF/container.xml']){const c=await read('META-INF/container.xml');const m=/full-path="([^"]+)"/.exec(c);if(m)main=m[1]}
+  if(!main||!files[main])main=Object.keys(files).find(k=>!k.startsWith('META-INF')&&/\.(xml|musicxml)$/i.test(k));
+  if(!main)throw new Error('Não achei a partitura dentro do .mxl.');
+  return await read(main);
+}
+function parseMusicXML(text){
+  const doc=new DOMParser().parseFromString(text,'application/xml');
+  if(doc.getElementsByTagName('parsererror').length)throw new Error('Não consegui ler este MusicXML.');
+  const STEP={C:0,D:2,E:4,F:5,G:7,A:9,B:11};const tx=(el,s)=>{const x=el.querySelector(s);return x?x.textContent.trim():null};
+  const title=tx(doc,'work-title')||tx(doc,'movement-title')||'';
+  let bpm=null,bpb=4;const out=[];const parts=[...doc.getElementsByTagName('part')];
+  parts.forEach((part,pi)=>{let t=0,last=0,divs=1;
+    [...part.getElementsByTagName('measure')].forEach(meas=>{const mStart=t;let mMax=t;
+      for(const el of meas.children){const tag=el.tagName;
+        if(tag==='attributes'){const dv=tx(el,'divisions');if(dv)divs=+dv;const b=tx(el,'time beats'),bt=tx(el,'time beat-type');if(b&&bt&&pi===0)bpb=(+b)*4/(+bt)}
+        else if(tag==='direction'||tag==='sound'){const s=tag==='sound'?el:el.querySelector('sound');if(s&&s.getAttribute('tempo')&&bpm==null)bpm=Math.round(+s.getAttribute('tempo'))}
+        else if(tag==='backup'){t-=(+tx(el,'duration')||0)/divs}
+        else if(tag==='forward'){t+=(+tx(el,'duration')||0)/divs}
+        else if(tag==='note'){if(el.querySelector('grace'))continue;
+          const chord=!!el.querySelector('chord'),dur=(+tx(el,'duration')||0)/divs,start=chord?last:t;
+          const pt=el.querySelector('pitch');
+          if(pt&&!el.querySelector('rest')){const al=tx(pt,'alter');const m=(+tx(pt,'octave')+1)*12+STEP[tx(pt,'step')]+(al?Math.round(+al):0);
+            const ties=[...el.querySelectorAll('tie')].map(x=>x.getAttribute('type'));const fg=tx(el,'technical fingering');
+            out.push({t:start,d:dur,m,part:pi,staff:+(tx(el,'staff')||1),f:fg&&/^[1-5]$/.test(fg)?+fg:null,sp:al&&+al<0?'b':'',tieStop:ties.includes('stop'),tieStart:ties.includes('start')})}
+          if(!chord){last=t;t+=dur}}
+        if(t>mMax)mMax=t}
+      t=Math.max(t,mMax)});
+  });
+  out.sort((a,b)=>a.t-b.t);const merged=[];const open={};
+  out.forEach(n=>{const k=n.part+'|'+n.staff+'|'+n.m;if(n.tieStop&&open[k]&&Math.abs(open[k].t+open[k].d-n.t)<.01){open[k].d+=n.d;if(!n.tieStart)delete open[k];return}
+    merged.push(n);if(n.tieStart)open[k]=n;else delete open[k]});
+  const hasStaff2=merged.some(n=>n.part===0&&n.staff===2);let R=[],Lh=[];
+  merged.forEach(n=>{let h;if(hasStaff2)h=n.part===0?(n.staff===2?'L':'R'):(n.m>=60?'R':'L');else if(parts.length>=2)h=n.part===0?'R':'L';else h=n.m>=60?'R':'L';(h==='R'?R:Lh).push(n)});
+  if(!R.length&&!Lh.length)throw new Error('Não encontrei notas nesta partitura.');
+  return{R,L:Lh,bpm:bpm||80,bpb,title};
+}
+function fingerHand(notes,hand){ // dedilhado automático; mantém o dedilhado da partitura quando existe
+  const q=x=>Math.round(x*4)/4;notes.forEach(n=>{n.t=q(n.t);n.d=Math.max(.25,q(n.d))});
+  notes.sort((a,b)=>a.t-b.t||a.m-b.m);const steps=[];notes.forEach(n=>{const s=steps[steps.length-1];if(s&&s.t===n.t)s.ns.push(n);else steps.push({t:n.t,ns:[n]})});
+  let p=null;
+  steps.forEach((s,k)=>{const ws=s.ns.map(n=>WIDX(n.m)),lo=Math.min(...ws),hi=Math.max(...ws);
+    if(p==null||lo<p||hi>p+4){if(hi-lo>4)p=lo;else{let best=lo,bs=-1;for(let c=hi-4;c<=lo;c++){let sc=0;for(let j=k;j<Math.min(steps.length,k+8);j++){const w2=steps[j].ns.map(n=>WIDX(n.m));if(Math.min(...w2)>=c&&Math.max(...w2)<=c+4)sc++;else break}
+        const v=sc*10-(p==null?0:Math.abs(c-p));if(v>bs){bs=v;best=c}}p=best}}
+    s.ns.forEach((n,i)=>{if(n.f)return;let off=WIDX(n.m)-p;if(off>4)off=4;if(off<0)off=0;n.f=hand==='R'?off+1:5-off});
+    if(s.ns.length>1){const used=new Set();s.ns.forEach(n=>{while(used.has(n.f)&&n.f<5)n.f++;used.add(n.f)})}});
+  return notes.map(n=>({t:n.t,d:n.d,m:n.m,f:n.f,h:hand,sp:n.sp||undefined}));
+}
+function buildImported(o,name){
+  const R=fingerHand(o.R,'R'),Lt=fingerHand(o.L,'L');const Ls=[];
+  const by={};Lt.forEach(n=>{if(!by[n.t]||n.m<by[n.t].m)by[n.t]=n});Object.values(by).forEach(n=>Ls.push(Object.assign({},n,{f:5})));
+  const bpb=o.bpb||4;
+  return{id:'imp'+Date.now(),title:(o.title||name.replace(/\.[^.]+$/,'')).slice(0,60),bpm:Math.min(200,Math.max(30,o.bpm||80)),bpb,tracks:{R,L:Lt,Ls}};
+}
+function loadImported(){const list=ST.get('imp',[]);list.forEach(o=>{if(SONGS.find(s=>s.id===o.id))return;
+  const ms=Object.values(o.tracks).flat().map(n=>n.m);if(!ms.length)return;
+  SONGS.push(mkPiece({id:o.id,title:o.title,sub:'Importada por você · uso pessoal',imported:true,bpm:o.bpm,bpb:o.bpb,range:autoRange(ms),tracks:o.tracks,
+    info:'Música importada de um arquivo. O dedilhado foi sugerido automaticamente (ou veio da própria partitura). Se algum dedo parecer estranho, use o que for mais confortável para você.'}))})}
+async function importFile(file){
+  const buf=await file.arrayBuffer();const nm=file.name.toLowerCase();let o;
+  if(/\.(mid|midi)$/.test(nm))o=parseMidi(buf);
+  else if(nm.endsWith('.mxl'))o=parseMusicXML(await unzipMxl(buf));
+  else if(/\.(xml|musicxml)$/.test(nm))o=parseMusicXML(new TextDecoder().decode(buf));
+  else throw new Error('Formato não reconhecido. Use .mid, .midi, .musicxml, .xml ou .mxl.');
+  const s=buildImported(o,file.name);const n=s.tracks.R.length+s.tracks.L.length;if(n>6000)throw new Error('Partitura muito longa (mais de 6.000 notas).');
+  const list=ST.get('imp',[]);list.push(s);ST.set('imp',list);
+  if(!ST.get('imp',[]).find(x=>x.id===s.id))throw new Error('Não há espaço para salvar esta música neste celular.');
+  loadImported();return s;
+}
+function deleteImported(id){ST.set('imp',ST.get('imp',[]).filter(o=>o.id!==id));const i=SONGS.findIndex(s=>s.id===id);if(i>=0)SONGS.splice(i,1)}
+
+loadImported();
+/* =========================================================
+   MÓDULO 10 · EXPRESSÃO (dinâmica e pedal)
+   ========================================================= */
+EX.dyn=(box)=>{
+  const canMeasure=S.input==='mic'||S.input==='midi';
+  const NOTES=[60,62,64,65,67];
+  let phase='calib',calib=[],base=null,targets=[],i=0,ok=0,cres=[],err=0;
+  const head=canMeasure?'':`<div class="note">Para medir a força do toque, use o <b>microfone</b> (pelo link) ou o <b>cabo USB</b>. No teclado da tela não dá para medir: o exercício só confere as notas.</div>`;
+  box.innerHTML=head+`<div class="prompt" id="dp"></div><div class="stats" style="margin-top:10px"><div class="stat"><b id="dlast">–</b><span>força do último toque</span></div><div class="stat"><b id="dok">0</b><span>acertos</span></div><div class="stat"><b id="dstep">–</b><span>etapa</span></div></div>
+    <div style="height:14px;background:var(--card2);border-radius:9px;overflow:hidden;margin-top:10px;position:relative"><i id="dbar" style="display:block;height:100%;width:0;background:var(--blue)"></i></div><div class="fb" id="dfb"></div>`;
+  const rel=v=>base?v/base:1;
+  const lvl=v=>{if(!canMeasure)return null;const r=rel(v);return r>=1.3?'f':r<=.78?'p':'m'};
+  const show=()=>{const dp=$('#dp');
+    if(phase==='calib'){$('#dstep').textContent='1 de 3';dp.innerHTML=`Toque o <b>Dó central</b> 3 vezes com força <b>normal</b><span class="big">${calib.length}/3</span>`;setTargets([{m:60,f:1}])}
+    else if(phase==='alt'){$('#dstep').textContent='2 de 3';const t=targets[i];dp.innerHTML=`Toque <b>${nn(t.m)}</b><span class="big" style="font-family:serif;font-style:italic">${t.d}</span>${t.d==='f'?'<b>forte</b> (mais força, use o peso do braço)':'<b>piano</b> (bem suave)'} · ${i+1} de ${targets.length}`;setTargets([{m:t.m,f:{60:1,62:2,64:3,65:4,67:5}[t.m]}])}
+    else if(phase==='cres'){$('#dstep').textContent='3 de 3';dp.innerHTML=`<b>Crescendo:</b> toque Dó, Ré, Mi, Fá, Sol, cada nota <b>mais forte</b> que a anterior<span class="big">${'&lt;'.repeat(Math.max(1,cres.length))}</span>${cres.length} de 5`;setTargets([{m:NOTES[cres.length],f:cres.length+1}])}};
+  const finish=()=>{HANDLER=null;setTargets([]);const tot=targets.length+1;const score=Math.round((ok)/(tot)*100);
+    resultBox(box,canMeasure?score:100,canMeasure?`${ok} de ${tot} acertos de dinâmica (forte/piano e crescendo)`:'Notas conferidas. Para medir a força, refaça com o microfone ou o cabo USB.',()=>EX.dyn(box))};
+  HANDLER=(m,src,vel)=>{
+    const v=vel!=null?vel:null;if(v!=null&&canMeasure){$('#dlast').textContent=base?Math.round(rel(v)*100)+'%':'—';$('#dbar').style.width=Math.min(100,(base?rel(v)/2:0.5)*100)+'%'}
+    if(phase==='calib'){if(m%12!==0){flashKey(m,'bad');return}flashKey(m,'ok');if(v!=null)calib.push(v);
+      if(!canMeasure||calib.length>=3){base=calib.length?calib.slice().sort((a,b)=>a-b)[Math.floor(calib.length/2)]:1;
+        targets=Array.from({length:8},(_,k)=>({m:rnd(NOTES),d:k%2===0?(Math.random()<.5?'p':'f'):null}));targets.forEach((t,k)=>{if(!t.d)t.d=targets[k-1].d==='p'?'f':'p'});
+        phase='alt';i=0}
+      show();return}
+    if(phase==='alt'){const t=targets[i];if(mod(m,12)!==mod(t.m,12)){flashKey(m,'bad');$('#dfb').className='fb bad';$('#dfb').textContent='Nota errada: era '+nn(t.m);return}
+      const L=lvl(v);if(!canMeasure||L===t.d){ok++;flashKey(m,'ok');$('#dfb').className='fb ok';$('#dfb').textContent=t.d==='f'?'Forte! ✓':'Suave! ✓'}
+      else{err++;flashKey(m,'bad');$('#dfb').className='fb bad';$('#dfb').textContent=t.d==='f'?'Faltou força: use o peso do braço.':'Forte demais: encoste a tecla com leveza.'}
+      $('#dok').textContent=ok;i++;if(i>=targets.length){phase='cres';cres=[]}show();return}
+    if(phase==='cres'){const want=NOTES[cres.length];if(m!==want&&mod(m,12)!==mod(want,12)){flashKey(m,'bad');return}
+      flashKey(m,'ok');cres.push(v==null?cres.length:v);
+      if(cres.length>=5){let inc=canMeasure?cres.every((x,k)=>k===0||x>cres[k-1]*1.03):true;if(inc){ok++;$('#dfb').className='fb ok';$('#dfb').textContent='Crescendo perfeito!'}else{$('#dfb').className='fb bad';$('#dfb').textContent='O crescendo não subiu em todas as notas. Tente de novo começando bem suave.'}
+        $('#dok').textContent=ok;setTimeout(finish,900);return}
+      show()}};
+  if(!canMeasure){base=1}
+  show();
+};
+EX.pedal=(box)=>{
+  const prog=['C','F','G','C'];const midi=S.input==='midi'&&midiAcc&&midiCount>0;
+  box.innerHTML=`<div class="row"><button class="btn" id="psem">▶ Ouvir sem pedal</button><button class="btn" id="pcom">▶ Ouvir com pedal</button></div>
+    <h3 style="margin-top:14px">Prática: troca de pedal</h3>
+    <p class="muted small">Para cada acorde: <b>1)</b> toque o acorde; <b>2)</b> logo depois, <b>solte e pise de novo</b> o pedal, mantendo o acorde soando. ${midi?'O app está ouvindo o seu pedal pelo cabo USB.':'O app só consegue perceber o pedal pelo <b>cabo USB</b>. Sem ele, faça a sequência e marque como feito.'}</p>
+    <div class="chart" id="pch">${prog.map((c,i)=>`<span data-i="${i}">${c}</span>`).join('')}</div>
+    <div class="prompt" id="ppr"></div><div class="fb" id="pfb"></div>
+    ${midi?'':'<button class="btn primary" id="pdone">✓ Fiz a sequência com o pedal</button>'}`;
+  const play=(ped)=>{newSession();const c=ac();let t=c.currentTime+.1;prog.forEach(s=>{const ci=chordInfo(s),bar=1.2;
+      ci.v.forEach(m=>tone(m,t,ped?bar:.35,{vel:.18}));tone(ci.bass,t,ped?bar:.35,{vel:.25});
+      [0,2,1,2].forEach((k,j)=>{const st=t+.3+j*.22;tone(ci.v[k]+12,st,ped?(t+bar-st):.18,{vel:.11})});t+=bar})};
+  $('#psem').onclick=()=>play(false);$('#pcom').onclick=()=>play(true);
+  let i=0,stage='chord',got=new Map(),ok=0,lastChordT=0;
+  const show=()=>{box.querySelectorAll('#pch span').forEach(s=>s.classList.toggle('cur',+s.dataset.i===i));if(i>=prog.length)return;const ci=chordInfo(prog[i]);
+    $('#ppr').innerHTML=stage==='chord'?`Toque o acorde<span class="big">${prog[i]}</span>`:`Agora: <b>solte e pise</b> o pedal<span class="big">🦶</span>`;setTargets(stage==='chord'?ci.v.map((m,k)=>({m,f:ci.f[k]})):[])};
+  const next=()=>{i++;stage='chord';got=new Map();if(i>=prog.length){HANDLER=null;PEDALCB=null;setTargets([]);resultBox(box,Math.round(ok/prog.length*100),`${ok} de ${prog.length} trocas de pedal no momento certo`,()=>EX.pedal(box));return}show()};
+  HANDLER=m=>{if(i>=prog.length||stage!=='chord')return;const ci=chordInfo(prog[i]),pc=mod(m,12);if(!ci.pcs.includes(pc)){flashKey(m,'bad');return}
+    got.set(pc,1);flashKey(m,'ok');if(ci.pcs.every(p=>got.has(p))){lastChordT=performance.now();if(midi){stage='pedal';PST.up=false;show()}else{next()}}};
+  const PST={up:false};
+  if(midi){PEDALCB=down=>{if(stage!=='pedal')return;if(!down){PST.up=true;return}
+    if(PST.up){const dt=performance.now()-lastChordT;if(dt<2500){ok++;$('#pfb').className='fb ok';$('#pfb').textContent='Troca de pedal certa ✓'}else{$('#pfb').className='fb bad';$('#pfb').textContent='Demorou para trocar o pedal: troque logo depois do acorde.'}next()}};addClean(()=>{PEDALCB=null})}
+  else{$('#pdone').onclick=()=>{HANDLER=null;setTargets([]);resultBox(box,100,'Sequência feita (o pedal só é conferido pelo cabo USB).',()=>EX.pedal(box))}}
+  show();
+};
+MODULES.push({n:'Módulo 10 · Expressão',d:'Tocar forte e piano, crescendo e o uso do pedal',ls:[
+  {t:'Dinâmica: forte e piano',obj:'Controlar a força do toque: tocar forte, piano (suave) e fazer crescendo.',
+   exp:['<b>Dinâmica</b> é o volume com que se toca. Ela dá vida à música: a mesma melodia soa muito diferente forte ou suave.',
+        'Na partitura: <b><i>p</i></b> = piano (suave), <b><i>mp</i></b> = meio piano, <b><i>mf</i></b> = meio forte, <b><i>f</i></b> = forte. O sinal <b>&lt;</b> é crescendo (ir aumentando) e <b>&gt;</b> é diminuendo.',
+        'A força vem do <b>peso do braço</b>, não de bater o dedo. Para o piano, encoste a tecla com leveza; para o forte, deixe o braço "cair" relaxado sobre o dedo.',
+        'Seu teclado precisa ter <b>sensibilidade ao toque</b> (<i>Touch Response</i> ou <i>Velocity</i>) ligada. Com o microfone, deixe o celular parado no mesmo lugar durante o exercício.'],
+   exd:'Calibração com 3 toques normais, 8 notas alternando forte e piano e um crescendo de 5 notas.',ex:{type:'dyn'}},
+  {t:'Pedal de sustentação',obj:'Usar o pedal para ligar os acordes sem embolar o som.',
+   exp:['O <b>pedal de sustentação</b> (sustain) faz as notas continuarem soando depois que você solta as teclas. Ele fica no chão e se liga na entrada <i>Sustain</i> do teclado.',
+        'O erro mais comum é segurar o pedal o tempo todo: os acordes se misturam e o som fica "sujo".',
+        'A técnica correta é a <b>troca de pedal</b>: toque o novo acorde e, <b>logo depois</b>, solte e pise de novo o pedal. Assim o acorde novo fica sustentado e o anterior se apaga.',
+        'Ouça a diferença nos botões abaixo. Com o cabo USB, o app percebe o seu pedal e confere se a troca foi na hora certa.'],
+   exd:'Ouça com e sem pedal e pratique a troca de pedal em Dó – Fá – Sol – Dó.',ex:{type:'pedal'}}
+]});
+MODULES[MODULES.length-1].ls.forEach(l=>{l.mod=MODULES.length-1;l.n=LESSONS.length+1;LESSONS.push(l)});
+
+/* =========================================================
+   CONQUISTAS
+   ========================================================= */
+function bestStreak(){const ds=[...new Set(DAYS)].sort();let best=0,cur=0,prev=null;ds.forEach(k=>{const d=new Date(k+'T12:00:00');if(prev&&(d-prev)/864e5<1.5)cur++;else cur=1;if(cur>best)best=cur;prev=d});return best}
+function achStats(){const ks=Object.keys(PROG);const st=ks.reduce((a,k)=>a+(PROG[k].stars||0),0);
+  return{lessons:lessonsDone(),ex:ks.filter(k=>/^x[rlb]\d/.test(k)).length,songAny:ks.some(k=>k.startsWith('s:')),
+    twoHands:ks.some(k=>/^s:.*:(2|3)$/.test(k)),stage:ks.some(k=>/^s:.*:4$/.test(k)&&PROG[k].stars>=2),
+    rep:new Set(ks.filter(k=>/^s:.*:3$/.test(k)).map(k=>k.split(':')[1])).size,three:ks.filter(k=>PROG[k].stars===3).length,stars:st,
+    streak:Math.max(bestStreak(),streak()),rt:ST.get('rtbest',0),treino:ST.get('treinoOk',0),mod:MODULES.some(M=>M.ls.every(l=>PROG['l'+l.n])),imp:ST.get('imp',[]).length}}
+const ACHS=[
+  {ic:'🌱',t:'Primeiro passo',d:'Concluir a primeira lição',ok:s=>s.lessons>=1},
+  {ic:'📘',t:'Estudante',d:'Concluir 10 lições',ok:s=>s.lessons>=10},
+  {ic:'🎓',t:'Módulo completo',d:'Concluir todas as lições de um módulo',ok:s=>s.mod},
+  {ic:'🏆',t:'Curso completo',d:'Concluir todas as lições',ok:s=>s.lessons>=LESSONS.length},
+  {ic:'💪',t:'Aquecido',d:'Concluir 10 exercícios progressivos',ok:s=>s.ex>=10},
+  {ic:'🦾',t:'Mãos fortes',d:'Concluir 45 exercícios',ok:s=>s.ex>=45},
+  {ic:'🥇',t:'Todos os exercícios',d:'Concluir os 90 exercícios',ok:s=>s.ex>=90},
+  {ic:'🎵',t:'Primeira música',d:'Concluir qualquer nível de uma música',ok:s=>s.songAny},
+  {ic:'🙌',t:'Duas mãos',d:'Concluir o nível 3 ou 4 de uma música',ok:s=>s.twoHands},
+  {ic:'🎤',t:'No palco',d:'Nível 5 (execução) com 2 estrelas ou mais',ok:s=>s.stage},
+  {ic:'🎼',t:'Repertório',d:'5 músicas no nível 4',ok:s=>s.rep>=5},
+  {ic:'⏱️',t:'No tempo',d:'90% de ritmo numa música no modo espera',ok:s=>s.rt>=90},
+  {ic:'🔥',t:'Constância',d:'3 dias seguidos de prática',ok:s=>s.streak>=3},
+  {ic:'📅',t:'Uma semana',d:'7 dias seguidos',ok:s=>s.streak>=7},
+  {ic:'🗓️',t:'Um mês',d:'30 dias seguidos',ok:s=>s.streak>=30},
+  {ic:'✅',t:'Treino cumprido',d:'Concluir um Treino do dia completo',ok:s=>s.treino>=1},
+  {ic:'⭐',t:'Perfeccionista',d:'10 itens com 3 estrelas',ok:s=>s.three>=10},
+  {ic:'🌟',t:'Cem estrelas',d:'Juntar 100 estrelas',ok:s=>s.stars>=100},
+  {ic:'📥',t:'Meu repertório',d:'Importar uma partitura',ok:s=>s.imp>=1}
+];
+function toast(html){const t=document.createElement('div');t.innerHTML=html;t.style.cssText='position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--card);color:var(--text);border:2px solid var(--accent);border-radius:14px;padding:10px 16px;z-index:80;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw;text-align:center';document.body.appendChild(t);setTimeout(()=>t.remove(),3500)}
+function checkAch(){const s=achStats(),got=new Set(ST.get('ach',[]));const fresh=ACHS.filter(a=>a.ok(s)&&!got.has(a.t));
+  fresh.forEach(a=>got.add(a.t));if(fresh.length){ST.set('ach',[...got]);toast(`🏅 Nova conquista: ${fresh[0].ic} ${fresh[0].t}${fresh.length>1?` (+${fresh.length-1})`:''}`)}}
+function viewAch(){title('Conquistas');showKB(false);checkAch();const s=achStats(),n=ACHS.filter(a=>a.ok(s)).length;
+  V().innerHTML=`<p class="muted">${n} de ${ACHS.length} conquistas · melhor sequência: ${s.streak} dia(s) · ${s.stars} estrelas</p>
+   <div class="grid2">${ACHS.map(a=>{const ok=a.ok(s);return `<div class="tile" style="min-height:0;${ok?'border:2px solid var(--accent)':'opacity:.5;filter:grayscale(1)'}"><span class="ic">${a.ic}</span><b>${a.t}</b><span>${a.d}</span>${ok?'<span style="color:var(--ok);font-weight:800">✓ conquistada</span>':''}</div>`}).join('')}</div>`}
+
+/* =========================================================
    PLANO DE ESTUDO, TREINO DO DIA, TESTE DO TECLADO E ANOTAÇÕES
    ========================================================= */
 const today=()=>dayKey(new Date());
 const NIVEIS=[
   {n:'Nunca toquei',d:'Começar do zero: postura, notas, ritmo e as primeiras melodias.',mods:[0],ex:{r:[1,10],l:[1,10]},songs:['sino','parab'],maxLv:1},
   {n:'Acho as notas e toco com uma mão',d:'Leitura de partitura, primeiras músicas com as duas mãos.',mods:[1,2],ex:{r:[11,20],l:[11,20],b:[1,10]},songs:['ode','noite','marcha','green'],maxLv:2},
-  {n:'Toco devagar com as duas mãos',d:'Escalas, acordes, cifras e independência entre as mãos.',mods:[3,4],ex:{r:[21,30],l:[21,30],b:[11,20]},songs:['minu','canon','lib','prel'],maxLv:3},
+  {n:'Toco devagar com as duas mãos',d:'Escalas, acordes, cifras e independência entre as mãos.',mods:[3,4,9],ex:{r:[21,30],l:[21,30],b:[11,20]},songs:['minu','canon','lib','prel'],maxLv:3},
   {n:'Já toco algumas músicas',d:'Teclado arranjador, estilos brasileiros, ouvido e introduções.',mods:[5,6,7,8],ex:{b:[21,30]},songs:['fe','gym','lib','canon'],maxLv:4}
 ];
 const OBJ={musicas:'Tocar músicas',acordes:'Acompanhar com acordes',partitura:'Ler partitura'};
@@ -1767,7 +2022,7 @@ function viewToday(){
   title('Treino do dia');showKB(false);const plan=ST.get('plan');
   const done=s.items.filter(it=>doneToday(itemKey(it))).length,all=s.items.length,tot=s.items.reduce((a,i)=>a+i.min,0);
   const nxt=s.items.find(it=>!doneToday(itemKey(it)));
-  if(done===all)markDay();
+  if(done===all){markDay();if(ST.get('treinoDay','')!==today()){ST.set('treinoDay',today());ST.set('treinoOk',ST.get('treinoOk',0)+1);setTimeout(checkAch,60)}}
   V().innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><div><b>Nível ${plan.level+1} · ${NIVEIS[plan.level].n}</b><div class="muted small">${tot} minutos · objetivo: ${OBJ[plan.goal]}</div></div><button class="btn sm" id="tplan">Mudar plano</button></div>
      <div style="height:10px;background:var(--card2);border-radius:9px;overflow:hidden;margin-top:12px"><i style="display:block;height:100%;width:${done/all*100}%;background:var(--ok)"></i></div><div class="muted small" style="margin-top:4px">${done} de ${all} concluídos hoje</div></div>
    ${done===all?`<div class="note" style="background:rgba(62,207,142,.12);border-color:var(--ok);color:inherit">🎉 <b>Treino de hoje concluído!</b> Volte amanhã para manter a sequência de dias. Se quiser, repita a música para ganhar mais estrelas.</div>`:''}
@@ -1859,23 +2114,25 @@ function viewHome(){
     <button class="tile" id="hK"><span class="ic">🎤</span><b>Teste seu teclado</b><span>Confira se o microfone ou o cabo USB reconhecem as notas</span></button>
     <button class="tile" id="hF"><span class="ic">🎹</span><b>Modo livre</b><span>Toque e veja o nome e a nota na pauta</span></button>
     <button class="tile" id="hN"><span class="ic">📝</span><b>Anotações do teste</b><span>${ST.get('notes',[]).length} anotação(ões) · copiar e enviar</span></button>
-    <button class="tile" id="hA"><span class="ic">ℹ️</span><b>Sobre</b><span>Como usar, versão e o que ainda falta</span></button>
+    <button class="tile" id="hC"><span class="ic">🏅</span><b>Conquistas</b><span>${ACHS.filter(a=>a.ok(achStats())).length} de ${ACHS.length} conquistadas</span></button>
+    <button class="tile" id="hA"><span class="ic">ℹ️</span><b>Sobre</b><span>Como usar, versão e novidades</span></button>
+    ${VIA_LINK&&!IS_APP?`<button class="tile instOnly" id="hI" style="${INSTALL_EVT?'':'display:none'}"><span class="ic">📲</span><b>Instalar o app</b><span>Ícone na tela e uso sem internet</span></button>`:''}
    </div>
    <div class="note" style="margin-top:12px">Dica: use o celular <b>deitado</b>. O teclado da tela fica maior e mais fácil de tocar.</div>`;
   if(plan)$('#hT').onclick=()=>go(viewToday);else $('#hP').onclick=()=>go(viewPlan);
   $('#hL').onclick=()=>go(viewLessons);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);
-  $('#hK').onclick=()=>go(viewTest);$('#hA').onclick=()=>go(viewAbout);$('#hF').onclick=()=>go(viewFree);$('#hN').onclick=()=>go(viewNotes);
+  $('#hK').onclick=()=>go(viewTest);$('#hA').onclick=()=>go(viewAbout);$('#hC').onclick=()=>go(viewAch);if($('#hI'))$('#hI').onclick=installApp;$('#hF').onclick=()=>go(viewFree);$('#hN').onclick=()=>go(viewNotes);
 }
 
 
 /* ---------- Sobre ---------- */
 const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
-const FEITAS=['56 lições em 9 módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro'];
-const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Avaliação do ritmo no modo espera','Importar partitura (MIDI ou MusicXML)','Tocar com a cifra','Funcionar sem internet, instalado como app','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
+const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML)','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas'];
+const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Tocar com a cifra','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
 function viewAbout(){
   title('Sobre');showKB(false);
-  const f=FEITAS.length,t=f+FALTAM.length,pct=Math.round(f/t*100);
-  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 0.9 (em teste)</p>
+  const f=FEITAS.length;
+  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 1.0 (em teste)</p>
    <div class="card"><h3>O que é</h3><p>Um curso de teclado para iniciantes, com lições, exercícios e músicas. O app confere o que você toca, indica o dedo de cada nota e monta um treino diário de acordo com o seu nível.</p></div>
    <div class="card exp"><h3>Duas formas de abrir o app</h3>
      ${location.protocol==='https:'?'<p style="color:var(--ok);font-weight:800">✓ Você abriu pelo link: tudo funciona, inclusive microfone e cabo USB.</p>':'<p style="color:var(--bad);font-weight:800">Você abriu pelo arquivo: microfone e cabo USB provavelmente não vão funcionar. Use o link abaixo para isso.</p>'}
@@ -1883,6 +2140,7 @@ function viewAbout(){
      <li><b>Pelo link (recomendado):</b> <a href="${LINK_APP}" style="color:var(--accent);font-weight:800;word-break:break-all">${LINK_APP}</a><br>Funciona tudo, inclusive <b>microfone</b> e <b>cabo USB</b>, e você sempre recebe a versão mais nova. O <b>microfone liga sozinho</b> ao abrir (na primeira vez o Chrome pede permissão; depois, basta tocar uma vez na tela).</li>
      <li><b>Pelo arquivo</b> (aprenda-teclado.html, aberto no celular com o Chrome): funcionam as lições, os exercícios, as músicas e o teclado da tela. Microfone e cabo USB <b>não</b> funcionam, porque o navegador só libera esses recursos em endereços https.</li>
      <li>O progresso (estrelas, plano e anotações) fica salvo <b>separado</b> em cada forma de abrir. Para não perder nada, escolha uma e use sempre ela.</li></ul></div>
+   ${installCard()}
    <div class="card exp"><h3>Como usar</h3><ul>
      <li>Abra no <b>Chrome do Android</b>. No iPhone o app funciona, mas o cabo USB (MIDI) não.</li>
      <li>Comece por <b>🎤 Teste seu teclado</b> para ver se o microfone ou o cabo reconhecem as notas.</li>
@@ -1892,10 +2150,9 @@ function viewAbout(){
    <div class="card exp"><h3>Como enviar sua opinião</h3><ul>
      <li>Durante o uso, toque no <b>📝</b> no topo da tela para anotar qualquer problema ou sugestão.</li>
      <li>No fim, abra <b>Anotações do teste → Copiar tudo</b> e mande para quem te enviou o link.</li></ul></div>
-   <div class="card"><h3>Em desenvolvimento</h3><p><b>${f} de ${t} funções prontas (${pct}%)</b></p>
-     <div style="height:12px;background:var(--card2);border-radius:9px;overflow:hidden;margin:6px 0 12px"><i style="display:block;height:100%;width:${pct}%;background:var(--ok)"></i></div>
+   <div class="card"><h3>Situação do app</h3><p><b>${f} funções prontas.</b> O app está completo para estudar; a versão ainda está em teste com os primeiros usuários.</p>
      <p style="margin-bottom:4px"><b>✅ Prontas (${f})</b></p><ul style="margin:0 0 10px;padding-left:18px;line-height:1.5">${FEITAS.map(x=>`<li>${x}</li>`).join('')}</ul>
-     <p style="margin-bottom:4px"><b>🔜 Faltam (${FALTAM.length})</b></p><ul style="margin:0;padding-left:18px;line-height:1.5">${FALTAM.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+     <p style="margin-bottom:4px"><b>💡 Possíveis melhorias futuras (${FALTAM.length})</b></p><ul style="margin:0;padding-left:18px;line-height:1.5">${FALTAM.map(x=>`<li>${x}</li>`).join('')}</ul></div>
    <div class="card"><h3>Músicas e direitos autorais</h3><p>O app não reproduz a melodia nem a letra de músicas protegidas por direitos autorais. Nesses casos, inclui apenas um arranjo próprio de acompanhamento (acordes e baixo). Na versão atual, isso vale para <b>Let It Be</b> (The Beatles). As outras ${SONGS.length-1} músicas estão em domínio público.</p></div>
    <div class="card" style="text-align:center"><p style="margin:0">Desenvolvido por <b>Guido Roberto do Rêgo Cavalcanti Júnior</b><br>usando o Claude (IA da Anthropic)</p></div>`;
 }
@@ -1908,6 +2165,18 @@ if(!VIA_LINK){if(S.input!=='touch'){S.input='touch';saveSettings()}}
 else if(S.input==='midi'){startMidi()}
 else if(!S.userTouch){ac();startMic().then(()=>{updChip();if(AC)AC.onstatechange=updChip})}
 function applyTheme(){document.body.classList.toggle('dark',S.theme==='dark');const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=S.theme==='dark'?'#14161c':'#f6f3ee'}
+/* app instalável e sem internet (só pelo link https) */
+let INSTALL_EVT=null;const IS_APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALL_EVT=e;document.querySelectorAll('.instOnly').forEach(x=>x.style.display='')});
+if(VIA_LINK&&'serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+function installApp(){if(INSTALL_EVT){INSTALL_EVT.prompt();INSTALL_EVT.userChoice.finally(()=>{INSTALL_EVT=null;document.querySelectorAll('.instOnly').forEach(x=>x.style.display='none')})}}
+function installCard(){
+  if(!VIA_LINK)return `<div class="card"><h3>📲 Instalar como app e usar sem internet</h3><p class="muted small">Disponível só abrindo pelo link. Pelo arquivo, o app não pode ser instalado.</p></div>`;
+  if(IS_APP)return `<div class="card"><h3>📲 App instalado</h3><p class="muted small">✓ Você está usando o app instalado. Ele funciona mesmo sem internet (o microfone continua funcionando; as atualizações chegam quando houver conexão).</p></div>`;
+  return `<div class="card"><h3>📲 Instalar como app e usar sem internet</h3><p class="muted small">Depois de aberto uma vez pelo link, o app funciona mesmo sem internet. Instalado, ele ganha ícone próprio e abre em tela cheia.</p>
+    <button class="btn primary instOnly" style="${INSTALL_EVT?'':'display:none'}" onclick="installApp()">📲 Instalar o app</button>
+    <p class="muted small" style="margin-top:8px">Se o botão não aparecer: no Chrome, menu ⋮ → <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>). No iPhone, Safari → Compartilhar → <b>Adicionar à Tela de Início</b>.</p></div>`;
+}
 applyTheme();updChip();go(viewHome);
 
 </script>
