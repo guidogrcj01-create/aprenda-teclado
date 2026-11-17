@@ -2291,7 +2291,7 @@ const T_AV=[
   exp:['Harmonizar é escolher acordes para uma melodia. Regra prática: em cada compasso, use o acorde que <b>contém as notas mais importantes</b> (as que caem no tempo forte ou duram mais).','Em Dó maior, comece testando só três acordes: <b>C</b> (Dó-Mi-Sol), <b>F</b> (Fá-Lá-Dó) e <b>G</b> (Sol-Si-Ré). Eles cobrem todas as notas da escala.','Termine as frases com G → C (cadência perfeita) para soar concluído.'],
   actd:'Escolha os acordes para 8 compassos de melodias conhecidas e confira.',act:{type:'harmz'},
   qs:[{q:'Para harmonizar um compasso, escolha o acorde que…',o:['Contém as notas principais','Tem o nome mais bonito','É sempre Dó'],a:0}]},
- {t:'Música e matemática',obj:'Ver a matemática por trás da afinação, das tonalidades e do timbre.',
+ {t:'Matemática da música: a parte técnica',obj:'Aprofundar a matemática da introdução: afinação, tonalidades e timbre.',
   exp:['<b>Temperamento igual</b>: o teclado divide a oitava (o dobro da frequência) em 12 passos iguais. Cada passo multiplica a frequência por ≈1,0595.',{s:'<b>Raiz 12ª de 2</b> é o número que, multiplicado por ele mesmo 12 vezes, dá 2. Por isso 12 passos completam exatamente uma oitava.'},
        '<b>Coma pitagórica</b>: 12 quintas "puras" (3:2) deveriam dar 7 oitavas, mas passam um pouco (cerca de 1,4%). O teclado reparte esse erro igualmente entre todas as quintas: cada uma fica 0,1% menor que a pura, quase imperceptível.',
        '<b>Módulo 12</b>: depois de 12 semitons, a nota se repete.',{s:'É a conta do relógio: 10 horas + 5 horas = 3 horas (e não 15). Na música, Si + 1 semitom = Dó. Transpor é somar; o ciclo das quintas é somar 7 repetidas vezes.'},
@@ -2300,7 +2300,7 @@ const T_AV=[
   actd:'Ouça a quinta pura e a temperada, gire o relógio das quintas, monte seu próprio timbre e veja o espectro ao vivo.',act:{type:'math'},
   qs:[{q:'Cada semitom multiplica a frequência por aproximadamente…',o:['1,06','1,5','2'],a:0},{q:'Por que o ciclo das quintas passa pelas 12 notas?',o:['Porque 7 e 12 não têm divisor comum','Porque o piano tem 88 teclas','Por acaso'],a:0},{q:'A FFT é usada para…',o:['Mostrar as frequências de um som','Afinar a voz','Medir o tempo'],a:0}]}
 ];
-const THEORY=[{k:'intro',n:'Introdução: a física da música',ic:'🔬',d:'Opcional · o porquê dos sons, em linguagem simples',ls:T_INTRO},
+const THEORY=[{k:'intro',n:'Introdução: física e matemática da música',ic:'🔬',d:'Opcional · por que a música funciona: o som (física) e os números que o descrevem (matemática), em linguagem simples',ls:T_INTRO},
   {k:'bas',n:'Teoria básica',ic:'🟢',d:'Os conceitos essenciais',ls:T_BAS},{k:'int',n:'Teoria intermediária',ic:'🟡',d:'Escalas, intervalos, acordes e armadura',ls:T_INT},{k:'av',n:'Teoria avançada',ic:'🔴',d:'Harmonia, cadências, transposição e matemática',ls:T_AV}];
 const TLESS=[];THEORY.forEach((G,gi)=>G.ls.forEach((l,i)=>{l.g=gi;l.i=i;l.id=G.k+(i+1);TLESS.push(l)}));
 const tDone=l=>!!PROG['th'+l.id];
@@ -2529,7 +2529,7 @@ function viewHome(){
 
 /* ---------- Sobre ---------- */
 const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
-const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML)','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
+const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML)','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física e matemática da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
 const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Tocar com a cifra','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
 function viewAbout(){
   title('Sobre');showKB(false);
