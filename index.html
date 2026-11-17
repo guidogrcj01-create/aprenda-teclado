@@ -65,6 +65,7 @@ p{line-height:1.5;margin:0 0 8px}
 .li .st{margin-left:auto;color:var(--accent);flex:none;letter-spacing:1px}
 .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--card2);color:var(--muted);margin-right:4px}
 .obj{border-left:4px solid var(--accent)}
+.simple{background:var(--notebg);border:1px solid var(--notebd);border-radius:10px;padding:9px 11px;margin:8px 0;font-size:13.5px;line-height:1.5}
 .exp p{color:var(--exptext)}
 .exp ul{margin:0 0 6px;padding-left:18px;line-height:1.5;color:var(--exptext)}
 .fb{min-height:22px;text-align:center;font-weight:700;margin-top:8px}
@@ -1094,7 +1095,7 @@ EX.quiz=(box,cfg)=>{
   const Q=QUIZ[cfg.set];let i=0,ok=0,err=0,tried=false;
   const show=()=>{if(i>=Q.length)return resultBox(box,Math.round(ok/Q.length*100),`${ok} de ${Q.length} certas na primeira tentativa`,()=>EX.quiz(box,cfg));
     const qq=Q[i];tried=false;box.innerHTML=`<div class="exhead"><b>${qq.q}</b><span class="cnt">${i+1} de ${Q.length}</span></div>${qq.play?'<div class="row" style="justify-content:center;margin:8px 0"><button class="btn" id="qp">▶ Ouvir</button></div>':''}<div class="opts">${qq.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join('')}</div><div class="fb" id="fb"></div>`;
-    if(qq.play){$('#qp').onclick=()=>playMeter(qq.play)}
+    if(qq.play){$('#qp').onclick=()=>typeof qq.play==='function'?(newSession(),qq.play()):playMeter(qq.play)}
     box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(k===qq.a){b.classList.add('right');if(!tried)ok++;i++;setTimeout(show,700)}else{b.classList.add('wrong');tried=true;err++}})};
   show();
 };
@@ -1225,13 +1226,14 @@ function viewHomeOld(){
    <div class="card"><div class="stats"><div class="stat"><b>${streak()}</b><span>dias seguidos</span></div><div class="stat"><b>${lessonsDone()}/${LESSONS.length}</b><span>lições feitas</span></div><div class="stat"><b>${Object.keys(PROG).filter(k=>/^x[rlb]\d/.test(k)).length}/90</b><span>exercícios</span></div><div class="stat"><b>${sd}/${SONGS.length*5}</b><span>níveis de música</span></div></div></div>
    <div class="grid2">
     <button class="tile" id="hL"><span class="ic">📚</span><b>Lições</b><span>${MODULES.length} módulos · ${LESSONS.length} lições</span></button>
+    <button class="tile" id="hT2"><span class="ic">🎼</span><b>Teoria musical</b><span>${TLESS.length} lições em 4 níveis · Teoria rápida</span></button>
     <button class="tile" id="hX"><span class="ic">💪</span><b>Exercícios progressivos</b><span>30 mão direita · 30 mão esquerda · 30 duas mãos</span></button>
     <button class="tile" id="hS"><span class="ic">🎵</span><b>Músicas para aprender</b><span>${SONGS.length} músicas · 5 níveis cada</span></button>
     <button class="tile" id="hF"><span class="ic">🎹</span><b>Modo livre</b><span>Toque e veja o nome e a nota na pauta</span></button>
     <button class="tile" id="hC"><span class="ic">⚙️</span><b>Configurações</b><span>Notação, nomes das notas, microfone, USB</span></button>
    </div>
    <div class="note" style="margin-top:12px">Dica: use o celular <b>deitado</b>. O teclado da tela fica maior e mais fácil de tocar.</div>`;
-  $('#hL').onclick=()=>go(viewLessons);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);$('#hF').onclick=()=>go(viewFree);$('#hC').onclick=()=>go(viewSettings);
+  $('#hL').onclick=()=>go(viewLessons);$('#hT2').onclick=()=>go(viewTheory);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);$('#hF').onclick=()=>go(viewFree);$('#hC').onclick=()=>go(viewSettings);
 }
 function viewLessons(){
   title('Lições');showKB(false);
@@ -1927,7 +1929,7 @@ function achStats(){const ks=Object.keys(PROG);const st=ks.reduce((a,k)=>a+(PROG
   return{lessons:lessonsDone(),ex:ks.filter(k=>/^x[rlb]\d/.test(k)).length,songAny:ks.some(k=>k.startsWith('s:')),
     twoHands:ks.some(k=>/^s:.*:(2|3)$/.test(k)),stage:ks.some(k=>/^s:.*:4$/.test(k)&&PROG[k].stars>=2),
     rep:new Set(ks.filter(k=>/^s:.*:3$/.test(k)).map(k=>k.split(':')[1])).size,three:ks.filter(k=>PROG[k].stars===3).length,stars:st,
-    streak:Math.max(bestStreak(),streak()),rt:ST.get('rtbest',0),treino:ST.get('treinoOk',0),mod:MODULES.some(M=>M.ls.every(l=>PROG['l'+l.n])),imp:ST.get('imp',[]).length}}
+    streak:Math.max(bestStreak(),streak()),thBas:T_BAS.every(tDone),thAll:TLESS.every(tDone),th1:TLESS.some(tDone),rt:ST.get('rtbest',0),treino:ST.get('treinoOk',0),mod:MODULES.some(M=>M.ls.every(l=>PROG['l'+l.n])),imp:ST.get('imp',[]).length}}
 const ACHS=[
   {ic:'🌱',t:'Primeiro passo',d:'Concluir a primeira lição',ok:s=>s.lessons>=1},
   {ic:'📘',t:'Estudante',d:'Concluir 10 lições',ok:s=>s.lessons>=10},
@@ -1947,7 +1949,10 @@ const ACHS=[
   {ic:'✅',t:'Treino cumprido',d:'Concluir um Treino do dia completo',ok:s=>s.treino>=1},
   {ic:'⭐',t:'Perfeccionista',d:'10 itens com 3 estrelas',ok:s=>s.three>=10},
   {ic:'🌟',t:'Cem estrelas',d:'Juntar 100 estrelas',ok:s=>s.stars>=100},
-  {ic:'📥',t:'Meu repertório',d:'Importar uma partitura',ok:s=>s.imp>=1}
+  {ic:'📥',t:'Meu repertório',d:'Importar uma partitura',ok:s=>s.imp>=1},
+  {ic:'🔬',t:'Curioso',d:'Concluir uma lição de teoria',ok:s=>s.th1},
+  {ic:'🎼',t:'Teórico',d:'Concluir a Teoria básica',ok:s=>s.thBas},
+  {ic:'🧠',t:'Mestre da teoria',d:'Concluir todas as lições de teoria',ok:s=>s.thAll}
 ];
 function toast(html){const t=document.createElement('div');t.innerHTML=html;t.style.cssText='position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--card);color:var(--text);border:2px solid var(--accent);border-radius:14px;padding:10px 16px;z-index:80;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw;text-align:center';document.body.appendChild(t);setTimeout(()=>t.remove(),3500)}
 function checkAch(){const s=achStats(),got=new Set(ST.get('ach',[]));const fresh=ACHS.filter(a=>a.ok(s)&&!got.has(a.t));
@@ -1955,6 +1960,400 @@ function checkAch(){const s=achStats(),got=new Set(ST.get('ach',[]));const fresh
 function viewAch(){title('Conquistas');showKB(false);checkAch();const s=achStats(),n=ACHS.filter(a=>a.ok(s)).length;
   V().innerHTML=`<p class="muted">${n} de ${ACHS.length} conquistas · melhor sequência: ${s.streak} dia(s) · ${s.stars} estrelas</p>
    <div class="grid2">${ACHS.map(a=>{const ok=a.ok(s);return `<div class="tile" style="min-height:0;${ok?'border:2px solid var(--accent)':'opacity:.5;filter:grayscale(1)'}"><span class="ic">${a.ic}</span><b>${a.t}</b><span>${a.d}</span>${ok?'<span style="color:var(--ok);font-weight:800">✓ conquistada</span>':''}</div>`}).join('')}</div>`}
+
+/* =========================================================
+   TEORIA — utilidades (nomes com grafia correta, escalas, acordes)
+   ========================================================= */
+const LTR=['C','D','E','F','G','A','B'],LPC=[0,2,4,5,7,9,11],SOLN={C:'Dó',D:'Ré',E:'Mi',F:'Fá',G:'Sol',A:'Lá',B:'Si'};
+const ACCS={'':'','#':'#','b':'♭','##':'##','bb':'♭♭'};
+function spell(L,a){return(S.names==='letters'?L:SOLN[L])+(ACCS[a]??a)}
+function keyPc(k){const L=k[0],a=k.slice(1);return mod(LPC[LTR.indexOf(L)]+(a==='#'?1:a==='b'?-1:0),12)}
+function keyName(k){return spell(k[0],k.slice(1))}
+function spellSeq(key,ints,degs){ // degs: graus (0..6) para cada intervalo
+  const L0=LTR.indexOf(key[0]),t=keyPc(key);
+  return ints.map((iv,i)=>{const L=LTR[(L0+degs[i])%7],pc=mod(t+iv,12);let df=mod(pc-LPC[LTR.indexOf(L)],12);if(df>6)df-=12;
+    const a=df===0?'':df===1?'#':df===-1?'b':df===2?'##':'bb';return{L,a,pc,name:spell(L,a)}})}
+const SMAJ=[0,2,4,5,7,9,11],NMIN=[0,2,3,5,7,8,10],HMIN=[0,2,3,5,7,8,11],MMIN=[0,2,3,5,7,9,11];
+const scaleOf=(key,ints=SMAJ)=>spellSeq(key,ints,[0,1,2,3,4,5,6]);
+const CHT={'':{n:'maior',iv:[0,4,7]},m:{n:'menor',iv:[0,3,7]},dim:{n:'diminuto',iv:[0,3,6]},aug:{n:'aumentado',iv:[0,4,8]},'7':{n:'com sétima',iv:[0,4,7,10]},m7:{n:'menor com sétima',iv:[0,3,7,10]},'7M':{n:'com sétima maior',iv:[0,4,7,11]},m7b5:{n:'meio-diminuto',iv:[0,3,6,10]}};
+function chordOf(root,type){const c=CHT[type];return spellSeq(root,c.iv,[0,2,4,6].slice(0,c.iv.length))}
+const symOf=(root,type)=>root.replace('b','♭')+(type==='dim'?'°':type==='aug'?'+':type==='m7b5'?'m7(♭5)':type);
+const midiNear=(pcs,base=60)=>{let r=base+mod(pcs[0]-base,12);if(r>base+6)r-=12;const out=[r];for(let i=1;i<pcs.length;i++){let m=out[i-1]+mod(pcs[i]-out[i-1],12);if(m===out[i-1])m+=12;out.push(m)}return out};
+const MAJKEYS=[['C',0],['G',1],['D',2],['A',3],['E',4],['B',5],['F#',6],['F',-1],['Bb',-2],['Eb',-3],['Ab',-4],['Db',-5]];
+const RELMIN={C:'A',G:'E',D:'B',A:'F#',E:'C#',B:'G#','F#':'D#',F:'D',Bb:'G',Eb:'C',Ab:'F',Db:'Bb'};
+const IVN={1:'2ª menor',2:'2ª maior',3:'3ª menor',4:'3ª maior',5:'4ª justa',6:'trítono',7:'5ª justa',8:'6ª menor',9:'6ª maior',10:'7ª menor',11:'7ª maior',12:'8ª (oitava)'};
+const ROMAN=['I','II','III','IV','V','VI','VII'];
+const WHITE=['C','D','E','F','G','A','B'];
+const hz=m=>440*Math.pow(2,(m-69)/12);
+function toneHz(f,when,dur,vel=.25,amps=[1]){const c=ac(),t=Math.max(when||0,c.currentTime),g=c.createGain();g.connect(session?session.g:master);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel,t+.02);g.gain.setTargetAtTime(vel*.7,t+.05,.3);g.gain.setTargetAtTime(0,t+dur,.08);
+  const tot=amps.reduce((a,b)=>a+Math.abs(b),0)||1;amps.forEach((a,i)=>{if(!a)return;const o=c.createOscillator(),og=c.createGain();o.frequency.value=f*(i+1);og.gain.value=a/tot;o.connect(og);og.connect(g);o.start(t);o.stop(t+dur+.5)});noteMute(t+dur+.5)}
+function waveSVG(f0,amps,{w=320,h=90,periods=2,col='var(--accent)',extra=null}={}){
+  const N=300;let pts=[],mx=0;const vals=[];for(let i=0;i<=N;i++){const x=i/N*periods;let v=0;amps.forEach((a,k)=>v+=a*Math.sin(2*Math.PI*(k+1)*x));if(extra)v+=extra(x);vals.push(v);mx=Math.max(mx,Math.abs(v))}
+  vals.forEach((v,i)=>pts.push(`${(i/N*w).toFixed(1)},${(h/2-v/(mx||1)*h*.42).toFixed(1)}`));
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block;background:var(--card2);border-radius:10px"><line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="var(--line)"/><polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2"/></svg>`}
+function barsSVG(amps,labels){const w=320,h=110,n=amps.length,bw=w/n;return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block">${amps.map((a,i)=>`<rect x="${i*bw+4}" y="${h-18-a*(h-28)}" width="${bw-8}" height="${a*(h-28)}" rx="3" fill="${FC[(i%5)+1]}"/><text x="${i*bw+bw/2}" y="${h-4}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--muted)">${labels?labels[i]:i+1}</text>`).join('')}</svg>`}
+const RECIPES={Piano:[1,.55,.35,.25,.18,.12,.08,.05],Flauta:[1,.12,.04,.02,0,0,0,0],Clarinete:[1,0,.55,0,.35,0,.2,0],Violino:[1,.5,.33,.25,.2,.17,.14,.12],Órgão:[1,1,.6,.8,.2,.4,0,.3]};
+const simple=t=>`<div class="simple"><b>🔢 Em palavras simples:</b> ${t}</div>`;
+
+/* =========================================================
+   TEORIA — motores das atividades
+   ========================================================= */
+// Perguntas respondidas no teclado (nota, conjunto de notas ou sequência)
+EX.kq=(box,cfg)=>{
+  const tasks=cfg.gen();let i=0,err=0,got=new Set(),pos=0;box._kq=()=>tasks[i];
+  box.innerHTML=`${cfg.top||''}<div class="exhead"><span class="muted small">${cfg.note||'Responda tocando no teclado'}</span><span class="cnt" id="kqc"></span></div><div class="prompt" id="kqp" style="font-size:16px;color:var(--text)"></div><div class="prompt" id="kqs" style="font-size:18px;letter-spacing:2px;margin-top:6px"></div>
+    <div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm" id="kqh">💡 Dica</button><button class="btn sm" id="kqo">🔊 Ouvir a resposta</button></div><div class="fb" id="kqf"></div>`;
+  if(cfg.after)cfg.after(box);
+  const cur=()=>tasks[i];
+  const prog=()=>{const t=cur();$('#kqs').textContent=t.seq?t.ans.map((p,k)=>k<pos?(t.names?t.names[k]:nn(p)):'•').join(' '):t.ans.length>1?t.ans.map(p=>got.has(p)?'✓':'•').join(' '):''};
+  const show=()=>{setTargets([]);if(i>=tasks.length){HANDLER=null;return resultBox(box,Math.round(tasks.length/(tasks.length+err)*100),`${tasks.length} respostas · ${err} nota(s) errada(s)`,()=>EX.kq(box,cfg))}
+    const t=cur();got=new Set();pos=0;$('#kqc').textContent=`${i+1} de ${tasks.length}`;$('#kqp').innerHTML=t.p;$('#kqf').textContent='';prog()};
+  $('#kqh').onclick=()=>{const t=cur();if(t)setTargets(midiNear(t.ans).map((m,k)=>({m,f:t.seq?undefined:undefined})))};
+  $('#kqo').onclick=()=>{const t=cur();if(!t)return;const ms=midiNear(t.ans);t.seq?playSeqNow(ms,.4,.38):(ms.length>1?playChordNow(ms):playSeqNow(ms))};
+  HANDLER=m=>{const t=cur();if(!t)return;const pc=mod(m,12);
+    if(t.seq){if(pc===t.ans[pos]){pos++;flashKey(m,'ok');prog();if(pos>=t.ans.length){i++;$('#kqf').className='fb ok';$('#kqf').textContent='Certo! ✓';setTimeout(show,700)}}
+      else{err++;flashKey(m,'bad');$('#kqf').className='fb bad';$('#kqf').innerHTML=`${nn(m)} não é a próxima nota.${t.why?' '+t.why:''}`}}
+    else{if(t.ans.includes(pc)){got.add(pc);flashKey(m,'ok');prog();if(t.ans.every(p=>got.has(p))){i++;$('#kqf').className='fb ok';$('#kqf').textContent=(t.ok||'Certo!')+' ✓';setTimeout(show,700)}}
+      else{err++;got.clear();prog();flashKey(m,'bad');$('#kqf').className='fb bad';$('#kqf').innerHTML=`${nn(m)} não está certo.${t.why?' '+t.why:''}`}}};
+  show();
+};
+// Frequência das teclas (Hz) e razão entre as duas últimas notas
+EX.hz=(box,cfg)=>{
+  let last=[],done=new Set();
+  box.innerHTML=`<div class="prompt">${cfg.task}</div><div class="stats" style="margin-top:8px"><div class="stat"><b id="hzn">–</b><span>nota</span></div><div class="stat"><b id="hzf">–</b><span>frequência</span></div><div class="stat"><b id="hzr">–</b><span>razão com a anterior</span></div></div>
+    <div id="hzw" style="margin-top:10px"></div><p class="muted small" id="hzp" style="margin-top:6px"></p><div class="fb" id="hzfb"></div>`;
+  const frac=r=>{for(let d=1;d<=16;d++){const n=Math.round(r*d);if(Math.abs(n/d-r)<.012)return n+':'+d}return r.toFixed(3)};
+  HANDLER=m=>{const f=hz(m);last.push(m);if(last.length>2)last.shift();$('#hzn').textContent=nn(m)+oct(m);$('#hzf').textContent=f.toFixed(1)+' Hz';
+    if(last.length===2){const a=hz(last[0]),b=hz(last[1]),r=Math.max(a,b)/Math.min(a,b);$('#hzr').textContent=a===b?'1:1':frac(r)}
+    $('#hzw').innerHTML=waveSVG(1,[1],{periods:Math.max(1,Math.round(f/65))});
+    $('#hzp').textContent=`A corda vibra ${Math.round(f)} vezes por segundo: uma vibração a cada ${(1000/f).toFixed(2)} milésimos de segundo.`;
+    if(cfg.check(m,done)){done.add(cfg.key(m));$('#hzfb').className='fb ok';$('#hzfb').textContent=cfg.prog(done)}
+    if(done.size>=cfg.need){saveScore(CURKEY,3,100);$('#hzfb').textContent='✓ Atividade concluída! '+cfg.prog(done)}};
+};
+// Harmônicos e timbres (série de Fourier)
+EX.harm=(box,cfg)=>{
+  const f0=hz(48);const names=['Dó3','Dó4','Sol4','Dó5','Mi5','Sol5','Si♭5','Dó6'];
+  if(cfg.mode==='series'){
+    box.innerHTML=`<p class="muted small">Nota de base: Dó3 (${f0.toFixed(1)} Hz). Os harmônicos vibram 2, 3, 4… vezes mais rápido.</p>${barsSVG([1,.8,.65,.5,.4,.33,.28,.24],names)}
+      <div class="row" style="margin-top:10px"><button class="btn" id="hs1">▶ Um a um</button><button class="btn" id="hs2">▶ Todos juntos</button><button class="btn" id="hs3">▶ Só o 1º (som puro)</button></div><div id="hsw" style="margin-top:10px"></div><div class="fb" id="hsf"></div>`;
+    let n=0;const mark=()=>{if(++n>=2)saveScore(CURKEY,3,100)};
+    $('#hs1').onclick=()=>{newSession();const c=ac();for(let k=1;k<=8;k++)toneHz(f0*k,c.currentTime+.1+(k-1)*.55,.5,.22);$('#hsf').textContent='Ouça: Dó, Dó, Sol, Dó, Mi, Sol, Si♭, Dó… os sons "escondidos" dentro de uma nota.';mark()};
+    $('#hs2').onclick=()=>{newSession();toneHz(f0,0,2.5,.35,[1,.8,.65,.5,.4,.33,.28,.24]);$('#hsw').innerHTML=waveSVG(1,[1,.8,.65,.5,.4,.33,.28,.24]);mark()};
+    $('#hs3').onclick=()=>{newSession();toneHz(f0,0,2,.35,[1]);$('#hsw').innerHTML=waveSVG(1,[1]);mark()};
+  }else{
+    box.innerHTML=`<div class="seg" id="tms">${Object.keys(RECIPES).map((k,i)=>`<button data-k="${k}" class="${i?'':'on'}">${k}</button>`).join('')}</div><div id="tmw" style="margin-top:10px"></div><div id="tmb"></div><p class="muted small">A mesma nota (Dó4). Muda só a "receita" de harmônicos, e com ela o desenho da onda e o som.</p>`;
+    const seen=new Set();const sel=k=>{box.querySelectorAll('#tms button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$('#tmw').innerHTML=waveSVG(1,RECIPES[k]);$('#tmb').innerHTML=barsSVG(RECIPES[k]);newSession();toneHz(hz(60),0,1.6,.35,RECIPES[k]);seen.add(k);if(seen.size>=3)saveScore(CURKEY,3,100)};
+    box.querySelectorAll('#tms button').forEach(b=>b.onclick=()=>sel(b.dataset.k));$('#tmw').innerHTML=waveSVG(1,RECIPES.Piano);$('#tmb').innerHTML=barsSVG(RECIPES.Piano);
+  }
+};
+// Razões simples e batimento
+EX.ratio=(box)=>{
+  const R=[['2:1','Oitava',2],['3:2','Quinta',1.5],['4:3','Quarta',4/3],['5:4','Terça maior',1.25],['16:15','Semitom',16/15],['45:32','Trítono',45/32]];
+  box.innerHTML=`<p class="muted small">Toque cada par: as duas notas soam juntas. Veja o desenho da onda somada: quanto mais simples a razão, mais curto e regular é o padrão.</p>
+    <div class="grid2">${R.map((r,i)=>`<button class="tile" data-i="${i}" style="min-height:0"><b>${r[0]}</b><span>${r[1]}</span></button>`).join('')}</div>
+    <div id="raw" style="margin-top:10px"></div><p class="muted small" id="rat"></p>
+    <h3 style="margin-top:12px">Batimento</h3><div class="row"><button class="btn" id="rb1">▶ 440 Hz + 440 Hz</button><button class="btn" id="rb2">▶ 440 Hz + 443 Hz</button></div><p class="muted small" id="rbt"></p>`;
+  let n=0;const mark=()=>{if(++n>=4)saveScore(CURKEY,3,100)};
+  box.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const[f,nm,r]=R[+b.dataset.i];const a=220;newSession();toneHz(a,0,2,.25,[1,.3]);toneHz(a*r,0,2,.25,[1,.3]);
+    $('#raw').innerHTML=waveSVG(1,[1],{periods:6,extra:x=>Math.sin(2*Math.PI*r*x)});$('#rat').textContent=`${nm}: enquanto uma vibra ${f.split(':')[1]} vezes, a outra vibra ${f.split(':')[0]}. ${r<1.3||r===16/15?'':''}${['Semitom','Trítono'].includes(nm)?'Razão complicada: o padrão demora a se repetir e o som fica tenso.':'Razão simples: o padrão se repete rápido e o som fica estável.'}`;mark()});
+  $('#rb1').onclick=()=>{newSession();toneHz(440,0,3,.25);toneHz(440,0,3,.25);$('#rbt').textContent='Frequências iguais: som estável, sem oscilar.';mark()};
+  $('#rb2').onclick=()=>{newSession();toneHz(440,0,3,.25);toneHz(443,0,3,.25);$('#rbt').textContent='Diferença de 3 Hz: o volume sobe e desce 3 vezes por segundo ("uá-uá-uá"). Isso é o batimento. Afinadores de piano usam esse efeito para afinar.';mark()};
+};
+// Exemplos para ouvir (botões)
+EX.tplay=(box,cfg)=>{
+  box.innerHTML=`<div class="grid2">${cfg.items.map((it,i)=>`<button class="tile" data-i="${i}" style="min-height:0"><b>▶ ${it[0]}</b><span>${it[1]||''}</span></button>`).join('')}</div><p class="muted small" id="tpd" style="margin-top:8px"></p>`;
+  const seen=new Set();box.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const it=cfg.items[+b.dataset.i];newSession();ac();it[2]();$('#tpd').innerHTML=it[3]||'';seen.add(b.dataset.i);if(seen.size>=Math.min(cfg.items.length,cfg.need||cfg.items.length))saveScore(CURKEY,3,100)});
+};
+// Ciclo das quintas interativo
+function circleSVG(sel){const R=110,cx=140,cy=135;return `<svg viewBox="0 0 280 270" width="100%" style="max-width:340px;display:block;margin:0 auto">${MAJKEYS.slice(0,7).concat(MAJKEYS.slice(7).reverse()).map((k,i)=>{
+    const ang=-Math.PI/2+i*Math.PI/6,x=cx+R*Math.cos(ang),y=cy+R*Math.sin(ang),on=k[0]===sel,sig=k[1];
+    return `<g data-k="${k[0]}" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="24" fill="${on?'var(--accent)':'var(--card2)'}"/><text x="${x}" y="${y+2}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--text)">${keyName(k[0])}</text><text x="${x}" y="${y+15}" text-anchor="middle" font-size="9" fill="var(--muted)">${sig===0?'—':Math.abs(sig)+(sig>0?'#':'♭')}</text></g>`}).join('')}
+    <text x="${cx}" y="${cy}" text-anchor="middle" font-size="11" fill="var(--muted)">horário: +1 quinta</text></svg>`}
+EX.circle=(box,cfg)=>{
+  box.innerHTML=`<div id="cc"></div><p class="muted small" id="cci" style="text-align:center">Toque em um tom para ver a armadura e ouvir a escala.</p><h3 style="margin-top:10px">Agora no teclado</h3><div id="ckq"></div>`;
+  const seen=new Set();const draw=k=>{$('#cc').innerHTML=circleSVG(k);$('#cc').querySelectorAll('[data-k]').forEach(g=>g.onclick=()=>pick(g.dataset.k))};
+  const pick=k=>{draw(k);const sc=scaleOf(k),sig=MAJKEYS.find(x=>x[0]===k)[1],acc=sc.filter(n=>n.a);
+    $('#cci').innerHTML=`<b>${keyName(k)} maior</b>: ${sig===0?'nenhum sustenido ou bemol':Math.abs(sig)+(sig>0?' sustenido(s)':' bemol(is)')+' ('+acc.map(n=>n.name).join(', ')+')'} · relativa menor: ${keyName(RELMIN[k])} menor<br>${sc.map(n=>n.name).join(' – ')}`;
+    newSession();playSeqNow(midiNear(sc.map(n=>n.pc).concat([sc[0].pc])),.28,.3);seen.add(k)};
+  draw(null);
+  EX.kq($('#ckq'),{note:'Uma 5ª justa = 7 semitons acima',gen:()=>Array.from({length:6},()=>{const k=rnd(MAJKEYS)[0],f=scaleOf(k)[4];return{p:`Toque a nota uma <b>quinta acima</b> de <b>${keyName(k)}</b>`,ans:[f.pc],why:'Conte 7 semitons (teclas, contando as pretas).'}})});
+};
+// Harmonizar uma melodia
+EX.harmz=(box)=>{
+  const bars=[[[64,64,65,67],'C'],[[67,65,64,62],'G'],[[60,60,62,64],'C'],[[64,62,62],'G'],[[65,65,64,64],'F'],[[62,62,60],'G'],[[67,67,69,69],'F'],[[67,64,60],'C']];
+  const ok={0:['C'],1:['G'],2:['C'],3:['G'],4:['F'],5:['G'],6:['F','C'],7:['C']};let pick=bars.map(()=>null);
+  box.innerHTML=`<p class="muted small">Para cada compasso, escolha o acorde (Dó, Fá ou Sol) que combina com a melodia. Dica: procure o acorde que contém as notas mais importantes do compasso.</p>
+    ${bars.map((b,i)=>`<div class="row" style="margin:6px 0;align-items:center"><b style="width:120px">${i+1}. ${b[0].map(m=>nn(m)).join(' ')}</b>${['C','F','G'].map(c=>`<button class="btn sm" data-b="${i}" data-c="${c}">${c}</button>`).join('')}<span id="hz${i}"></span></div>`).join('')}
+    <div class="row" style="margin-top:10px"><button class="btn" id="hzp">▶ Ouvir com os meus acordes</button><button class="btn primary" id="hzc">Conferir</button></div><div class="fb" id="hzf"></div>`;
+  box.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const i=+b.dataset.b;pick[i]=b.dataset.c;box.querySelectorAll(`[data-b="${i}"]`).forEach(x=>x.classList.toggle('primary',x===b));playChordNow(chordInfo(b.dataset.c).v,.8)});
+  $('#hzp').onclick=()=>{newSession();const c=ac();let t=c.currentTime+.1;bars.forEach((b,i)=>{b[0].forEach((m,k)=>tone(m,t+k*.45,.42));if(pick[i])chordInfo(pick[i]).v.forEach(m=>tone(m-12,t,1.75,{vel:.14}));t+=1.8})};
+  $('#hzc').onclick=()=>{if(pick.some(p=>!p)){$('#hzf').className='fb bad';$('#hzf').textContent='Escolha um acorde para cada compasso.';return}
+    let n=0;bars.forEach((b,i)=>{const r=ok[i].includes(pick[i]);if(r)n++;$('#hz'+i).textContent=r?' ✓':' ✗ (melhor: '+ok[i].join(' ou ')+')'});
+    const acc=Math.round(n/bars.length*100);$('#hzf').className='fb '+(acc>=75?'ok':'bad');$('#hzf').textContent=`${n} de ${bars.length} compassos bem harmonizados. Ouça de novo com os acordes corrigidos.`;saveScore(CURKEY,acc>=95?3:acc>=75?2:1,acc)};
+};
+// Espectro em tempo real (transformada de Fourier / FFT)
+function spectrumBox(el){
+  const c=ac();const an=c.createAnalyser();an.fftSize=4096;an.smoothingTimeConstant=.6;let src='som do app';
+  if(micStream){const s=c.createMediaStreamSource(micStream);s.connect(an);src='microfone'}else{master.connect(an)}
+  el.innerHTML=`<canvas id="spc" style="width:100%;height:140px;background:var(--card2);border-radius:10px;display:block"></canvas><p class="muted small">Fonte: ${src}. Eixo horizontal: frequência (0 a 2.500 Hz). Cada pico é um harmônico.</p>`;
+  const cv=$('#spc'),data=new Uint8Array(an.frequencyBinCount);let raf;
+  const draw=()=>{if(!document.body.contains(cv))return;const dpr=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);an.getByteFrequencyData(data);
+    const maxBin=Math.floor(2500/(c.sampleRate/an.fftSize));g.fillStyle=getComputedStyle(document.body).getPropertyValue('--accent');for(let i=0;i<maxBin;i++){const v=data[i]/255;g.fillRect(i/maxBin*W,H-v*H,Math.max(1,W/maxBin),v*H)}raf=requestAnimationFrame(draw)};
+  draw();addClean(()=>{cancelAnimationFrame(raf);try{master.disconnect(an)}catch(e){}});
+}
+// Música e matemática
+EX.math=(box)=>{
+  const amps=[1,0,0,0,0,0,0,0];let used=0;const mark=()=>{if(++used>=4)saveScore(CURKEY,3,100)};
+  box.innerHTML=`<h3>1. Temperamento: a quinta "pura" e a do teclado</h3>
+    <div class="row"><button class="btn sm" id="mt1">▶ Quinta pura (3:2)</button><button class="btn sm" id="mt2">▶ Quinta do teclado (2^(7/12))</button></div><p class="muted small" id="mtt">Dó = 261,63 Hz. Sol puro = 392,44 Hz. Sol do teclado = 392,00 Hz.</p>
+    <h3 style="margin-top:12px">2. O relógio de 12 notas (módulo 12)</h3><div id="mclk"></div><div class="row" style="justify-content:center"><button class="btn sm" id="mc7">+7 (subir uma quinta)</button><button class="btn sm" id="mc0">Recomeçar</button></div><p class="muted small" id="mct" style="text-align:center"></p>
+    <h3 style="margin-top:12px">3. Monte o seu som (série de Fourier)</h3><div id="mw"></div>
+    <div class="ctl">${amps.map((a,i)=>`<label>${i+1}º harmônico (${i+1}f) <input type="range" min="0" max="100" value="${a*100}" data-h="${i}"></label>`).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn primary sm" id="mplay">▶ Ouvir</button><button class="btn sm" data-p="pure">Só o 1º</button><button class="btn sm" data-p="odd">Só ímpares (clarinete)</button><button class="btn sm" data-p="all">Todos (violino)</button></div>
+    <h3 style="margin-top:12px">4. Espectro ao vivo (transformada de Fourier)</h3><div class="row"><button class="btn sm" id="mspec">Mostrar o espectro</button></div><div id="mspc"></div>`;
+  $('#mt1').onclick=()=>{newSession();toneHz(261.63,0,3,.25,[1,.5,.3]);toneHz(392.44,0,3,.25,[1,.5,.3]);$('#mtt').innerHTML='Quinta pura: as ondas se encaixam e o som fica parado, sem oscilar.';mark()};
+  $('#mt2').onclick=()=>{newSession();toneHz(261.63,0,3,.25,[1,.5,.3]);toneHz(392.00,0,3,.25,[1,.5,.3]);$('#mtt').innerHTML='Quinta do teclado: escute com atenção um leve "tremido" lento. É o pequeno erro (0,1%) que o teclado aceita para que todas as 12 tonalidades funcionem.';mark()};
+  let clk=0;const ORDER=[];const drawClk=()=>{const R=80,cx=110,cy=100;$('#mclk').innerHTML=`<svg viewBox="0 0 220 200" width="100%" style="max-width:260px;display:block;margin:0 auto">${Array.from({length:12},(_,i)=>{const a=-Math.PI/2+i*Math.PI/6,x=cx+R*Math.cos(a),y=cy+R*Math.sin(a),on=i===clk,vis=ORDER.includes(i);
+      return `<circle cx="${x}" cy="${y}" r="15" fill="${on?'var(--accent)':vis?'#b8e7cf':'var(--card2)'}"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--text)">${nn(60+i)}</text>`}).join('')}<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" fill="var(--muted)">${ORDER.length} de 12</text></svg>`;
+    $('#mct').textContent=`(posição + 7) mod 12 = ${clk}. Como 7 e 12 não têm divisor comum, o ciclo passa pelas 12 notas antes de voltar ao Dó.`};
+  ORDER.push(0);drawClk();
+  $('#mc7').onclick=()=>{clk=(clk+7)%12;if(!ORDER.includes(clk))ORDER.push(clk);drawClk();tone(60+clk,0,.5);mark()};$('#mc0').onclick=()=>{clk=0;ORDER.length=0;ORDER.push(0);drawClk()};
+  const drawW=()=>{$('#mw').innerHTML=waveSVG(1,amps)+barsSVG(amps)};drawW();
+  box.querySelectorAll('[data-h]').forEach(r=>r.oninput=()=>{amps[+r.dataset.h]=r.value/100;drawW()});
+  const setA=a=>{a.forEach((v,i)=>{amps[i]=v;box.querySelector(`[data-h="${i}"]`).value=v*100});drawW();newSession();toneHz(hz(57),0,1.8,.35,amps.slice());mark()};
+  box.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>setA(b.dataset.p==='pure'?[1,0,0,0,0,0,0,0]:b.dataset.p==='odd'?[1,0,.33,0,.2,0,.14,0]:[1,.5,.33,.25,.2,.17,.14,.12]));
+  $('#mplay').onclick=()=>{newSession();toneHz(hz(57),0,1.8,.35,amps.slice());mark()};
+  $('#mspec').onclick=()=>{spectrumBox($('#mspc'));mark()};
+};
+// Quiz com perguntas próprias da lição
+EX.tq=(box,cfg)=>{QUIZ['_t']=cfg.qs;EX.quiz(box,{set:'_t'})};
+
+/* =========================================================
+   TEORIA — conteúdo (Introdução, Básica, Intermediária, Avançada)
+   ========================================================= */
+const PM=(notes,bpm=100,t0=0)=>{const c=ac();let t=c.currentTime+.1+t0;const sp=60/bpm;notes.forEach(([m,d])=>{if(m!=null)(Array.isArray(m)?m:[m]).forEach(x=>tone(x,t,d*sp*.95));t+=d*sp})};
+const PC=(syms,beats=2,bpm=100,t0=0)=>{const c=ac();let t=c.currentTime+.1+t0;const sp=60/bpm;syms.forEach(s=>{const ci=chordInfo(s);ci.v.forEach(m=>tone(m,t,beats*sp*.95,{vel:.15}));tone(ci.bass,t,beats*sp*.95,{vel:.2});t+=beats*sp})};
+const PD=(bars=2,bpm=100)=>{const c=ac(),sp=60/bpm,t0=c.currentTime+.1;for(let b=0;b<bars*4;b++){const t=t0+b*sp;drum(b%2?'snare':'kick',t,.8);drum('hat',t);drum('hat',t+sp/2)}};
+const ODE4=[[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[64,1.5],[62,.5],[62,2]];
+const randWhite=()=>rnd(WHITE);
+const T_INTRO=[
+ {t:'Som é vibração',obj:'Entender que cada nota é uma vibração com uma velocidade própria, a frequência.',
+  exp:['Todo som é uma <b>vibração</b>: a corda do piano, a pele do tambor ou as cordas vocais vão e voltam muito rápido e empurram o ar. Esse empurrão chega ao ouvido.',
+       {s:'<b>Frequência</b> é quantas vezes algo vibra em um segundo. A unidade é o <b>hertz (Hz)</b>: 440 Hz = 440 vibrações por segundo.'},
+       'Quanto <b>mais rápida</b> a vibração, mais <b>agudo</b> o som. Quanto mais lenta, mais <b>grave</b>. O Lá do meio do piano vibra a 440 Hz; a tecla mais grave de um piano, a cerca de 27 Hz; a mais aguda, a mais de 4.000 Hz.'],
+  actd:'Toque três Dós diferentes (um grave, o central e um agudo) e veja a frequência de cada um.',
+  act:{type:'hz',task:'Toque <b>três Dós</b> em alturas diferentes',need:3,check:m=>mod(m,12)===0,key:m=>m,prog:d=>`${d.size} de 3 Dós tocados`},
+  qs:[{q:'O que é frequência?',o:['O volume do som','Quantas vezes algo vibra por segundo','A duração da nota'],a:1},{q:'Um som de 880 Hz, comparado a um de 440 Hz, é…',o:['Mais grave','Mais agudo','Igual'],a:1}]},
+ {t:'Oitava é o dobro',obj:'Descobrir que duas notas com o mesmo nome têm frequências que são o dobro uma da outra.',
+  exp:['Toque um Lá e o Lá seguinte, à direita. Eles soam como "a mesma nota", só que uma mais aguda. Essa distância se chama <b>oitava</b>.',
+       {s:'O <b>dobro</b> de um número é ele multiplicado por 2. O Lá de 220 Hz, o de 440 Hz e o de 880 Hz: cada um é o dobro do anterior.'},
+       'Por isso as notas se repetem com o mesmo nome por todo o teclado: o ouvido percebe "dobro da frequência" como a mesma nota, em outra altura.'],
+  actd:'Toque dois Lás seguidos (em oitavas diferentes) e veja a razão 2:1 aparecer.',
+  act:{type:'hz',task:'Toque <b>dois ou mais Lás</b> em alturas diferentes',need:2,check:m=>mod(m,12)===9,key:m=>m,prog:d=>`${d.size} Lá(s) tocados · veja a razão "2:1" quando tocar dois seguidos`},
+  qs:[{q:'Se um Dó vibra a 261 Hz, o Dó uma oitava acima vibra a…',o:['130 Hz','261 Hz','522 Hz'],a:2},{q:'Duas notas separadas por uma oitava…',o:['Têm o mesmo nome','Têm nomes diferentes','Não existem no teclado'],a:0}]},
+ {t:'Harmônicos: as notas escondidas',obj:'Ouvir que uma nota é formada por vários sons ao mesmo tempo.',
+  exp:['Quando uma corda vibra, ela não vibra só inteira. Ela vibra também em <b>pedaços</b>: duas metades, três terços, quatro quartos…',
+       {s:'Pense numa corda de pular: dá para fazê-la formar uma "barriga", duas ou três. Cada jeito de vibrar produz um som mais agudo. Esses sons extras são os <b>harmônicos</b>, e vibram 2, 3, 4… vezes mais rápido que o som principal.'},
+       'Os harmônicos de um Dó são: Dó, Dó (oitava), Sol, Dó, Mi, Sol, Si♭, Dó… Repare que <b>Dó, Mi e Sol</b> aparecem logo no começo: é o acorde de Dó maior, escondido dentro de uma única nota.'],
+  actd:'Ouça os harmônicos de um Dó um a um, depois todos juntos, e compare com um som puro.',act:{type:'harm',mode:'series'},
+  qs:[{q:'O 2º harmônico vibra…',o:['Na metade da velocidade','No dobro da velocidade','Na mesma velocidade'],a:1},{q:'Quais notas formam os primeiros harmônicos de Dó?',o:['Dó, Ré, Mi','Dó, Mi, Sol','Dó, Fá, Lá'],a:1}]},
+ {t:'Por que algumas notas combinam',obj:'Entender por que alguns intervalos soam estáveis e outros tensos.',
+  exp:['Algumas notas tocadas juntas soam "bem" (consonantes) e outras soam tensas (dissonantes). A explicação está nas frequências.',
+       {s:'Uma <b>razão</b> (ou proporção) compara dois números. "3 para 2" (3:2) quer dizer que, enquanto uma corda vibra 3 vezes, a outra vibra 2. Quanto menores os números, mais simples a razão.'},
+       'Notas com razões simples (2:1, 3:2, 4:3, 5:4) têm ondas que se "encaixam" com frequência: o som fica estável. Razões complicadas (16:15, 45:32) quase nunca se encaixam: o som fica tenso.',
+       {s:'<b>Batimento</b>: duas notas quase iguais tocadas juntas fazem o volume subir e descer ("uá-uá-uá"). É sinal de que as ondas estão quase, mas não totalmente, sincronizadas.'}],
+  actd:'Toque os pares de notas e compare o desenho das ondas. Depois ouça o batimento.',act:{type:'ratio'},
+  qs:[{q:'Qual razão soa mais estável?',o:['3:2 (quinta)','16:15 (semitom)','45:32 (trítono)'],a:0},{q:'O batimento acontece quando duas notas são…',o:['Muito diferentes','Quase iguais','Exatamente iguais'],a:1}]},
+ {t:'Timbre: a receita do som',obj:'Entender por que piano e flauta soam diferentes tocando a mesma nota.',
+  exp:['A mesma nota, Dó, soa diferente no piano, na flauta e no violino. Essa "cor" do som é o <b>timbre</b>.',
+       'A diferença está na <b>quantidade de cada harmônico</b>. A flauta tem quase só o som principal; o violino tem muitos harmônicos fortes; o clarinete tem principalmente os harmônicos ímpares (1º, 3º, 5º…).',
+       {s:'<b>Série de Fourier</b>: o matemático Joseph Fourier mostrou (por volta de 1807) que qualquer som que se repete pode ser montado somando ondas puras, cada uma vibrando 1, 2, 3, 4… vezes mais rápido que a principal. O timbre é a "receita": quanto de cada onda entra na mistura.'}],
+  actd:'Escolha piano, flauta, clarinete, violino e órgão: ouça o som e veja a onda e a receita de harmônicos de cada um.',act:{type:'harm',mode:'timbres'},
+  qs:[{q:'O que muda entre o Dó do piano e o Dó da flauta?',o:['A frequência','A quantidade de cada harmônico','O nome da nota'],a:1},{q:'A série de Fourier diz que um som que se repete pode ser…',o:['Montado somando ondas puras','Tocado só no piano','Medido em metros'],a:0}]}
+];
+const T_BAS=[
+ {t:'Os elementos da música',obj:'Reconhecer ritmo, melodia e harmonia.',
+  exp:['Música é a organização de <b>sons e silêncios</b> no tempo. Ela tem três elementos principais:',
+       '<b>Ritmo</b>: a organização dos sons no tempo (as batidas, as durações). <b>Melodia</b>: uma sequência de notas, uma de cada vez, que dá para cantar. <b>Harmonia</b>: notas soando juntas (os acordes), que acompanham a melodia.'],
+  actd:'Ouça cada elemento separado e depois todos juntos.',
+  act:{type:'tplay',items:[['Só ritmo','bateria',()=>PD(2,100),'Ritmo: batidas organizadas no tempo, sem notas.'],['Só melodia','uma nota de cada vez',()=>PM(ODE4,100),'Melodia: notas uma após a outra (Ode à Alegria).'],['Só harmonia','acordes',()=>PC(['C','G','C','G'],4,100),'Harmonia: notas juntas formando acordes.'],['Tudo junto','ritmo + melodia + harmonia',()=>{PD(4,100);PM(ODE4,100);PC(['C','G','C','G'],4,100)},'Os três elementos juntos formam a música completa.']]},
+  qs:[{q:'Uma sequência de notas que dá para cantar é…',o:['Ritmo','Melodia','Harmonia'],a:1},{q:'Notas tocadas ao mesmo tempo formam a…',o:['Harmonia','Melodia','Pausa'],a:0},{q:'O silêncio faz parte da música?',o:['Sim','Não'],a:0}]},
+ {t:'Agudo e grave',obj:'Perceber se uma nota é mais aguda ou mais grave e onde ela fica no teclado.',
+  exp:['No teclado, quanto mais para a <b>direita</b>, mais <b>agudo</b> o som (fino). Quanto mais para a <b>esquerda</b>, mais <b>grave</b> (grosso).','Essa característica do som se chama <b>altura</b>. Não confunda com volume: um som pode ser agudo e fraco, ou grave e forte.'],
+  actd:'Ouça duas notas e diga se a segunda é mais aguda ou mais grave.',act:{type:'earhl'},
+  qs:[{q:'Para a direita do teclado o som fica…',o:['Mais agudo','Mais grave','Mais forte'],a:0},{q:'"Altura" do som significa…',o:['Volume','Se é agudo ou grave','Duração'],a:1}]},
+ {t:'Longo e curto',obj:'Entender a duração dos sons.',
+  exp:['Cada som dura um certo tempo: essa é a <b>duração</b>. Na música, a duração é medida em <b>tempos</b> (as batidas do pulso).','Uma nota de 4 tempos é longa; uma de meio tempo é curta. Para tocar a duração certa, a tecla precisa ficar apertada o tempo todo.'],
+  actd:'Toque o ritmo com notas longas e curtas junto com o metrônomo.',act:{type:'rhythm',bpm:66,bpb:4,pattern:[2,1,1,4,1,1,2]},
+  qs:[{q:'Uma nota de 4 tempos é…',o:['Curta','Longa'],a:1},{q:'Para a nota durar o tempo certo, a tecla deve…',o:['Ser solta logo','Ficar apertada até o fim da duração'],a:1}]},
+ {t:'Forte e fraco',obj:'Diferenciar sons fortes e fracos (intensidade).',
+  exp:['A <b>intensidade</b> é o volume do som: forte ou fraco. Na música ela também se chama <b>dinâmica</b>.','No piano e em teclados sensíveis ao toque, a intensidade depende da <b>força</b> com que a tecla é tocada.'],
+  actd:'Ouça a mesma melodia forte e fraca. Para praticar a força do toque, faça a lição de Dinâmica (Módulo 10).',
+  act:{type:'tplay',items:[['Forte','',()=>ODE4.slice(0,8).forEach((n,i)=>tone(n[0],ac().currentTime+.1+i*.5,.45,{vel:.45})),'Forte: mais energia, mais volume.'],['Fraco','',()=>ODE4.slice(0,8).forEach((n,i)=>tone(n[0],ac().currentTime+.1+i*.5,.45,{vel:.07})),'Fraco (piano): suave, com pouca força.'],['Crescendo','do fraco ao forte',()=>ODE4.slice(0,8).forEach((n,i)=>tone(n[0],ac().currentTime+.1+i*.5,.45,{vel:.05+i*.05})),'Crescendo: o volume vai aumentando aos poucos.']]},
+  qs:[{q:'Intensidade é o mesmo que…',o:['Volume','Altura','Duração'],a:0},{q:'Na partitura, "piano" (p) significa…',o:['Tocar no piano','Tocar fraco','Tocar rápido'],a:1}]},
+ {t:'Timbre',obj:'Reconhecer que cada instrumento tem uma "cor" própria de som.',
+  exp:['O <b>timbre</b> é o que faz você reconhecer a voz de uma pessoa ou o som de um instrumento, mesmo tocando a mesma nota.','Teclados arranjadores imitam vários timbres: piano, órgão, cordas, flauta… Na Introdução da Teoria você pode ver por que isso acontece (harmônicos).'],
+  actd:'Ouça o mesmo Dó em vários timbres.',
+  act:{type:'tplay',items:Object.keys(TIMBRES).map(k=>[TNAME[k],'',()=>tone(60,0,1.2,{timbre:k,vel:.3}),'Mesma nota (Dó), timbre de '+TNAME[k].toLowerCase()+'.'])},
+  qs:[{q:'O que muda entre o Dó do piano e o Dó da flauta?',o:['A nota','O timbre','A duração'],a:1}]},
+ {t:'As 7 notas e a oitava',obj:'Saber que existem 7 nomes de notas que se repetem.',
+  exp:['As notas naturais (teclas brancas) são só sete: <b>Dó, Ré, Mi, Fá, Sol, Lá, Si</b>. Depois do Si, recomeça no Dó.','Cada repetição é uma <b>oitava</b> (do Dó ao Dó seguinte são 8 teclas brancas, contando as duas pontas). Por isso a mesma nota aparece várias vezes no teclado.'],
+  actd:'Ache e toque todos os Lás do teclado.',act:{type:'findall',pc:9},
+  qs:[{q:'Quantos nomes de notas naturais existem?',o:['5','7','12'],a:1},{q:'Depois do Si vem…',o:['Lá','Dó','Ré'],a:1}]},
+ {t:'Teclas pretas e o meio passo',obj:'Entender o semitom, a menor distância entre duas teclas.',
+  exp:['A distância de uma tecla para a vizinha mais próxima (branca ou preta) é o <b>meio passo</b>, também chamado <b>semitom</b>. É a menor distância do teclado.','Entre Mi e Fá, e entre Si e Dó, não há tecla preta: eles já estão a meio passo um do outro.','A tecla preta logo acima de uma nota recebe o nome dela com <b>sustenido (#)</b>: Dó#. A tecla logo abaixo recebe <b>bemol (♭)</b>: Ré♭. Dó# e Ré♭ são a mesma tecla.'],
+  actd:'Toque a tecla que fica meio passo (semitom) acima da nota pedida.',
+  act:{type:'kq',gen:()=>Array.from({length:7},()=>{const L=randWhite(),pc=keyPc(L);return{p:`Toque a tecla <b>meio passo acima</b> de <b>${keyName(L)}</b>`,ans:[mod(pc+1,12)],why:L==='E'||L==='B'?'Repare: depois de '+keyName(L)+' não há tecla preta.':'É a vizinha imediatamente à direita.'}})},
+  qs:[{q:'Entre quais notas brancas NÃO há tecla preta?',o:['Dó e Ré','Mi e Fá','Sol e Lá'],a:1},{q:'Dó# e Ré♭ são…',o:['Teclas diferentes','A mesma tecla'],a:1}]},
+ {t:'Pulso e tempo forte',obj:'Sentir o pulso e identificar o tempo forte do compasso.',
+  exp:['O <b>pulso</b> é a batida regular da música, como o coração. É o que fazemos ao bater o pé.','Os pulsos se agrupam em <b>compassos</b> de 2, 3 ou 4 tempos. O <b>primeiro tempo</b> de cada grupo é o mais forte: por isso contamos "<b>1</b>, 2, 3, 4".'],
+  actd:'Toque junto com o metrônomo, uma nota por tempo.',act:{type:'rhythm',bpm:72,bpb:4,pattern:[1,1,1,1,1,1,1,1]},
+  qs:[{q:'Em "1, 2, 3, 4", qual tempo é o mais forte?',o:['1','2','4'],a:0},{q:'Ouça e diga quantos tempos tem cada grupo.',o:['2','3','4'],a:1,play:3}]}
+];
+const T_INT=[
+ {t:'Tom e semitom',obj:'Medir distâncias entre notas em tons e semitons.',
+  exp:['<b>Semitom</b> = meio passo = de uma tecla para a vizinha mais próxima. <b>Tom</b> = dois semitons.','Exemplos: Dó → Ré é um tom (passa pela tecla preta Dó#). Mi → Fá é só um semitom. Si → Dó também.',{s:'Pense numa régua em que cada tecla é um centímetro: semitom = 1 cm, tom = 2 cm. Contar teclas (inclusive as pretas) é medir a distância.'}],
+  actd:'Toque a nota pedida, contando tons e semitons.',
+  act:{type:'kq',gen:()=>Array.from({length:8},()=>{const L=randWhite(),pc=keyPc(L),up=Math.random()<.6,sz=Math.random()<.5?1:2;return{p:`Toque <b>${sz===2?'um tom':'um semitom'} ${up?'acima':'abaixo'}</b> de <b>${keyName(L)}</b>`,ans:[mod(pc+(up?sz:-sz),12)],why:`${sz===2?'Tom = 2 teclas':'Semitom = 1 tecla'}, contando as pretas.`}})},
+  qs:[{q:'Um tom equivale a…',o:['1 semitom','2 semitons','3 semitons'],a:1},{q:'De Mi para Fá a distância é…',o:['Um semitom','Um tom'],a:0}]},
+ {t:'Graus da escala',obj:'Numerar as notas da escala do 1º ao 7º grau.',
+  exp:['Numa escala, cada nota recebe um número: o <b>grau</b>. Em Dó maior: Dó = 1º, Ré = 2º, Mi = 3º, Fá = 4º, Sol = 5º, Lá = 6º, Si = 7º.','Os graus permitem falar de música sem depender do tom: "o 5º grau" é Sol em Dó maior e Ré em Sol maior. Os mais importantes são o 1º (a "casa"), o 4º e o 5º.'],
+  actd:'Toque o grau pedido na escala indicada.',
+  act:{type:'kq',gen:()=>Array.from({length:8},()=>{const k=rnd(['C','G','F']),d=Math.floor(Math.random()*7),sc=scaleOf(k);return{p:`Em <b>${keyName(k)} maior</b>, toque o <b>${d+1}º grau</b>`,ans:[sc[d].pc],why:`Escala de ${keyName(k)} maior: ${sc.map(n=>n.name).join(' ')}.`}})},
+  qs:[{q:'Em Dó maior, o 5º grau é…',o:['Fá','Sol','Lá'],a:1},{q:'O 1º grau também é chamado de…',o:['Tônica (a "casa")','Pausa','Oitava'],a:0}]},
+ {t:'Como se forma a escala maior',obj:'Montar qualquer escala maior pela regra de tons e semitons.',
+  exp:['Toda escala maior segue a mesma regra de distâncias: <b>tom – tom – semitom – tom – tom – tom – semitom</b>.','Em Dó maior isso dá só teclas brancas. Começando em outra nota, a regra obriga a usar teclas pretas. Em Ré maior: Ré, Mi, <b>Fá#</b>, Sol, Lá, Si, <b>Dó#</b>, Ré.',{s:'É como uma receita de passos: "dois passos grandes, um pequeno, três grandes, um pequeno". Começando de qualquer tecla, seguir a mesma receita sempre dá uma escala maior.'}],
+  actd:'Toque a escala maior pedida, subindo, da tônica até a oitava.',
+  act:{type:'kq',gen:()=>['D','A','F','Bb'].sort(()=>Math.random()-.5).slice(0,3).map(k=>{const sc=scaleOf(k);return{p:`Toque a escala de <b>${keyName(k)} maior</b>, subindo (8 notas)`,ans:sc.map(n=>n.pc).concat([sc[0].pc]),names:sc.map(n=>n.name).concat([sc[0].name]),seq:true,why:'Use a regra: T T S T T T S.'}})},
+  qs:[{q:'A regra da escala maior é…',o:['T T S T T T S','T S T T S T T','S T T S T T T'],a:0},{q:'Quais notas com sustenido tem Ré maior?',o:['Fá# e Dó#','Só Fá#','Sol# e Ré#'],a:0}]},
+ {t:'Intervalos',obj:'Reconhecer e tocar os principais intervalos.',
+  exp:['<b>Intervalo</b> é a distância entre duas notas. Ele recebe o nome pelo número de notas da escala que abrange: de Dó a Mi é uma <b>3ª</b> (Dó-Ré-Mi), de Dó a Sol é uma <b>5ª</b>.','O tamanho exato é medido em semitons: 3ª maior = 4 semitons, 3ª menor = 3, 4ª justa = 5, 5ª justa = 7, oitava = 12.','Cada intervalo tem uma "cor": a 3ª maior soa alegre, a 3ª menor soa triste, a 5ª soa firme e aberta.'],
+  actd:'Toque a nota que forma o intervalo pedido acima da nota dada.',
+  act:{type:'kq',gen:()=>Array.from({length:8},()=>{const iv=rnd([2,3,4,5,7,9,12]),L=rnd(['C','D','F','G','A']),pc=keyPc(L);return{p:`Toque uma <b>${IVN[iv]}</b> acima de <b>${keyName(L)}</b>`,ans:[mod(pc+iv,12)],why:`${IVN[iv]} = ${iv} semitons.`}})},
+  qs:[{q:'De Dó a Sol temos uma…',o:['3ª','5ª','8ª'],a:1},{q:'Quantos semitons tem uma 3ª maior?',o:['3','4','5'],a:1},{q:'Ouça: o intervalo é…',o:['3ª maior (alegre)','3ª menor (triste)'],a:0,play:()=>playSeqNow([60,64,[60,64]],.6,.8)}]},
+ {t:'Acordes maiores e menores',obj:'Montar acordes maiores e menores a partir de qualquer nota.',
+  exp:['Um acorde básico (tríade) tem 3 notas: a <b>fundamental</b>, a <b>3ª</b> e a <b>5ª</b>.','<b>Maior</b>: fundamental + 4 semitons + 3 semitons (Dó-Mi-Sol). <b>Menor</b>: fundamental + 3 semitons + 4 semitons (Lá-Dó-Mi).','A única diferença é a 3ª: meio tom mais baixa no acorde menor. É ela que deixa o som alegre ou triste.'],
+  actd:'Toque o acorde pedido (vale qualquer posição das notas).',
+  act:{type:'kq',gen:()=>Array.from({length:6},()=>{const r=rnd(['C','D','E','F','G','A','Bb']),t=rnd(['','m']),c=chordOf(r,t);return{p:`Toque o acorde de <b>${keyName(r)} ${CHT[t].n}</b> (${symOf(r,t)})`,ans:c.map(n=>n.pc),why:`${symOf(r,t)} = ${c.map(n=>n.name).join(' – ')}.`}})},
+  qs:[{q:'O que diferencia o acorde maior do menor?',o:['A 3ª','A 5ª','A fundamental'],a:0},{q:'Ouça: o acorde é…',o:['Maior','Menor'],a:1,play:()=>playChordNow([57,60,64],1.4)}]},
+ {t:'Armadura de clave',obj:'Saber quais notas têm sustenido ou bemol em cada tom.',
+  exp:['A <b>armadura</b> são os sustenidos ou bemóis escritos no início da pauta. Eles valem para a música inteira e mostram em que tom ela está.','Primeiros tons: <b>Sol maior</b> = 1 sustenido (Fá#). <b>Ré maior</b> = 2 (Fá#, Dó#). <b>Fá maior</b> = 1 bemol (Si♭). <b>Si♭ maior</b> = 2 bemóis (Si♭, Mi♭).','Com a armadura, você não precisa escrever o # ou ♭ em cada nota: basta lembrar que, naquele tom, aquelas notas são sempre alteradas.'],
+  actd:'Toque as teclas pretas que fazem parte do tom pedido.',
+  act:{type:'kq',gen:()=>['G','D','F','Bb','A','Eb'].sort(()=>Math.random()-.5).slice(0,5).map(k=>{const acc=scaleOf(k).filter(n=>n.a);return{p:`Toque as notas <b>alteradas</b> (# ou ♭) de <b>${keyName(k)} maior</b>`,ans:acc.map(n=>n.pc),why:`${keyName(k)} maior: ${acc.map(n=>n.name).join(', ')}.`,ok:acc.map(n=>n.name).join(', ')}})},
+  qs:[{q:'Quantos sustenidos tem Sol maior?',o:['0','1','2'],a:1},{q:'Qual a nota alterada de Fá maior?',o:['Fá#','Si♭','Dó#'],a:1}]},
+ {t:'Ritmo: semicolcheias e pontuadas',obj:'Ler e tocar semicolcheias e notas pontuadas.',
+  exp:['<b>Semicolcheia</b> vale um quarto de tempo: cabem 4 em um tempo. Conte "1-e-e-a".','<b>Nota pontuada</b>: o ponto soma metade do valor. Semínima pontuada = 1 + ½ = 1½ tempo. Normalmente vem seguida de uma colcheia, formando o "longo-curto".',{s:'Frações do tempo: inteiro (1), metade (½), quarto (¼). O ponto é "mais a metade": 1 + 0,5 = 1,5.'}],
+  actd:'Toque o ritmo com semicolcheias e notas pontuadas.',act:{type:'rhythm',bpm:60,bpb:4,pattern:[1,.25,.25,.25,.25,1.5,.5,1.5,.5,1,1,4]},
+  qs:[{q:'Quantas semicolcheias cabem em um tempo?',o:['2','4','8'],a:1},{q:'Uma semínima pontuada vale…',o:['1 tempo','1 tempo e meio','2 tempos'],a:1}]},
+ {t:'Sinais da partitura',obj:'Reconhecer os sinais mais usados na partitura.',
+  exp:['<b>Ritornelo</b> (𝄆 … 𝄇): repita o trecho entre os sinais.','<b>Casa 1 e casa 2</b>: na primeira vez toque a casa 1; na repetição, pule para a casa 2.','<b>D.C.</b> (da capo): volte ao início. <b>Fine</b>: termine aqui.','<b>Fermata</b> (𝄐): segure a nota mais tempo que o normal.','<b>Staccato</b> (ponto sobre a nota): toque curto, destacado. <b>Legato</b> (linha curva sobre várias notas): toque ligado, sem silêncio entre elas.'],
+  actd:'Ouça a diferença entre legato, staccato e fermata.',
+  act:{type:'tplay',items:[['Legato','ligado',()=>ODE4.slice(0,8).forEach((n,i)=>tone(n[0],ac().currentTime+.1+i*.45,.5)),'Legato: cada nota emenda na próxima.'],['Staccato','destacado',()=>ODE4.slice(0,8).forEach((n,i)=>tone(n[0],ac().currentTime+.1+i*.45,.12)),'Staccato: notas curtas, com silêncio entre elas.'],['Fermata','nota final segurada',()=>{[60,62,64,65].forEach((m,i)=>tone(m,ac().currentTime+.1+i*.45,.42));tone(67,ac().currentTime+.1+1.8,2.6)},'Fermata: a última nota fica segurada além do tempo normal.']]},
+  qs:[{q:'"D.C." significa…',o:['Voltar ao início','Tocar mais forte','Terminar'],a:0},{q:'Staccato pede notas…',o:['Ligadas','Curtas e destacadas','Mais longas'],a:1},{q:'Na casa 1 e casa 2, na repetição você toca…',o:['A casa 1','A casa 2'],a:1}]}
+];
+const T_AV=[
+ {t:'Ciclo das quintas',obj:'Entender como os tons se organizam e quantos sustenidos ou bemóis cada um tem.',
+  exp:['Começando em Dó e subindo de quinta em quinta (Dó → Sol → Ré → Lá → Mi…), cada novo tom ganha <b>um sustenido</b>. Descendo de quinta em quinta (Dó → Fá → Si♭ → Mi♭…), cada tom ganha <b>um bemol</b>.','Organizados num círculo, os 12 tons formam o <b>ciclo das quintas</b>. Tons vizinhos no círculo são "parentes": diferem em uma nota só. Por isso as músicas costumam passar entre eles.'],
+  actd:'Explore o círculo tocando nos tons e depois responda no teclado.',act:{type:'circle'},
+  qs:[{q:'Subindo uma quinta a partir de Dó chegamos a…',o:['Fá','Sol','Ré'],a:1},{q:'Quantos bemóis tem Mi♭ maior?',o:['2','3','4'],a:1}]},
+ {t:'Escalas menores',obj:'Conhecer as três escalas menores.',
+  exp:['<b>Menor natural</b>: regra T S T T S T T. Lá menor = Lá Si Dó Ré Mi Fá Sol Lá (só teclas brancas). É a <b>relativa</b> de Dó maior: mesmas notas, outra "casa".','<b>Menor harmônica</b>: igual à natural, com o <b>7º grau elevado</b> (Sol#). Cria um som "árabe" e uma atração forte para a tônica.','<b>Menor melódica</b>: eleva o 6º e o 7º graus ao subir (Fá#, Sol#). Suaviza a melodia.'],
+  actd:'Ouça as três escalas de Lá menor e depois toque as escalas pedidas.',
+  act:{type:'kq',top:`<div class="row" style="margin-bottom:8px"><button class="btn sm" onclick="newSession();playSeqNow(midiNear([9,11,0,2,4,5,7,9],57),.3,.3)">▶ Natural</button><button class="btn sm" onclick="newSession();playSeqNow(midiNear([9,11,0,2,4,5,8,9],57),.3,.3)">▶ Harmônica</button><button class="btn sm" onclick="newSession();playSeqNow(midiNear([9,11,0,2,4,6,8,9],57),.3,.3)">▶ Melódica</button></div>`,
+    gen:()=>[['A',HMIN,'harmônica'],['E',NMIN,'natural'],['D',HMIN,'harmônica'],['A',MMIN,'melódica']].map(([k,iv,n])=>{const sc=scaleOf(k,iv);return{p:`Toque <b>${keyName(k)} menor ${n}</b>, subindo (8 notas)`,ans:sc.map(x=>x.pc).concat([sc[0].pc]),names:sc.map(x=>x.name).concat([sc[0].name]),seq:true,why:`${keyName(k)} menor ${n}: ${sc.map(x=>x.name).join(' ')}.`}})},
+  qs:[{q:'A relativa menor de Dó maior é…',o:['Mi menor','Lá menor','Ré menor'],a:1},{q:'Na menor harmônica, qual grau é elevado?',o:['O 3º','O 6º','O 7º'],a:2}]},
+ {t:'Diminutos, aumentados e sétimas',obj:'Formar acordes diminutos, aumentados e com sétima.',
+  exp:['<b>Diminuto</b> (°): duas 3ªs menores empilhadas (Si-Ré-Fá). Som tenso, instável. <b>Aumentado</b> (+): duas 3ªs maiores (Dó-Mi-Sol#). Som de suspense.','<b>Com sétima</b>: acorde de 4 notas, acrescentando a 7ª. <b>7</b> (dominante): maior + 7ª menor (Sol-Si-Ré-Fá), pede resolução. <b>7M</b>: maior + 7ª maior (Dó-Mi-Sol-Si), suave, típico da bossa. <b>m7</b>: menor + 7ª menor (Ré-Fá-Lá-Dó).'],
+  actd:'Toque o acorde pedido (qualquer posição).',
+  act:{type:'kq',gen:()=>Array.from({length:6},()=>{const t=rnd(['dim','aug','7','m7','7M']),r=t==='dim'?rnd(['B','C#','F#']):rnd(['C','D','F','G','A']),c=chordOf(r,t);return{p:`Toque <b>${symOf(r,t)}</b> (${keyName(r)} ${CHT[t].n})`,ans:c.map(n=>n.pc),why:`${symOf(r,t)} = ${c.map(n=>n.name).join(' – ')}.`}})},
+  qs:[{q:'O acorde G7 tem quantas notas?',o:['3','4','5'],a:1},{q:'Qual acorde soa típico da bossa nova?',o:['C7M','Bdim','C+'],a:0}]},
+ {t:'Campo harmônico',obj:'Conhecer os 7 acordes de um tom.',
+  exp:['Montando um acorde sobre cada nota da escala (usando só notas da escala), surgem 7 acordes: o <b>campo harmônico</b>.','Em Dó maior: <b>C, Dm, Em, F, G, Am, B°</b>. Em graus: <b>I, ii, iii, IV, V, vi, vii°</b> (maiúsculo = maior, minúsculo = menor). Essa ordem maior-menor-menor-maior-maior-menor-diminuto vale para <b>todo</b> tom maior.','Quase todas as músicas usam acordes do campo harmônico. Sabendo o tom, você já sabe quais acordes devem aparecer: isso ajuda muito a tirar músicas de ouvido.'],
+  actd:'Toque o acorde do grau pedido. Use a Teoria rápida para consultar.',
+  act:{type:'kq',gen:()=>Array.from({length:7},()=>{const k=rnd(['C','G','F']),d=Math.floor(Math.random()*6),sc=scaleOf(k),pcs=[sc[d].pc,sc[(d+2)%7].pc,sc[(d+4)%7].pc];return{p:`Em <b>${keyName(k)} maior</b>, toque o acorde do grau <b>${['I','ii','iii','IV','V','vi'][d]}</b>`,ans:pcs,why:`Grau ${d+1} de ${keyName(k)} maior: ${[sc[d],sc[(d+2)%7],sc[(d+4)%7]].map(n=>n.name).join(' – ')}.`}})},
+  qs:[{q:'Em Dó maior, o acorde do 6º grau (vi) é…',o:['F','Am','G'],a:1},{q:'No campo harmônico maior, o V grau é sempre…',o:['Maior','Menor','Diminuto'],a:0}]},
+ {t:'Funções e cadências',obj:'Entender por que alguns acordes "pedem" outros.',
+  exp:['Os acordes têm <b>funções</b>: <b>tônica</b> (I, repouso, a "casa"), <b>subdominante</b> (IV, afastamento) e <b>dominante</b> (V, tensão que pede volta à tônica).','<b>Cadência</b> é o encadeamento que fecha uma frase. <b>Perfeita</b> (V → I): conclusão forte. <b>Plagal</b> (IV → I): o "amém" das igrejas. <b>Suspensiva</b> (termina no V): soa como pergunta. <b>Interrompida</b> (V → vi): surpresa.'],
+  actd:'Ouça cada cadência e compare.',
+  act:{type:'tplay',items:[['Perfeita','G → C',()=>PC(['C','F','G','C'],2,90),'V → I: sensação de fim.'],['Plagal','F → C',()=>PC(['C','F','C'],2,90),'IV → I: o "amém".'],['Suspensiva','termina em G',()=>PC(['C','F','C','G'],2,90),'Termina no V: parece uma pergunta.'],['Interrompida','G → Am',()=>PC(['C','F','G','Am'],2,90),'V → vi: a "casa" esperada não vem.']]},
+  qs:[{q:'O acorde de tensão que pede volta à tônica é o…',o:['I','IV','V'],a:2},{q:'Ouça: a frase soa…',o:['Concluída','Suspensa (pergunta)'],a:1,play:()=>PC(['C','F','C','G'],2,90)},{q:'Ouça: a frase soa…',o:['Concluída','Suspensa (pergunta)'],a:0,play:()=>PC(['C','F','G','C'],2,90)}]},
+ {t:'Transposição',obj:'Tocar a mesma melodia começando em outra nota.',
+  exp:['<b>Transpor</b> é mudar o tom de uma música mantendo as mesmas distâncias entre as notas. Serve para ajustar uma música à voz de quem canta.','Para transpor, desloque todas as notas pelo mesmo número de semitons. Se Dó-Ré-Mi sobe para começar em Sol, vira Sol-Lá-Si.',{s:'É como deslocar um desenho na folha sem deformá-lo: todos os pontos andam a mesma distância. Matematicamente, é somar o mesmo número a todas as notas (contando de volta ao Dó depois do Si, como num relógio).'}],
+  actd:'Toque o trecho transposto para começar na nota pedida.',
+  act:{type:'kq',gen:()=>[[[0,2,4,0],'Dó – Ré – Mi – Dó'],[[0,4,7,4,0],'Dó – Mi – Sol – Mi – Dó'],[[4,2,0,2,4,4,4],'Mi – Ré – Dó – Ré – Mi – Mi – Mi'],[[0,0,7,7,9,9,7],'Dó – Dó – Sol – Sol – Lá – Lá – Sol']].map(([m,txt])=>{const k=rnd(['G','F','D','A']),sh=keyPc(k);const sc=scaleOf(k);const names=m.map(x=>sc[[0,2,4,5,7,9,11].indexOf(x)].name);return{p:`Transponha <b>${txt}</b> para começar em <b>${keyName(k)}</b>`,ans:m.map(x=>mod(x+sh,12)),names,seq:true,why:'Mantenha as mesmas distâncias (semitons) do original.'}})},
+  qs:[{q:'Transpor é…',o:['Mudar o tom mantendo as distâncias','Tocar mais rápido','Trocar os acordes'],a:0},{q:'Dó-Mi-Sol transposto para começar em Fá fica…',o:['Fá-Lá-Dó','Fá-Sol-Lá','Fá-Si-Ré'],a:0}]},
+ {t:'Ritmo avançado',obj:'Tocar tercinas e síncopes e entender o 6/8.',
+  exp:['<b>Tercina</b>: três notas iguais no espaço de duas, ou seja, um tempo dividido em <b>três</b>. Conte "tri-o-la".','<b>Síncope</b>: uma nota que começa fora do tempo forte e se prolonga, dando um "balanço". É a base do samba e do baião.','<b>6/8</b>: seis colcheias por compasso, agrupadas em <b>dois grupos de três</b> ("<b>1</b>-2-3-<b>4</b>-5-6"). Soa como "dois tempos com balanço".',{s:'Dividir o tempo em 2 dá metades (½); em 3 dá terços (⅓). A tercina é a divisão por 3.'}],
+  actd:'Toque o ritmo com tercinas e síncope.',act:{type:'rhythm',bpm:60,bpb:4,pattern:[1/3,1/3,1/3,.5,1,.5,1,1/3,1/3,1/3,1/3,1/3,1/3,2]},
+  qs:[{q:'Uma tercina divide o tempo em…',o:['2 partes','3 partes','4 partes'],a:1},{q:'O 6/8 se conta em grupos de…',o:['2','3','4'],a:1}]},
+ {t:'Harmonizar uma melodia',obj:'Escolher os acordes certos para acompanhar uma melodia.',
+  exp:['Harmonizar é escolher acordes para uma melodia. Regra prática: em cada compasso, use o acorde que <b>contém as notas mais importantes</b> (as que caem no tempo forte ou duram mais).','Em Dó maior, comece testando só três acordes: <b>C</b> (Dó-Mi-Sol), <b>F</b> (Fá-Lá-Dó) e <b>G</b> (Sol-Si-Ré). Eles cobrem todas as notas da escala.','Termine as frases com G → C (cadência perfeita) para soar concluído.'],
+  actd:'Escolha os acordes para 8 compassos de melodias conhecidas e confira.',act:{type:'harmz'},
+  qs:[{q:'Para harmonizar um compasso, escolha o acorde que…',o:['Contém as notas principais','Tem o nome mais bonito','É sempre Dó'],a:0}]},
+ {t:'Música e matemática',obj:'Ver a matemática por trás da afinação, das tonalidades e do timbre.',
+  exp:['<b>Temperamento igual</b>: o teclado divide a oitava (o dobro da frequência) em 12 passos iguais. Cada passo multiplica a frequência por ≈1,0595.',{s:'<b>Raiz 12ª de 2</b> é o número que, multiplicado por ele mesmo 12 vezes, dá 2. Por isso 12 passos completam exatamente uma oitava.'},
+       '<b>Coma pitagórica</b>: 12 quintas "puras" (3:2) deveriam dar 7 oitavas, mas passam um pouco (cerca de 1,4%). O teclado reparte esse erro igualmente entre todas as quintas: cada uma fica 0,1% menor que a pura, quase imperceptível.',
+       '<b>Módulo 12</b>: depois de 12 semitons, a nota se repete.',{s:'É a conta do relógio: 10 horas + 5 horas = 3 horas (e não 15). Na música, Si + 1 semitom = Dó. Transpor é somar; o ciclo das quintas é somar 7 repetidas vezes.'},
+       '<b>Série de Fourier e espectro</b>: um som periódico é a soma de ondas puras em f, 2f, 3f… (os harmônicos). Para sons que não se repetem, usa-se a <b>transformada de Fourier</b>; os aparelhos calculam uma versão rápida dela (FFT) para mostrar o espectro.',
+       '<b>Como o app reconhece a nota</b>: o microfone usa a <b>autocorrelação</b>, que compara o som com ele mesmo deslocado no tempo para descobrir de quanto em quanto tempo a onda se repete (o período). A frequência é 1 ÷ período.'],
+  actd:'Ouça a quinta pura e a temperada, gire o relógio das quintas, monte seu próprio timbre e veja o espectro ao vivo.',act:{type:'math'},
+  qs:[{q:'Cada semitom multiplica a frequência por aproximadamente…',o:['1,06','1,5','2'],a:0},{q:'Por que o ciclo das quintas passa pelas 12 notas?',o:['Porque 7 e 12 não têm divisor comum','Porque o piano tem 88 teclas','Por acaso'],a:0},{q:'A FFT é usada para…',o:['Mostrar as frequências de um som','Afinar a voz','Medir o tempo'],a:0}]}
+];
+const THEORY=[{k:'intro',n:'Introdução: a física da música',ic:'🔬',d:'Opcional · o porquê dos sons, em linguagem simples',ls:T_INTRO},
+  {k:'bas',n:'Teoria básica',ic:'🟢',d:'Os conceitos essenciais',ls:T_BAS},{k:'int',n:'Teoria intermediária',ic:'🟡',d:'Escalas, intervalos, acordes e armadura',ls:T_INT},{k:'av',n:'Teoria avançada',ic:'🔴',d:'Harmonia, cadências, transposição e matemática',ls:T_AV}];
+const TLESS=[];THEORY.forEach((G,gi)=>G.ls.forEach((l,i)=>{l.g=gi;l.i=i;l.id=G.k+(i+1);TLESS.push(l)}));
+const tDone=l=>!!PROG['th'+l.id];
+function viewTheory(){
+  title('Teoria musical');showKB(false);
+  V().innerHTML=`<p class="muted">Cada lição tem explicação curta, atividade no teclado (o app confere) e um quiz rápido. Quando aparecer matemática, procure o quadro <b>🔢 Em palavras simples</b>.</p>
+    <button class="tile" id="trq" style="width:100%;min-height:0;margin-bottom:12px;border:2px solid var(--accent)"><span class="ic">🧭</span><b>Teoria rápida</b><span>Escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom</span></button>
+    ${THEORY.map((G,gi)=>`<div class="modh"><b>${G.ic} ${G.n}</b><span>${G.ls.filter(tDone).length}/${G.ls.length}</span></div><p class="muted small" style="margin-top:-4px">${G.d}</p>${G.ls.map(l=>{const p=PROG['th'+l.id];return `<button class="li${p?' done':''}" data-id="${l.id}"><div class="n">${p?'✓':l.i+1}</div><div><div class="t">${l.t}</div><div class="d">${l.obj}</div></div><div class="st">${p?starStr(p.stars):''}</div></button>`}).join('')}`).join('')}`;
+  $('#trq').onclick=()=>go(viewQuickTheory);V().querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>go(viewTheoryLesson,b.dataset.id));
+}
+function viewTheoryLesson(id){
+  const k=TLESS.findIndex(l=>l.id===id),l=TLESS[k],G=THEORY[l.g];title(`${G.n.split(':')[0]} · ${l.i+1} de ${G.ls.length}`);showKB(true,48,84);
+  V().innerHTML=`<span class="tag">${G.ic} ${G.n}</span><h1 style="font-size:21px;margin-top:8px">${l.t}</h1>
+   <div class="card obj"><h3>🎯 Objetivo</h3><p>${l.obj}</p></div>
+   <div class="card exp"><h3>📖 Explicação</h3>${l.exp.map(p=>typeof p==='string'?`<p>${p}</p>`:simple(p.s)).join('')}</div>
+   <div class="card"><h3>🎹 Atividade</h3><p class="muted">${l.actd}</p><div id="tact"><button class="btn primary" id="tgo">Começar atividade</button></div></div>
+   ${l.qs?`<div class="card"><h3>❓ Quiz rápido</h3><div id="tqz"><button class="btn" id="tqgo">Começar quiz</button></div></div>`:''}
+   <div class="row" style="justify-content:space-between"><button class="btn sm" id="tprv" ${k===0?'disabled':''}>← Anterior</button><button class="btn sm" id="tnxt" ${k===TLESS.length-1?'disabled':''}>Próxima →</button></div>`;
+  $('#tgo').onclick=()=>{ac();CURKEY='th'+l.id;teardownSoft();EX[l.act.type]($('#tact'),l.act)};
+  if(l.qs)$('#tqgo').onclick=()=>{CURKEY='thq'+l.id;EX.tq($('#tqz'),{qs:l.qs})};
+  $('#tprv').onclick=()=>{HIST.pop();go(viewTheoryLesson,TLESS[k-1].id)};$('#tnxt').onclick=()=>{HIST.pop();go(viewTheoryLesson,TLESS[k+1].id)};
+}
+function teardownSoft(){HANDLER=null;setTargets([]);clearMarks()}
+/* ---------- Teoria rápida ---------- */
+function viewQuickTheory(){
+  title('Teoria rápida');showKB(true,48,84);
+  const keys=MAJKEYS.map(k=>k[0]);let key='C',mode='maior',root='C',ctype='';
+  V().innerHTML=`<div class="card"><h3>Tom</h3><div class="seg" id="qk">${keys.map(k=>`<button data-k="${k}">${keyName(k)}</button>`).join('')}</div>
+     <div class="seg" style="margin-top:8px" id="qm"><button data-m="maior" class="on">Maior</button><button data-m="menor">Menor (natural)</button><button data-m="harm">Menor harmônica</button></div>
+     <div id="qinfo" style="margin-top:10px"></div></div>
+   <div class="card"><h3>Acorde</h3><div class="seg" id="qr">${['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'].map(k=>`<button data-r="${k}">${keyName(k)}</button>`).join('')}</div>
+     <div class="seg" style="margin-top:8px" id="qt">${Object.keys(CHT).map(t=>`<button data-t="${t}">${CHT[t].n}</button>`).join('')}</div><div id="qch" style="margin-top:10px"></div></div>
+   <div class="card"><h3>Intervalos a partir de ${keyName('C')}</h3><div class="grid2">${Object.entries(IVN).map(([s,n])=>`<button class="tile" data-iv="${s}" style="min-height:0"><b>${n}</b><span>${s} semiton${s>1?'s':''} · ${keyName('C')} – ${nn(60+ +s)}</span></button>`).join('')}</div></div>`;
+  const show=()=>{const tk=mode==='maior'?key:RELMIN[key]||key;const iv=mode==='maior'?SMAJ:mode==='menor'?NMIN:HMIN;const sc=scaleOf(mode==='maior'?key:tk,iv);
+    const sig=MAJKEYS.find(x=>x[0]===key)[1];const triads=sc.map((n,d)=>[sc[d],sc[(d+2)%7],sc[(d+4)%7]]);
+    const qual=t=>{const a=mod(t[1].pc-t[0].pc,12),b=mod(t[2].pc-t[0].pc,12);return a===4&&b===7?'':a===3&&b===7?'m':a===3&&b===6?'°':'+'};
+    const nm=n=>(S.names==='letters'?n.L:n.L)+(n.a==='#'?'#':n.a==='b'?'♭':n.a);
+    $('#qinfo').innerHTML=`<p><b>${keyName(mode==='maior'?key:tk)} ${mode==='maior'?'maior':mode==='menor'?'menor natural':'menor harmônica'}</b> · armadura: ${sig===0?'nenhuma alteração':Math.abs(sig)+(sig>0?' sustenido(s)':' bemol(is)')}${mode!=='maior'?` (relativa de ${keyName(key)} maior)`:''}</p>
+      <p style="font-size:17px;font-weight:800;letter-spacing:1px">${sc.map(n=>n.name).join(' – ')}</p><button class="btn sm" id="qplay">▶ Ouvir a escala</button>
+      <p style="margin:10px 0 4px"><b>Campo harmônico</b> (toque para ouvir e ver no teclado):</p><div class="row">${triads.map((t,d)=>`<button class="btn sm" data-d="${d}"><span class="muted">${['m','°'].includes(qual(t))?ROMAN[d].toLowerCase():ROMAN[d]}${qual(t)==='°'?'°':''}</span> ${nm(t[0])}${qual(t)}</button>`).join('')}</div>`;
+    setTargets(midiNear(sc.map(n=>n.pc)).map(m=>({m})));
+    $('#qplay').onclick=()=>{newSession();playSeqNow(midiNear(sc.map(n=>n.pc).concat([sc[0].pc])),.3,.3)};
+    $('#qinfo').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const t=triads[+b.dataset.d],ms=midiNear(t.map(n=>n.pc));setTargets(ms.map((m,i)=>({m,f:[1,3,5][i]})));playChordNow(ms)})};
+  const showCh=()=>{const c=chordOf(root,ctype),ms=midiNear(c.map(n=>n.pc));$('#qch').innerHTML=`<p style="font-size:17px;font-weight:800">${symOf(root,ctype)} = ${c.map(n=>n.name).join(' – ')}</p><p class="muted small">Intervalos (semitons a partir da fundamental): ${CHT[ctype].iv.join(', ')}</p>`;
+    setTargets(ms.map((m,i)=>({m,f:ms.length===3?[1,3,5][i]:[1,2,3,5][i]})));playChordNow(ms)};
+  const sel=(id,attr,val)=>V().querySelectorAll(`#${id} button`).forEach(b=>b.classList.toggle('on',b.dataset[attr]===val));
+  V().querySelectorAll('#qk button').forEach(b=>b.onclick=()=>{key=b.dataset.k;sel('qk','k',key);show()});
+  V().querySelectorAll('#qm button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;sel('qm','m',mode);show()});
+  V().querySelectorAll('#qr button').forEach(b=>b.onclick=()=>{root=b.dataset.r;sel('qr','r',root);showCh()});
+  V().querySelectorAll('#qt button').forEach(b=>b.onclick=()=>{ctype=b.dataset.t;sel('qt','t',ctype);showCh()});
+  V().querySelectorAll('[data-iv]').forEach(b=>b.onclick=()=>{const s=+b.dataset.iv;setTargets([{m:60},{m:60+s}]);newSession();playSeqNow([60,60+s,[60,60+s]],.5,.6)});
+  sel('qk','k','C');sel('qr','r','C');sel('qt','t','');show();
+}
 
 /* =========================================================
    PLANO DE ESTUDO, TREINO DO DIA, TESTE DO TECLADO E ANOTAÇÕES
@@ -1989,6 +2388,8 @@ function buildSession(plan){
   // revisão (30 min): algo com 1 estrela
   if(plan.mins===30){const rev=Object.keys(PROG).find(k=>PROG[k].stars===1&&!doneToday(k));
     if(rev){if(rev[0]==='l')items.push({kind:'lesson',n:+rev.slice(1),role:'Revisão',min:5});else if(rev[0]==='x')items.push({kind:'ex',k:rev[1],n:+rev.slice(2),role:'Revisão',min:5})}}
+  // teoria: próxima lição do nível
+  if(plan.mins>=20){const TP=[['intro','bas'],['bas','int'],['int','av'],['av']][plan.level];const tl=TLESS.find(l=>TP.includes(THEORY[l.g].k)&&!tDone(l));if(tl)items.push({kind:'theory',id:tl.id,role:'Teoria',min:4})}
   // música: menor nível ainda sem 2 estrelas
   let pick=null;for(let lv=0;lv<=nv.maxLv&&!pick;lv++)for(const id of nv.songs){if(stars('s:'+id+':'+lv)<2){pick={id,lv};break}}
   if(!pick)pick={id:nv.songs[0],lv:nv.maxLv};
@@ -1997,11 +2398,11 @@ function buildSession(plan){
 }
 function getSession(){const plan=ST.get('plan',null);if(!plan)return null;let s=ST.get('session',null);
   if(!s||s.date!==today()||s.sig!==JSON.stringify(plan)){s={date:today(),sig:JSON.stringify(plan),items:buildSession(plan)};ST.set('session',s)}return s}
-function itemKey(it){return it.kind==='lesson'?'l'+it.n:it.kind==='ex'?'x'+it.k+it.n:'s:'+it.id+':'+it.lv}
-function itemLabel(it){if(it.kind==='lesson'){const l=LESSONS[it.n-1];return`Lição ${it.n}: ${l.t}`}
+function itemKey(it){return it.kind==='theory'?'th'+it.id:it.kind==='lesson'?'l'+it.n:it.kind==='ex'?'x'+it.k+it.n:'s:'+it.id+':'+it.lv}
+function itemLabel(it){if(it.kind==='theory'){const l=TLESS.find(x=>x.id===it.id);return`Teoria: ${l.t}`}if(it.kind==='lesson'){const l=LESSONS[it.n-1];return`Lição ${it.n}: ${l.t}`}
   if(it.kind==='ex'){const x=xInfo(it.k,it.n);return`${XK[it.k].n} ${it.n}: ${x.t}`}
   const s=SONGS.find(x=>x.id===it.id);return`${s.title} · nível ${it.lv+1} (${LEVELS[it.lv].t})`}
-function openItem(it){ac();if(it.kind==='lesson')go(viewLesson,it.n);else if(it.kind==='ex')go(viewEx,it.k,it.n);else go(viewSong,it.id,it.lv)}
+function openItem(it){ac();if(it.kind==='theory')return go(viewTheoryLesson,it.id);if(it.kind==='lesson')go(viewLesson,it.n);else if(it.kind==='ex')go(viewEx,it.k,it.n);else go(viewSong,it.id,it.lv)}
 function levelComplete(plan){const lp=lessonPool(plan),ep=exPool(plan);return lp.every(n=>stars('l'+n)>=2)&&ep.every(e=>stars('x'+e.k+e.n)>=2)}
 
 function viewPlan(){
@@ -2109,6 +2510,7 @@ function viewHome(){
    <div class="card"><div class="stats"><div class="stat"><b>${streak()}</b><span>dias seguidos</span></div><div class="stat"><b>${lessonsDone()}/${LESSONS.length}</b><span>lições</span></div><div class="stat"><b>${Object.keys(PROG).filter(k=>/^x[rlb]\d/.test(k)).length}/90</b><span>exercícios</span></div><div class="stat"><b>${sd}/${SONGS.length*5}</b><span>níveis de música</span></div></div></div>
    <div class="grid2">
     <button class="tile" id="hL"><span class="ic">📚</span><b>Lições</b><span>${MODULES.length} módulos · ${LESSONS.length} lições</span></button>
+    <button class="tile" id="hT2"><span class="ic">🎼</span><b>Teoria musical</b><span>${TLESS.length} lições em 4 níveis · Teoria rápida</span></button>
     <button class="tile" id="hX"><span class="ic">💪</span><b>Exercícios progressivos</b><span>30 mão direita · 30 esquerda · 30 duas mãos</span></button>
     <button class="tile" id="hS"><span class="ic">🎵</span><b>Músicas para aprender</b><span>${SONGS.length} músicas · 5 níveis cada</span></button>
     <button class="tile" id="hK"><span class="ic">🎤</span><b>Teste seu teclado</b><span>Confira se o microfone ou o cabo USB reconhecem as notas</span></button>
@@ -2120,14 +2522,14 @@ function viewHome(){
    </div>
    <div class="note" style="margin-top:12px">Dica: use o celular <b>deitado</b>. O teclado da tela fica maior e mais fácil de tocar.</div>`;
   if(plan)$('#hT').onclick=()=>go(viewToday);else $('#hP').onclick=()=>go(viewPlan);
-  $('#hL').onclick=()=>go(viewLessons);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);
+  $('#hL').onclick=()=>go(viewLessons);$('#hT2').onclick=()=>go(viewTheory);$('#hX').onclick=()=>go(viewExList,'r');$('#hS').onclick=()=>go(viewSongs);
   $('#hK').onclick=()=>go(viewTest);$('#hA').onclick=()=>go(viewAbout);$('#hC').onclick=()=>go(viewAch);if($('#hI'))$('#hI').onclick=installApp;$('#hF').onclick=()=>go(viewFree);$('#hN').onclick=()=>go(viewNotes);
 }
 
 
 /* ---------- Sobre ---------- */
 const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
-const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML)','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas'];
+const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML)','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
 const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Tocar com a cifra','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
 function viewAbout(){
   title('Sobre');showKB(false);
