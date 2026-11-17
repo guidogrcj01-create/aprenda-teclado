@@ -1264,13 +1264,18 @@ function viewSongs(){
    <h2>Músicas do app</h2>${base.map(item).join('')}`;
   V().querySelectorAll('.li').forEach(b=>b.onclick=()=>go(viewSong,b.dataset.id));
   $('#impf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const fb=$('#impfb');fb.className='fb';fb.textContent='Lendo a partitura…';
-    try{const s=await importFile(f);checkAch();fb.className='fb ok';fb.textContent=`“${s.title}” importada: ${s.tracks.R.length} notas na direita e ${s.tracks.L.length} na esquerda.`;setTimeout(()=>{HIST.pop();go(viewSongs)},1200)}
+    try{const s=await importFile(f);checkAch();fb.className='fb ok';fb.textContent=`“${s.title}” importada: ${(s.tracks.Rf||s.tracks.R).length} notas na direita e ${s.tracks.L.length} na esquerda${s.sections?`, em ${s.sections.length} trechos`:''}.`;setTimeout(()=>{HIST.pop();go(viewSongs)},1200)}
     catch(err){fb.className='fb bad';fb.textContent=err.message||String(err)}};
 }
-function viewSong(id,lv){
-  const s=SONGS.find(x=>x.id===id);if(!s)return back();title(s.title);showKB(true,s.range[0],s.range[1]);
-  V().innerHTML=`<h1 style="font-size:21px">${s.title}</h1><p class="muted small">${s.sub}</p><div class="card"><p>${s.info}</p>${s.imported?'<button class="btn sm" id="sdel">🗑 Apagar esta música importada</button><div class="fb" id="sdelfb"></div>':''}</div><div class="card" id="ps"></div>`;
+function viewSong(id,lv,ver){
+  let s=SONGS.find(x=>x.id===id);if(!s)return back();
+  if(s.versions){ver=ver||ST.get('ver:'+id,'i');s=s.versions[ver]||s}
+  title(s.title);showKB(true,s.range[0],s.range[1]);
+  V().innerHTML=`<h1 style="font-size:21px">${s.title}</h1><p class="muted small">${s.sub}</p>
+   ${s.versions?`<div class="card"><h3>Versão</h3><div class="seg" id="sver">${Object.keys(s.versions).map(k=>{const st=Math.max(0,...LEVELS.map((_,i)=>stars('s:'+s.versions[k].id+':'+i)));return `<button data-v="${k}" class="${k===s.ver?'on':''}">${s.vnames[k]}${st?' '+'★'.repeat(st):''}</button>`}).join('')}</div><p class="muted small" style="margin-top:8px">${s.vdesc[s.ver]}</p></div>`:''}
+   <div class="card"><p>${s.info}</p>${s.imported?'<button class="btn sm" id="sdel">🗑 Apagar esta música importada</button><div class="fb" id="sdelfb"></div>':''}</div><div class="card" id="ps"></div>`;
   playSetup($('#ps'),s,{levels:true,key:'s:'+s.id,lv:lv||0});
+  if(s.versions)V().querySelectorAll('#sver [data-v]').forEach(b=>b.onclick=()=>{ST.set('ver:'+id,b.dataset.v);HIST.pop();go(viewSong,id,0,b.dataset.v)});
   if(s.imported)$('#sdel').onclick=()=>{$('#sdelfb').innerHTML='Apagar “'+s.title+'”? <button class="btn sm" id="sdy">Sim, apagar</button>';$('#sdy').onclick=()=>{deleteImported(s.id);back()}};
 }
 function viewFree(){
@@ -1727,6 +1732,82 @@ const PRELUDIO=(()=>{
 SONGS.push(GREEN,PRELUDIO);
 
 /* =========================================================
+   AIR (Ária na corda Sol) — J. S. Bach, Suíte para orquestra nº 3, BWV 1068 — domínio público
+   Arranjo do app em 3 versões: melodia e baixo de Bach (em Sol maior, cada parte uma vez);
+   notas de apoio da mão direita e simplificações próprias. Notas: [tempo, duração, nota MIDI, dedo]
+   ========================================================= */
+const AIRV={
+ f:{R:[[0,4,71,2],[4,5,71,2],[9,0.5,76,5],[9.5,0.5,72,3],[10,0.5,69,2],[10.5,0.5,67,1],[11,0.5,66,2],[11.5,0.5,67,4],[12,2,66,3],[14,0.5,64,2],[14.5,1.5,62,1],[16,4.5,74,5],[20.5,0.5,71,5],[21,0.5,65,2],[21.5,0.5,64,1],[22,0.5,69,3],[22.5,0.5,68,2],[23,0.5,74,5],[23.5,0.5,72,4],[24,4.5,72,4],[28.5,0.5,69,4],[29,0.5,64,2],[29.5,0.5,62,1],[30,0.5,67,3],[30.5,0.5,66,2],[31,0.5,72,5],[31.5,0.5,71,3],[32,3,71,3],[35,0.5,73,4],[35.5,0.5,74,5],[36,1,67,1],[37,0.5,67,1],[37.5,0.25,69,3],[37.75,0.25,71,5],[38,0.5,71,5],[38.5,0.5,69,4],[39,0.5,69,4],[39.5,0.5,67,3],[40,0.5,66,2],[40.5,0.5,64,1],[41,0.25,64,1],[41.25,0.25,66,2],[41.5,0.5,67,4],[42,1,67,4],[43,0.5,66,3],[43.5,0.5,64,2],[44,4,62,1],[48,2.5,66,2],[50.5,0.25,67,3],[50.75,0.25,66,2],[51,0.25,64,1],[51.25,0.25,66,2],[51.5,0.5,62,1],[52,3,74,5],[55,1,65,2],[56,1,64,1],[57,1.5,76,5],[58.5,0.5,74,4],[59,0.5,72,3],[59.5,0.5,71,2],[60,2.25,72,4],[62.25,0.25,71,3],[62.5,0.25,69,2],[62.75,0.25,67,1],[63,0.5,66,3],[63.5,0.5,64,2],[64,0.5,63,1],[64.5,0.5,64,2],[65,1.5,66,3],[66.5,0.5,67,1],[67,1.5,69,2],[68.5,0.5,71,3],[69,2,72,4],[71,1,71,3],[72,0.5,69,2],[72.5,0.5,67,1],[73,0.5,66,2],[73.5,0.5,64,1],[74,0.5,66,2],[74.5,0.25,67,3],[74.75,0.25,69,4],[75,1,67,3],[76,4,64,1],[80,2.5,67,2],[82.5,0.5,71,4],[83,0.5,69,2],[83.5,0.5,67,1],[84,3,76,5],[87,0.5,74,4],[87.5,0.5,73,3],[88,0.25,71,2],[88.25,0.25,69,1],[88.5,0.5,74,4],[89,1,62,1],[90,1.5,64,2],[91.5,0.25,66,3],[91.75,0.25,67,4],[92,1.5,66,3],[93.5,0.5,64,2],[94,2,62,1],[96,3,67,2],[99,0.5,71,4],[99.5,0.5,69,3],[100,3,69,3],[103,0.5,72,5],[103.5,0.5,71,4],[104,3,71,4],[107,0.5,74,5],[107.5,0.5,72,4],[108,4,72,4],[112,2.5,62,1],[114.5,0.5,66,2],[115,0.5,69,3],[115.5,0.5,72,5],[116,0.5,72,5],[116.5,0.5,69,2],[117,2,71,3],[119,0.5,71,3],[119.5,0.25,72,4],[119.75,0.25,74,5],[120,2.5,67,1],[122.5,0.5,71,2],[123,0.5,74,3],[123.5,0.5,77,5],[124,3,76,4],[127,1,67,2],[128,0.5,66,1],[128.5,0.5,69,3],[129,2,72,5],[131,1,64,2],[132,1,62,1],[133,0.5,69,3],[133.5,0.25,71,4],[133.75,0.25,72,5],[134,0.5,72,5],[134.5,1,71,4],[135.5,0.5,69,2],[136,0.25,67,1],[136.25,0.25,66,2],[136.5,1,64,1],[137.5,0.5,66,2],[138,1,67,3],[139,0.5,66,2],[139.5,0.5,67,3],[140,4,67,3]],
+  Rf:null,
+  L:[[0,2,43,5],[2,2,54,2],[4,2,40,5],[6,2,50,1],[8,2,48,2],[10,2,49,1],[12,2,38,5],[14,2,48,1],[16,2,47,3],[18,2,57,1],[20,2,44,5],[22,2,52,1],[24,2,45,5],[26,2,55,1],[28,2,42,5],[30,2,50,1],[32,2,43,5],[34,2,54,1],[36,2,40,3],[38,2,49,2],[40,2,50,1],[42,2,45,2],[44,4,38,5],[48,2,38,5],[50,2,48,1],[52,2,47,3],[54,2,57,1],[56,2,44,5],[58,2,52,1],[60,2,45,5],[62,2,55,1],[64,2,42,5],[66,2,52,1],[68,2,39,5],[70,2,42,3],[72,2,40,5],[74,2,45,2],[76,2,40,5],[78,2,50,1],[80,2,49,2],[82,2,47,3],[84,2,45,5],[86,2,55,1],[88,2,42,3],[90,2,43,2],[92,2,38,5],[94,2,48,1],[96,2,47,2],[98,2,48,1],[100,2,49,2],[102,2,50,1],[104,2,39,5],[106,2,52,1],[108,2,45,5],[110,2,55,1],[112,2,42,5],[114,2,50,2],[116,2,55,1],[118,2,41,5],[120,2,52,1],[122,2,38,5],[124,2,48,1],[126,2,47,2],[128,2,45,4],[130,2,55,1],[132,2,42,5],[134,2,43,4],[136,2,50,1],[138,2,50,1],[140,4,43,3]],
+  Ls:[[0,4,43,3],[4,4,40,5],[8,4,48,1],[12,4,38,5],[16,4,47,1],[20,4,44,3],[24,4,45,2],[28,4,42,4],[32,4,43,3],[36,4,40,5],[40,4,50,1],[44,4,38,5],[48,4,38,5],[52,4,47,1],[56,4,44,2],[60,4,45,1],[64,4,42,2],[68,4,39,4],[72,4,40,3],[76,4,40,3],[80,4,49,1],[84,4,45,2],[88,4,42,3],[92,4,38,5],[96,4,47,1],[100,4,49,2],[104,4,39,4],[108,4,45,1],[112,4,42,3],[116,4,55,1],[120,4,52,2],[124,4,48,1],[128,4,45,2],[132,4,42,4],[136,4,50,1],[140,4,43,3]]},
+ i:{R:[[0,4,71,2],[4,5,71,2],[9,0.5,76,5],[9.5,0.5,72,3],[10,0.5,69,2],[10.5,0.5,67,1],[11,0.5,66,2],[11.5,0.5,67,4],[12,2,66,3],[14,0.5,64,2],[14.5,1.5,62,1],[16,4.5,74,5],[20.5,0.5,71,5],[21,0.5,65,2],[21.5,0.5,64,1],[22,0.5,69,3],[22.5,0.5,68,2],[23,0.5,74,5],[23.5,0.5,72,4],[24,4.5,72,4],[28.5,0.5,69,4],[29,0.5,64,2],[29.5,0.5,62,1],[30,0.5,67,3],[30.5,0.5,66,2],[31,0.5,72,5],[31.5,0.5,71,3],[32,3,71,3],[35,0.5,73,4],[35.5,0.5,74,5],[36,1,67,1],[37,0.5,67,1],[37.5,0.25,69,3],[37.75,0.25,71,5],[38,0.5,71,5],[38.5,0.5,69,4],[39,0.5,69,4],[39.5,0.5,67,3],[40,0.5,66,2],[40.5,0.5,64,1],[41,0.25,64,1],[41.25,0.25,66,2],[41.5,0.5,67,4],[42,1,67,4],[43,0.5,66,3],[43.5,0.5,64,2],[44,4,62,1],[48,2.5,66,2],[50.5,0.25,67,3],[50.75,0.25,66,2],[51,0.25,64,1],[51.25,0.25,66,2],[51.5,0.5,62,1],[52,3,74,5],[55,1,65,2],[56,1,64,1],[57,1.5,76,5],[58.5,0.5,74,4],[59,0.5,72,3],[59.5,0.5,71,2],[60,2.25,72,4],[62.25,0.25,71,3],[62.5,0.25,69,2],[62.75,0.25,67,1],[63,0.5,66,3],[63.5,0.5,64,2],[64,0.5,63,1],[64.5,0.5,64,2],[65,1.5,66,3],[66.5,0.5,67,1],[67,1.5,69,2],[68.5,0.5,71,3],[69,2,72,4],[71,1,71,3],[72,0.5,69,2],[72.5,0.5,67,1],[73,0.5,66,2],[73.5,0.5,64,1],[74,0.5,66,2],[74.5,0.25,67,3],[74.75,0.25,69,4],[75,1,67,3],[76,4,64,1],[80,2.5,67,2],[82.5,0.5,71,4],[83,0.5,69,2],[83.5,0.5,67,1],[84,3,76,5],[87,0.5,74,4],[87.5,0.5,73,3],[88,0.25,71,2],[88.25,0.25,69,1],[88.5,0.5,74,4],[89,1,62,1],[90,1.5,64,2],[91.5,0.25,66,3],[91.75,0.25,67,4],[92,1.5,66,3],[93.5,0.5,64,2],[94,2,62,1],[96,3,67,2],[99,0.5,71,4],[99.5,0.5,69,3],[100,3,69,3],[103,0.5,72,5],[103.5,0.5,71,4],[104,3,71,4],[107,0.5,74,5],[107.5,0.5,72,4],[108,4,72,4],[112,2.5,62,1],[114.5,0.5,66,2],[115,0.5,69,3],[115.5,0.5,72,5],[116,0.5,72,5],[116.5,0.5,69,2],[117,2,71,3],[119,0.5,71,3],[119.5,0.25,72,4],[119.75,0.25,74,5],[120,2.5,67,1],[122.5,0.5,71,2],[123,0.5,74,3],[123.5,0.5,77,5],[124,3,76,4],[127,1,67,2],[128,0.5,66,1],[128.5,0.5,69,3],[129,2,72,5],[131,1,64,2],[132,1,62,1],[133,0.5,69,3],[133.5,0.25,71,4],[133.75,0.25,72,5],[134,0.5,72,5],[134.5,1,71,4],[135.5,0.5,69,2],[136,0.25,67,1],[136.25,0.25,66,2],[136.5,1,64,1],[137.5,0.5,66,2],[138,1,67,3],[139,0.5,66,2],[139.5,0.5,67,3],[140,4,67,3]],
+  Rf:[[0,4,62,1],[0,4,71,4],[4,4,67,2],[4,5,71,4],[9,0.5,76,5],[9.5,0.5,72,3],[10,0.5,69,2],[10.5,0.5,67,1],[11,0.5,66,2],[11.5,0.5,67,4],[12,2,57,1],[12,2,66,3],[14,0.5,64,2],[14.5,1.5,62,1],[16,4,65,2],[16,4.5,74,5],[20.5,0.5,71,5],[21,0.5,65,2],[21.5,0.5,64,1],[22,0.5,69,3],[22.5,0.5,68,2],[23,0.5,74,5],[23.5,0.5,72,4],[24,4,64,1],[24,4.5,72,4],[28.5,0.5,69,4],[29,0.5,64,2],[29.5,0.5,62,1],[30,0.5,67,3],[30.5,0.5,66,2],[31,0.5,72,5],[31.5,0.5,71,3],[32,3,62,1],[32,3,71,3],[35,0.5,73,4],[35.5,0.5,74,5],[36,1,59,1],[36,1,67,2],[37,0.5,67,2],[37.5,0.25,69,3],[37.75,0.25,71,5],[38,0.5,71,5],[38.5,0.5,69,4],[39,0.5,69,4],[39.5,0.5,67,3],[40,0.5,66,2],[40.5,0.5,64,1],[41,0.25,64,2],[41.25,0.25,66,4],[41.5,0.5,67,5],[42,1,62,2],[42,1,67,5],[43,0.5,66,4],[43.5,0.5,64,3],[44,4,57,1],[44,4,62,2],[48,2.5,57,1],[48,2.5,66,4],[50.5,0.25,67,5],[50.75,0.25,66,4],[51,0.25,64,2],[51.25,0.25,66,3],[51.5,0.5,62,1],[52,3,65,2],[52,3,74,5],[55,1,65,2],[56,1,64,1],[57,1.5,76,5],[58.5,0.5,74,4],[59,0.5,72,3],[59.5,0.5,71,2],[60,2.25,64,1],[60,2.25,72,4],[62.25,0.25,71,3],[62.5,0.25,69,2],[62.75,0.25,67,1],[63,0.5,66,3],[63.5,0.5,64,2],[64,0.5,63,1],[64.5,0.5,64,2],[65,1.5,66,3],[66.5,0.5,67,1],[67,1.5,69,2],[68.5,0.5,71,3],[69,2,72,4],[71,1,71,3],[72,0.5,69,2],[72.5,0.5,67,1],[73,0.5,66,2],[73.5,0.5,64,1],[74,0.5,66,2],[74.5,0.25,67,3],[74.75,0.25,69,5],[75,1,67,4],[76,4,55,1],[76,4,64,2],[80,2.5,64,2],[80,2.5,67,4],[82.5,0.5,71,5],[83,0.5,69,3],[83.5,0.5,67,1],[84,3,73,3],[84,3,76,5],[87,0.5,74,4],[87.5,0.5,73,3],[88,0.25,71,2],[88.25,0.25,69,1],[88.5,0.5,74,4],[89,1,62,1],[90,1.5,61,2],[90,1.5,64,3],[91.5,0.25,66,4],[91.75,0.25,67,5],[92,1.5,57,1],[92,1.5,66,4],[93.5,0.5,64,3],[94,2,57,1],[94,2,62,2],[96,3,64,3],[96,3,67,5],[99,0.5,71,5],[99.5,0.5,69,4],[100,3,66,2],[100,3,69,4],[103,0.5,72,5],[103.5,0.5,71,4],[104,3,68,2],[104,3,71,4],[107,0.5,74,5],[107.5,0.5,72,4],[108,4,64,1],[108,4,72,4],[112,2.5,57,1],[112,2.5,62,2],[114.5,0.5,66,2],[115,0.5,69,3],[115.5,0.5,72,5],[116,0.5,72,5],[116.5,0.5,69,2],[117,2,71,3],[119,0.5,71,3],[119.5,0.25,72,4],[119.75,0.25,74,5],[120,2.5,60,1],[120,2.5,67,2],[122.5,0.5,71,1],[123,0.5,74,3],[123.5,0.5,77,5],[124,3,67,1],[124,3,76,4],[127,1,67,2],[128,0.5,66,1],[128.5,0.5,69,3],[129,2,72,5],[131,1,64,3],[132,1,57,1],[132,1,62,2],[133,0.5,69,2],[133.5,0.25,71,3],[133.75,0.25,72,4],[134,0.5,72,4],[134.5,1,71,3],[135.5,0.5,69,2],[136,0.25,67,1],[136.25,0.25,66,2],[136.5,1,64,1],[137.5,0.5,66,2],[138,1,67,3],[139,0.5,66,2],[139.5,0.5,67,3],[140,4,59,1],[140,4,67,3]],
+  L:[[0,1,43,5],[1,1,55,1],[2,1,54,2],[3,1,42,4],[4,1,40,5],[5,1,52,1],[6,1,50,2],[7,1,38,5],[8,1,48,1],[9,1,48,2],[10,1,49,1],[11,1,49,1],[12,1,38,5],[13,1,50,1],[14,1,48,2],[15,1,48,2],[16,1,47,3],[17,1,56,2],[18,1,57,1],[19,1,45,2],[20,1,44,3],[21,1,59,1],[22,1,52,3],[23,1,56,1],[24,1,45,5],[25,1,57,1],[26,1,55,2],[27,1,43,2],[28,1,42,3],[29,1,57,1],[30,1,50,3],[31,1,54,1],[32,1,43,5],[33,1,55,1],[34,1,54,2],[35,1,42,4],[36,1,40,5],[37,1,52,1],[38,1,49,2],[39,1,45,4],[40,1,50,1],[41,1,47,2],[42,1,45,3],[43,1,45,1],[44,4,38,5],[48,1,38,5],[49,1,50,1],[50,1,48,2],[51,1,48,2],[52,1,47,3],[53,1,56,2],[54,1,57,1],[55,1,45,2],[56,1,44,3],[57,1,59,1],[58,1,52,3],[59,1,56,1],[60,1,45,5],[61,1,57,1],[62,1,55,2],[63,1,43,4],[64,1,42,5],[65,1,54,1],[66,1,52,2],[67,1,40,4],[68,1,39,5],[69,1,40,4],[70,1,42,3],[71,1,39,5],[72,1,40,4],[73,1,48,1],[74,1,45,2],[75,1,47,1],[76,1,40,5],[77,1,52,1],[78,1,50,2],[79,1,38,5],[80,1,49,1],[81,1,49,2],[82,1,47,3],[83,1,47,3],[84,1,45,5],[85,1,57,1],[86,1,55,2],[87,1,43,4],[88,1,42,5],[89,1,54,1],[90,1,43,4],[91,1,45,2],[92,1,38,5],[93,1,50,1],[94,1,48,2],[95,1,48,2],[96,1,47,4],[97,1,47,4],[98,1,48,3],[99,1,48,3],[100,1,49,2],[101,1,49,2],[102,1,50,1],[103,1,38,5],[104,1,39,4],[105,1,51,2],[106,1,52,1],[107,1,44,5],[108,1,45,4],[109,1,57,1],[110,1,55,2],[111,1,43,4],[112,1,42,5],[113,1,54,1],[114,1,50,4],[115,1,54,2],[116,1,55,1],[117,1,43,4],[118,1,41,5],[119,1,53,1],[120,1,52,2],[121,1,40,4],[122,1,38,5],[123,1,50,1],[124,1,48,2],[125,1,48,2],[126,1,47,3],[127,1,47,3],[128,1,45,5],[129,1,57,1],[130,1,55,2],[131,1,43,2],[132,1,42,3],[133,1,38,5],[134,1,43,2],[135,1,48,2],[136,1,50,1],[137,1,48,2],[138,1,50,1],[139,1,38,5],[140,4,43,2]],
+  Ls:[[0,2,43,5],[2,2,54,2],[4,2,40,5],[6,2,50,1],[8,2,48,2],[10,2,49,1],[12,2,38,5],[14,2,48,1],[16,2,47,3],[18,2,57,1],[20,2,44,5],[22,2,52,1],[24,2,45,5],[26,2,55,1],[28,2,42,5],[30,2,50,1],[32,2,43,5],[34,2,54,1],[36,2,40,3],[38,2,49,2],[40,2,50,1],[42,2,45,2],[44,4,38,5],[48,2,38,5],[50,2,48,1],[52,2,47,3],[54,2,57,1],[56,2,44,5],[58,2,52,1],[60,2,45,5],[62,2,55,1],[64,2,42,5],[66,2,52,1],[68,2,39,5],[70,2,42,3],[72,2,40,5],[74,2,45,2],[76,2,40,5],[78,2,50,1],[80,2,49,2],[82,2,47,3],[84,2,45,5],[86,2,55,1],[88,2,42,3],[90,2,43,2],[92,2,38,5],[94,2,48,1],[96,2,47,2],[98,2,48,1],[100,2,49,2],[102,2,50,1],[104,2,39,5],[106,2,52,1],[108,2,45,5],[110,2,55,1],[112,2,42,5],[114,2,50,2],[116,2,55,1],[118,2,41,5],[120,2,52,1],[122,2,38,5],[124,2,48,1],[126,2,47,2],[128,2,45,4],[130,2,55,1],[132,2,42,5],[134,2,43,4],[136,2,50,1],[138,2,50,1],[140,4,43,3]]},
+ c:{R:[[0,4,71,2],[4,5,71,2],[9,0.5,76,5],[9.5,0.5,72,3],[10,0.5,69,2],[10.5,0.5,67,1],[11,0.5,66,2],[11.5,0.5,67,4],[12,2,66,3],[14,0.5,64,2],[14.5,1.5,62,1],[16,4.5,74,5],[20.5,0.5,71,5],[21,0.5,65,2],[21.5,0.5,64,1],[22,0.5,69,3],[22.5,0.5,68,2],[23,0.5,74,5],[23.5,0.5,72,4],[24,4.5,72,4],[28.5,0.5,69,4],[29,0.5,64,2],[29.5,0.5,62,1],[30,0.5,67,3],[30.5,0.5,66,2],[31,0.5,72,5],[31.5,0.5,71,3],[32,3,71,3],[35,0.5,73,4],[35.5,0.5,74,5],[36,1,67,1],[37,0.5,67,1],[37.5,0.25,69,3],[37.75,0.25,71,5],[38,0.5,71,5],[38.5,0.5,69,4],[39,0.5,69,4],[39.5,0.5,67,3],[40,0.5,66,2],[40.5,0.5,64,1],[41,0.25,64,1],[41.25,0.25,66,2],[41.5,0.5,67,4],[42,1,67,4],[43,0.5,66,3],[43.5,0.5,64,2],[44,4,62,1],[48,2.5,66,2],[50.5,0.25,67,3],[50.75,0.25,66,2],[51,0.25,64,1],[51.25,0.25,66,2],[51.5,0.5,62,1],[52,3,74,5],[55,1,65,2],[56,1,64,1],[57,1.5,76,5],[58.5,0.5,74,4],[59,0.5,72,3],[59.5,0.5,71,2],[60,2.25,72,4],[62.25,0.25,71,3],[62.5,0.25,69,2],[62.75,0.25,67,1],[63,0.5,66,3],[63.5,0.5,64,2],[64,0.5,63,1],[64.5,0.5,64,2],[65,1.5,66,3],[66.5,0.5,67,1],[67,1.5,69,2],[68.5,0.5,71,3],[69,2,72,4],[71,1,71,3],[72,0.5,69,2],[72.5,0.5,67,1],[73,0.5,66,2],[73.5,0.5,64,1],[74,0.5,66,2],[74.5,0.25,67,3],[74.75,0.25,69,4],[75,1,67,3],[76,4,64,1],[80,2.5,67,2],[82.5,0.5,71,4],[83,0.5,69,2],[83.5,0.5,67,1],[84,3,76,5],[87,0.5,74,4],[87.5,0.5,73,3],[88,0.25,71,2],[88.25,0.25,69,1],[88.5,0.5,74,4],[89,1,62,1],[90,1.5,64,2],[91.5,0.25,66,3],[91.75,0.25,67,4],[92,1.5,66,3],[93.5,0.5,64,2],[94,2,62,1],[96,3,67,2],[99,0.5,71,4],[99.5,0.5,69,3],[100,3,69,3],[103,0.5,72,5],[103.5,0.5,71,4],[104,3,71,4],[107,0.5,74,5],[107.5,0.5,72,4],[108,4,72,4],[112,2.5,62,1],[114.5,0.5,66,2],[115,0.5,69,3],[115.5,0.5,72,5],[116,0.5,72,5],[116.5,0.5,69,2],[117,2,71,3],[119,0.5,71,3],[119.5,0.25,72,4],[119.75,0.25,74,5],[120,2.5,67,1],[122.5,0.5,71,2],[123,0.5,74,3],[123.5,0.5,77,5],[124,3,76,4],[127,1,67,2],[128,0.5,66,1],[128.5,0.5,69,3],[129,2,72,5],[131,1,64,2],[132,1,62,1],[133,0.5,69,3],[133.5,0.25,71,4],[133.75,0.25,72,5],[134,0.5,72,5],[134.5,1,71,4],[135.5,0.5,69,2],[136,0.25,67,1],[136.25,0.25,66,2],[136.5,1,64,1],[137.5,0.5,66,2],[138,1,67,3],[139,0.5,66,2],[139.5,0.5,67,3],[140,4,67,3]],
+  Rf:[[0,4,62,1],[0,4,67,3],[0,4,71,5],[4,4,64,2],[4,4,67,3],[4,5,71,5],[9,0.5,76,5],[9.5,0.5,72,3],[10,0.5,61,1],[10,0.5,69,2],[10.5,0.5,67,1],[11,0.5,66,3],[11.5,0.5,67,5],[12,2,57,1],[12,2,62,2],[12,2,66,4],[14,0.5,60,1],[14,0.5,64,3],[14.5,1.5,62,2],[16,4,65,1],[16,4,71,4],[16,4.5,74,5],[20.5,0.5,71,4],[21,0.5,65,2],[21.5,0.5,64,1],[22,0.5,64,1],[22,0.5,69,3],[22.5,0.5,68,2],[23,0.5,74,5],[23.5,0.5,72,4],[24,4,64,1],[24,4,69,2],[24,4.5,72,4],[28.5,0.5,69,2],[29,0.5,64,2],[29.5,0.5,62,1],[30,0.5,62,1],[30,0.5,67,3],[30.5,0.5,66,2],[31,0.5,72,5],[31.5,0.5,71,4],[32,3,62,1],[32,3,67,2],[32,3,71,4],[35,0.5,73,4],[35.5,0.5,74,5],[36,1,59,1],[36,1,64,2],[36,1,67,3],[37,0.5,67,3],[37.5,0.25,69,4],[37.75,0.25,71,5],[38,0.5,64,1],[38,0.5,71,5],[38.5,0.5,69,4],[39,0.5,69,4],[39.5,0.5,67,3],[40,0.5,57,1],[40,0.5,66,2],[40.5,0.5,64,1],[41,0.25,64,2],[41.25,0.25,66,4],[41.5,0.5,67,5],[42,1,62,2],[42,1,67,5],[43,0.5,66,4],[43.5,0.5,64,3],[44,4,57,1],[44,4,62,2],[48,2.5,57,1],[48,2.5,62,2],[48,2.5,66,4],[50.5,0.25,67,5],[50.75,0.25,66,4],[51,0.25,64,2],[51.25,0.25,66,3],[51.5,0.5,62,1],[52,3,65,2],[52,3,71,4],[52,3,74,5],[55,1,65,1],[56,1,56,1],[56,1,64,2],[57,1.5,76,3],[58.5,0.5,74,2],[59,0.5,72,1],[59.5,0.5,71,3],[60,2.25,64,1],[60,2.25,69,2],[60,2.25,72,4],[62.25,0.25,71,3],[62.5,0.25,69,2],[62.75,0.25,67,1],[63,0.5,66,3],[63.5,0.5,64,2],[64,0.5,63,1],[64.5,0.5,64,2],[65,1.5,66,3],[66.5,0.5,67,1],[67,1.5,69,2],[68.5,0.5,71,4],[69,2,72,5],[71,1,71,4],[72,0.5,64,1],[72,0.5,69,3],[72.5,0.5,67,2],[73,0.5,66,1],[73.5,0.5,64,2],[74,0.5,57,1],[74,0.5,66,3],[74.5,0.25,67,4],[74.75,0.25,69,5],[75,1,67,4],[76,4,55,1],[76,4,59,2],[76,4,64,3],[80,2.5,64,3],[80,2.5,67,5],[82.5,0.5,71,5],[83,0.5,69,3],[83.5,0.5,67,1],[84,3,69,2],[84,3,73,4],[84,3,76,5],[87,0.5,74,5],[87.5,0.5,73,4],[88,0.25,62,1],[88,0.25,71,3],[88.25,0.25,69,2],[88.5,0.5,74,5],[89,1,62,1],[90,1.5,55,1],[90,1.5,61,2],[90,1.5,64,3],[91.5,0.25,66,4],[91.75,0.25,67,5],[92,1.5,57,1],[92,1.5,62,2],[92,1.5,66,4],[93.5,0.5,64,3],[94,2,57,1],[94,2,62,2],[96,3,59,1],[96,3,64,3],[96,3,67,5],[99,0.5,71,5],[99.5,0.5,69,4],[100,3,61,1],[100,3,66,2],[100,3,69,4],[103,0.5,72,5],[103.5,0.5,71,4],[104,3,63,1],[104,3,68,2],[104,3,71,4],[107,0.5,74,5],[107.5,0.5,72,4],[108,4,64,1],[108,4,69,2],[108,4,72,4],[112,2.5,57,1],[112,2.5,62,2],[114.5,0.5,66,2],[115,0.5,69,3],[115.5,0.5,72,5],[116,0.5,67,2],[116,0.5,72,5],[116.5,0.5,69,3],[117,2,71,4],[119,0.5,71,1],[119.5,0.25,72,2],[119.75,0.25,74,3],[120,2.5,60,1],[120,2.5,64,2],[120,2.5,67,3],[122.5,0.5,71,1],[123,0.5,74,3],[123.5,0.5,77,5],[124,3,67,1],[124,3,72,2],[124,3,76,4],[127,1,67,1],[128,0.5,57,1],[128,0.5,66,2],[128.5,0.5,69,4],[129,2,72,5],[131,1,64,3],[132,1,57,1],[132,1,62,2],[133,0.5,69,1],[133.5,0.25,71,2],[133.75,0.25,72,3],[134,0.5,67,1],[134,0.5,72,3],[134.5,1,71,2],[135.5,0.5,69,1],[136,0.25,59,1],[136,0.25,67,3],[136.25,0.25,66,2],[136.5,1,64,1],[137.5,0.5,66,2],[138,1,62,1],[138,1,67,4],[139,0.5,66,3],[139.5,0.5,67,5],[140,4,59,1],[140,4,62,2],[140,4,67,5]],
+  L:[[0,1,43,5],[1,1,55,1],[2,1,54,2],[3,1,42,4],[4,1,40,5],[5,1,52,1],[6,1,50,2],[7,1,38,5],[8,1,48,1],[9,1,48,2],[10,1,49,1],[11,1,49,1],[12,1,38,5],[13,1,50,1],[14,1,48,2],[15,1,48,2],[16,1,47,3],[17,1,56,2],[18,1,57,1],[19,1,45,2],[20,1,44,3],[21,1,59,1],[22,1,52,3],[23,1,56,1],[24,1,45,5],[25,1,57,1],[26,1,55,2],[27,1,43,2],[28,1,42,3],[29,1,57,1],[30,1,50,3],[31,1,54,1],[32,1,43,5],[33,1,55,1],[34,1,54,2],[35,1,42,4],[36,1,40,5],[37,1,52,1],[38,1,49,2],[39,1,45,4],[40,1,50,1],[41,1,47,2],[42,1,45,3],[43,1,45,1],[44,4,38,5],[48,1,38,5],[49,1,50,1],[50,1,48,2],[51,1,48,2],[52,1,47,3],[53,1,56,2],[54,1,57,1],[55,1,45,2],[56,1,44,3],[57,1,59,1],[58,1,52,3],[59,1,56,1],[60,1,45,5],[61,1,57,1],[62,1,55,2],[63,1,43,4],[64,1,42,5],[65,1,54,1],[66,1,52,2],[67,1,40,4],[68,1,39,5],[69,1,40,4],[70,1,42,3],[71,1,39,5],[72,1,40,4],[73,1,48,1],[74,1,45,2],[75,1,47,1],[76,1,40,5],[77,1,52,1],[78,1,50,2],[79,1,38,5],[80,1,49,1],[81,1,49,2],[82,1,47,3],[83,1,47,3],[84,1,45,5],[85,1,57,1],[86,1,55,2],[87,1,43,4],[88,1,42,5],[89,1,54,1],[90,1,43,4],[91,1,45,2],[92,1,38,5],[93,1,50,1],[94,1,48,2],[95,1,48,2],[96,1,47,4],[97,1,47,4],[98,1,48,3],[99,1,48,3],[100,1,49,2],[101,1,49,2],[102,1,50,1],[103,1,38,5],[104,1,39,4],[105,1,51,2],[106,1,52,1],[107,1,44,5],[108,1,45,4],[109,1,57,1],[110,1,55,2],[111,1,43,4],[112,1,42,5],[113,1,54,1],[114,1,50,4],[115,1,54,2],[116,1,55,1],[117,1,43,4],[118,1,41,5],[119,1,53,1],[120,1,52,2],[121,1,40,4],[122,1,38,5],[123,1,50,1],[124,1,48,2],[125,1,48,2],[126,1,47,3],[127,1,47,3],[128,1,45,5],[129,1,57,1],[130,1,55,2],[131,1,43,2],[132,1,42,3],[133,1,38,5],[134,1,43,2],[135,1,48,2],[136,1,50,1],[137,1,48,2],[138,1,50,1],[139,1,38,5],[140,4,43,2]],
+  Ls:[[0,2,43,5],[2,2,54,2],[4,2,40,5],[6,2,50,1],[8,2,48,2],[10,2,49,1],[12,2,38,5],[14,2,48,1],[16,2,47,3],[18,2,57,1],[20,2,44,5],[22,2,52,1],[24,2,45,5],[26,2,55,1],[28,2,42,5],[30,2,50,1],[32,2,43,5],[34,2,54,1],[36,2,40,3],[38,2,49,2],[40,2,50,1],[42,2,45,2],[44,4,38,5],[48,2,38,5],[50,2,48,1],[52,2,47,3],[54,2,57,1],[56,2,44,5],[58,2,52,1],[60,2,45,5],[62,2,55,1],[64,2,42,5],[66,2,52,1],[68,2,39,5],[70,2,42,3],[72,2,40,5],[74,2,45,2],[76,2,40,5],[78,2,50,1],[80,2,49,2],[82,2,47,3],[84,2,45,5],[86,2,55,1],[88,2,42,3],[90,2,43,2],[92,2,38,5],[94,2,48,1],[96,2,47,2],[98,2,48,1],[100,2,49,2],[102,2,50,1],[104,2,39,5],[106,2,52,1],[108,2,45,5],[110,2,55,1],[112,2,42,5],[114,2,50,2],[116,2,55,1],[118,2,41,5],[120,2,52,1],[122,2,38,5],[124,2,48,1],[126,2,47,2],[128,2,45,4],[130,2,55,1],[132,2,42,5],[134,2,43,4],[136,2,50,1],[138,2,50,1],[140,4,43,3]]},
+};
+const AIR=(()=>{
+  const tr=(a,h)=>a.map(([t,d,m,f])=>({t,d,m,f,h}));
+  const SECS=[['Parte A inteira (compassos 1–13)',0,48],['Parte A · frase 1 (1–6)',0,24],['Parte A · frase 2 (7–11 e casa 2)',24,48],
+    ['Parte B inteira (14–37)',48,144],['Parte B · frase 1 (14–19)',48,72],['Parte B · frase 2 (20–25)',72,96],['Parte B · frase 3 (26–31)',96,120],['Parte B · frase 4 (32–37)',120,144]];
+  const VN={f:'Fácil',i:'Intermediária',c:'Completa'};
+  const VD={f:'Direita: só a melodia. Esquerda: uma nota do baixo a cada meio compasso.',
+    i:'Direita: melodia com uma nota de apoio nos tempos fortes. Esquerda: o baixo de Bach, que sobe e desce de oitava a cada tempo.',
+    c:'Direita: melodia com acordes de apoio (duas notas por baixo da melodia) nos tempos fortes. Esquerda: o baixo de Bach completo.'};
+  const mk=k=>{const v=AIRV[k],t={R:tr(v.R,'R'),L:tr(v.L,'L'),Ls:tr(v.Ls,'L')};if(v.Rf)t.Rf=tr(v.Rf,'R');
+    [t.R,t.Rf].forEach(a=>{if(!a)return;const A=a.find(n=>n.t===0),B=a.find(n=>n.t===48);if(A)A.lab='A';if(B)B.lab='B'});
+    const ms=Object.values(t).flat().map(n=>n.m);
+    return mkPiece({id:k==='i'?'air':'air-'+k,ver:k,title:'Air (Ária na corda Sol)',sub:'J. S. Bach · domínio público · arranjo do app em 3 versões',bpm:66,bpb:4,range:autoRange(ms),tracks:t,sections:SECS,
+      info:'O 2º movimento (Air) da Suíte para orquestra nº 3 de Bach, uma das melodias mais conhecidas da música. O apelido “na corda Sol” vem de um arranjo para violino do século XIX, tocado só na corda mais grave. Aqui a música está em Sol maior, com a parte A e a parte B tocadas uma vez cada (na partitura, cada parte se repete). A melodia e o baixo são de Bach; as notas de apoio da mão direita foram escolhidas para o app, e as notas mais graves do baixo subiram uma oitava para caber no teclado da tela. Escolha a versão acima: cada uma tem os seus 5 níveis e as suas estrelas. A melodia é lenta e cantada: segure cada nota o tempo todo. Se tiver pedal, troque-o a cada nota do baixo.'})};
+  const V={f:mk('f'),i:mk('i'),c:mk('c')};Object.values(V).forEach(p=>{p.versions=V;p.vnames=VN;p.vdesc=VD});return V.i;
+})();
+SONGS.push(AIR);
+
+/* =========================================================
+   DEDILHADO AUTOMÁTICO (programação dinâmica)
+   Custo de cada par de dedos pela distância em semitons (modelo de Parncutt, simplificado).
+   Mão esquerda = mão direita espelhada (altura com sinal trocado).
+   ========================================================= */
+const FSPAN={12:[-5,-3,1,5,8,10],13:[-4,-2,3,7,10,12],14:[-3,-1,5,9,12,14],15:[-1,1,7,10,13,15],23:[1,1,1,2,3,5],24:[1,1,3,4,5,7],25:[2,2,5,6,8,10],34:[1,1,1,2,2,4],35:[1,1,3,4,5,7],45:[1,1,1,2,3,5]};
+const BLK=m=>[1,3,6,8,10].includes(((m%12)+12)%12);
+// custo de tocar a nota p1 com o dedo f1 e a nota p2 com o dedo f2 (alturas já no "referencial da mão direita")
+function fPair(f1,p1,f2,p2,free,chord){
+  if(f1===f2){if(p1===p2)return 0;const a=Math.abs(p2-p1);return free?3:a<=4?10:4+a*.1}
+  const lo=Math.min(f1,f2),hi=Math.max(f1,f2),d=f1<f2?p2-p1:p1-p2,[mp,mc,mr,xr,xc,xp]=FSPAN[lo*10+hi];
+  let c=0;
+  const th=lo===1;
+  if(d<mp||d>xp)c=chord?30:Math.abs(p2-p1)>=7?4+.3*(d<mp?mp-d:d-xp):20; // fora do alcance: salto (mão muda de posição) ou impossível
+  else{if(d<mc)c+=2*(mc-d);if(d>xc)c+=2*(d-xc);if(d<mr)c+=(mr-d)*(th?1:.7);if(d>xr)c+=(d-xr)*(th?.7:1.2)}
+  if(lo>1&&d<=0)c+=10; // cruzar dedos longos
+  if(lo===1&&d<0)c+=1; // passagem do polegar
+  if(lo===3&&hi===4)c+=.5;
+  return free?c*.35:c;
+}
+function fNote(f,m){return(f===1&&BLK(m)?1.5:0)+(f===5&&BLK(m)?.5:0)+(f===4?.2:0)}
+// combinações crescentes de k dedos (para acordes)
+function fCombos(k){const out=[];const rec=(s,a)=>{if(a.length===k){out.push(a.slice());return}for(let f=s;f<=5;f++){a.push(f);rec(f+1,a);a.pop()}};rec(1,[]);return out}
+/* steps: [{t,ms:[alturas],free:bool, ban:[dedos proibidos], min:dedo mínimo, held:[{m,f}] notas seguradas}] em ordem; hand 'R' ou 'L'.
+   Devolve, para cada passo, a lista de dedos na mesma ordem de ms. */
+function fingerSteps(steps,hand){
+  const sg=hand==='L'?-1:1;
+  const cand=steps.map(s=>{const ord=s.ms.map((m,i)=>({p:m*sg,m,i})).sort((a,b)=>a.p-b.p);const k=Math.min(5,ord.length);
+    let cs=fCombos(k).filter(c=>!(s.ban||[]).some(b=>c.includes(b))&&c[0]>=(s.min||1));if(!cs.length)cs=fCombos(k);
+    return cs.map(c=>{let own=0;for(let j=1;j<k;j++)own+=fPair(c[j-1],ord[j-1].p,c[j],ord[j].p,false,true)*.6;c.forEach((f,j)=>{own+=fNote(f,ord[j].m);(s.held||[]).forEach(h=>{own+=fPair(h.f,h.m*sg,f,ord[j].p,false)})});
+      const fs=new Array(s.ms.length).fill(null);ord.forEach((o,j)=>fs[o.i]=j<k?c[j]:c[k-1]);return{fs,ord,c,own}})});
+  const tr=(A,B,free)=>{let c=0,n=0;for(let i=0;i<A.ord.length&&i<5;i++)for(let j=0;j<B.ord.length&&j<5;j++){const v=fPair(A.c[i],A.ord[i].p,B.c[j],B.ord[j].p,free);c+=A.c[i]===B.c[j]&&A.ord[i].p!==B.ord[j].p?v:v/ (A.ord.length*B.ord.length)**.5;n++}return c};
+  let cost=cand[0].map(x=>x.own),back=[];
+  for(let k=1;k<steps.length;k++){const nc=[],bk=[];
+    cand[k].forEach(b=>{let best=1e9,bi=0;cand[k-1].forEach((a,ai)=>{const v=cost[ai]+tr(a,b,steps[k].free);if(v<best){best=v;bi=ai}});nc.push(best+b.own);bk.push(bi)});
+    cost=nc;back.push(bk)}
+  let bi=cost.indexOf(Math.min(...cost));const res=new Array(steps.length);
+  for(let k=steps.length-1;k>=0;k--){res[k]=cand[k][bi].fs;if(k>0)bi=back[k-1][bi]}
+  return res;
+}
+/* =========================================================
    IMPORTAR PARTITURA (MIDI e MusicXML)
    ========================================================= */
 function readVar(d,p){let v=0,b;do{b=d.getUint8(p.i++);v=(v<<7)|(b&127)}while(b&128);return v}
@@ -1782,61 +1863,102 @@ function parseMusicXML(text){
   const doc=new DOMParser().parseFromString(text,'application/xml');
   if(doc.getElementsByTagName('parsererror').length)throw new Error('Não consegui ler este MusicXML.');
   const STEP={C:0,D:2,E:4,F:5,G:7,A:9,B:11};const tx=(el,s)=>{const x=el.querySelector(s);return x?x.textContent.trim():null};
-  const title=tx(doc,'work-title')||tx(doc,'movement-title')||'';
-  let bpm=null,bpb=4;const out=[];const parts=[...doc.getElementsByTagName('part')];
-  parts.forEach((part,pi)=>{let t=0,last=0,divs=1;
-    [...part.getElementsByTagName('measure')].forEach(meas=>{const mStart=t;let mMax=t;
-      for(const el of meas.children){const tag=el.tagName;
-        if(tag==='attributes'){const dv=tx(el,'divisions');if(dv)divs=+dv;const b=tx(el,'time beats'),bt=tx(el,'time beat-type');if(b&&bt&&pi===0)bpb=(+b)*4/(+bt)}
-        else if(tag==='direction'||tag==='sound'){const s=tag==='sound'?el:el.querySelector('sound');if(s&&s.getAttribute('tempo')&&bpm==null)bpm=Math.round(+s.getAttribute('tempo'))}
-        else if(tag==='backup'){t-=(+tx(el,'duration')||0)/divs}
-        else if(tag==='forward'){t+=(+tx(el,'duration')||0)/divs}
-        else if(tag==='note'){if(el.querySelector('grace'))continue;
-          const chord=!!el.querySelector('chord'),dur=(+tx(el,'duration')||0)/divs,start=chord?last:t;
-          const pt=el.querySelector('pitch');
-          if(pt&&!el.querySelector('rest')){const al=tx(pt,'alter');const m=(+tx(pt,'octave')+1)*12+STEP[tx(pt,'step')]+(al?Math.round(+al):0);
-            const ties=[...el.querySelectorAll('tie')].map(x=>x.getAttribute('type'));const fg=tx(el,'technical fingering');
-            out.push({t:start,d:dur,m,part:pi,staff:+(tx(el,'staff')||1),f:fg&&/^[1-5]$/.test(fg)?+fg:null,sp:al&&+al<0?'b':'',tieStop:ties.includes('stop'),tieStart:ties.includes('start')})}
-          if(!chord){last=t;t+=dur}}
-        if(t>mMax)mMax=t}
-      t=Math.max(t,mMax)});
-  });
+  // título: usa o texto da capa quando ele completa o título da obra (ex.: "Air" → "Air on the G String")
+  let title=tx(doc,'movement-title')||tx(doc,'work-title')||'';
+  const cw=[...doc.getElementsByTagName('credit-words')].map(x=>x.textContent.trim()).filter(Boolean);
+  const longer=cw.find(c=>title&&c.toLowerCase().startsWith(title.toLowerCase())&&c.length>title.length);
+  if(longer)title=longer;else if(!title&&cw.length)title=cw[0];
+  let bpm=null,bpb=4;const parts=[...doc.getElementsByTagName('part')];
+  // 1) cada compasso de cada parte, com tempos relativos ao início do compasso
+  const P=parts.map((part,pi)=>{let divs=1,cur=null;return [...part.getElementsByTagName('measure')].map(meas=>{
+    let t=0,last=0,mx=0;const ns=[],info={num:meas.getAttribute('number')||'',ns};
+    if(cur)info.end=cur;
+    for(const el of meas.children){const tag=el.tagName;
+      if(tag==='attributes'){const dv=tx(el,'divisions');if(dv)divs=+dv;const b=tx(el,'time beats'),bt=tx(el,'time beat-type');if(b&&bt&&pi===0&&!info.bpbSet){bpb=(+b)*4/(+bt);info.bpbSet=1}}
+      else if(tag==='direction'||tag==='sound'){const s=tag==='sound'?el:el.querySelector('sound');if(s&&s.getAttribute('tempo')&&bpm==null)bpm=Math.round(+s.getAttribute('tempo'))}
+      else if(tag==='barline'){const r=el.querySelector('repeat');if(r){if(r.getAttribute('direction')==='forward')info.fwd=true;else{info.bwd=true;info.times=+(r.getAttribute('times')||2)}}
+        const e=el.querySelector('ending');if(e){const ty=e.getAttribute('type');if(ty==='start'){cur=(e.getAttribute('number')||'1').split(/[ ,]+/).filter(Boolean).map(Number);info.end=cur}else{info.endStop=true;cur=null}}}
+      else if(tag==='backup'){t-=(+tx(el,'duration')||0)/divs}
+      else if(tag==='forward'){t+=(+tx(el,'duration')||0)/divs}
+      else if(tag==='note'){if(el.querySelector('grace'))continue;
+        const chord=!!el.querySelector('chord'),dur=(+tx(el,'duration')||0)/divs,start=chord?last:t;
+        const pt=el.querySelector('pitch');
+        if(pt&&!el.querySelector('rest')){const al=tx(pt,'alter');const m=(+tx(pt,'octave')+1)*12+STEP[tx(pt,'step')]+(al?Math.round(+al):0);
+          const ties=[...el.querySelectorAll('tie')].map(x=>x.getAttribute('type'));const fg=tx(el,'technical fingering');
+          ns.push({t:start,d:dur,m,part:pi,staff:+(tx(el,'staff')||1),f:fg&&/^[1-5]$/.test(fg)?+fg:null,sp:al&&+al<0?'b':'',tieStop:ties.includes('stop'),tieStart:ties.includes('start')})}
+        if(!chord){last=t;t+=dur}}
+      if(t>mx)mx=t}
+    info.len=mx;return info})});
+  if(!P.length||!P[0].length)throw new Error('Não encontrei compassos nesta partitura.');
+  // 2) ordem de execução com ritornelos e casas 1 e 2
+  const M0=P[0],n=M0.length,order=[];let i=0,start=0,pass=1,guard=0;
+  while(i<n&&guard++<5000){const m=M0[i];
+    if(m.fwd&&start!==i){start=i;pass=1}
+    if(m.end&&!m.end.includes(pass)){i++;continue}
+    order.push(i);
+    if(m.bwd&&pass<(m.times||2)){pass++;i=start;continue}
+    if(m.bwd||(m.end&&m.endStop)){pass=1;start=i+1}
+    i++}
+  const lenOf=k=>Math.max(...P.map(p=>p[k]?p[k].len:0))||bpb;
+  const offs=[];let tt=0;order.forEach(k=>{offs.push(tt);tt+=lenOf(k)});
+  const out=[];order.forEach((k,j)=>P.forEach(p=>{if(p[k])p[k].ns.forEach(nn=>out.push(Object.assign({},nn,{t:offs[j]+nn.t})))}));
+  // 3) trechos: corta onde a execução salta (repetição) e divide trechos longos de 8 em 8 compassos
+  const segs=[];let a=0;for(let j=1;j<=order.length;j++)if(j===order.length||order[j]!==order[j-1]+1||M0[order[j]].fwd||M0[order[j-1]].endStop){segs.push([a,j-1]);a=j}
+  for(let j=segs.length-1;j>0;j--)if(segs[j][1]-segs[j][0]<1){segs[j-1][1]=segs[j][1];segs.splice(j,1)} // compasso solto (ex.: casa 2) junta com o anterior
+  const sections=[],played=new Set();
+  const label=(x,y)=>{const runs=[];for(let j=x;j<=y;j++){const nm=M0[order[j]].num,r=runs[runs.length-1];if(r&&order[j]===order[j-1]+1)r[1]=nm;else runs.push([nm,nm])}
+    return 'Compassos '+runs.map(r=>r[0]===r[1]?r[0]:r[0]+'–'+r[1]).join(' e ')};
+  segs.forEach(([s,e])=>{const cnt=e-s+1,parts8=cnt>12?Math.ceil(cnt/8):1,step=Math.ceil(cnt/parts8);
+    for(let x=s;x<=e;x+=step){const y=Math.min(e,x+step-1),rep=played.has(order[x]);
+      sections.push([label(x,y)+(rep?' (repetição)':''),offs[x],offs[y]+lenOf(order[y])]);for(let j=x;j<=y;j++)played.add(order[j])}});
+  // 4) junta notas ligadas
   out.sort((a,b)=>a.t-b.t);const merged=[];const open={};
   out.forEach(n=>{const k=n.part+'|'+n.staff+'|'+n.m;if(n.tieStop&&open[k]&&Math.abs(open[k].t+open[k].d-n.t)<.01){open[k].d+=n.d;if(!n.tieStart)delete open[k];return}
     merged.push(n);if(n.tieStart)open[k]=n;else delete open[k]});
   const hasStaff2=merged.some(n=>n.part===0&&n.staff===2);let R=[],Lh=[];
   merged.forEach(n=>{let h;if(hasStaff2)h=n.part===0?(n.staff===2?'L':'R'):(n.m>=60?'R':'L');else if(parts.length>=2)h=n.part===0?'R':'L';else h=n.m>=60?'R':'L';(h==='R'?R:Lh).push(n)});
   if(!R.length&&!Lh.length)throw new Error('Não encontrei notas nesta partitura.');
-  return{R,L:Lh,bpm:bpm||80,bpb,title};
+  return{R,L:Lh,bpm:bpm||80,bpb,title,sections:sections.length>1?sections:null};
 }
-function fingerHand(notes,hand){ // dedilhado automático; mantém o dedilhado da partitura quando existe
-  const q=x=>Math.round(x*4)/4;notes.forEach(n=>{n.t=q(n.t);n.d=Math.max(.25,q(n.d))});
-  notes.sort((a,b)=>a.t-b.t||a.m-b.m);const steps=[];notes.forEach(n=>{const s=steps[steps.length-1];if(s&&s.t===n.t)s.ns.push(n);else steps.push({t:n.t,ns:[n]})});
-  let p=null;
-  steps.forEach((s,k)=>{const ws=s.ns.map(n=>WIDX(n.m)),lo=Math.min(...ws),hi=Math.max(...ws);
-    if(p==null||lo<p||hi>p+4){if(hi-lo>4)p=lo;else{let best=lo,bs=-1;for(let c=hi-4;c<=lo;c++){let sc=0;for(let j=k;j<Math.min(steps.length,k+8);j++){const w2=steps[j].ns.map(n=>WIDX(n.m));if(Math.min(...w2)>=c&&Math.max(...w2)<=c+4)sc++;else break}
-        const v=sc*10-(p==null?0:Math.abs(c-p));if(v>bs){bs=v;best=c}}p=best}}
-    s.ns.forEach((n,i)=>{if(n.f)return;let off=WIDX(n.m)-p;if(off>4)off=4;if(off<0)off=0;n.f=hand==='R'?off+1:5-off});
-    if(s.ns.length>1){const used=new Set();s.ns.forEach(n=>{while(used.has(n.f)&&n.f<5)n.f++;used.add(n.f)})}});
-  return notes.map(n=>({t:n.t,d:n.d,m:n.m,f:n.f,h:hand,sp:n.sp||undefined}));
+function quantSteps(notes){const q=x=>Math.round(x*4)/4;notes.forEach(n=>{n.t=q(n.t);n.d=Math.max(.25,q(n.d))});
+  notes.sort((a,b)=>a.t-b.t||a.m-b.m);const steps=[];notes.forEach(n=>{const s=steps[steps.length-1];if(s&&s.t===n.t)s.ns.push(n);else steps.push({t:n.t,ns:[n]})});return steps}
+function fingerHand(notes,hand){ // dedilhado automático por programação dinâmica; mantém o dedilhado escrito na partitura
+  if(!notes.length)return[];
+  const steps=quantSteps(notes);
+  const st=steps.map((s,i)=>{const pv=steps[i-1];return{t:s.t,ms:s.ns.map(n=>n.m),free:!!pv&&(s.t-pv.t>=2||s.t-Math.max(...pv.ns.map(n=>n.t+n.d))>=.5)}});
+  const fs=fingerSteps(st,hand);
+  steps.forEach((s,i)=>s.ns.forEach((n,k)=>{if(!n.f)n.f=fs[i][k]}));
+  return steps.flatMap(s=>s.ns).map(n=>({t:n.t,d:n.d,m:n.m,f:n.f,h:hand,sp:n.sp||undefined}));
 }
+function skyline(ns){ // melodia = a voz mais aguda (ignora notas de dentro que começam enquanto a melodia segura uma nota)
+  const by=new Map();ns.forEach(n=>{if(!by.has(n.t))by.set(n.t,[]);by.get(n.t).push(n)});const out=[];
+  [...by.keys()].sort((a,b)=>a-b).forEach(t=>{const top=by.get(t).reduce((a,b)=>b.m>a.m?b:a);const last=out[out.length-1];
+    if(last&&last.t+last.d>t+.01&&last.m>top.m)return;out.push(top)});
+  return out}
 function buildImported(o,name){
-  const R=fingerHand(o.R,'R'),Lt=fingerHand(o.L,'L');const Ls=[];
-  const by={};Lt.forEach(n=>{if(!by[n.t]||n.m<by[n.t].m)by[n.t]=n});Object.values(by).forEach(n=>Ls.push(Object.assign({},n,{f:5})));
+  const Rall=fingerHand(o.R.map(n=>Object.assign({},n)),'R'),Lt=fingerHand(o.L.map(n=>Object.assign({},n)),'L');
+  const tracks={R:Rall,L:Lt};
+  const mel=skyline(Rall);
+  if(mel.length&&mel.length<Rall.length){ // mão direita com mais de uma voz: nível 1 só com a melodia
+    tracks.Rf=Rall;tracks.R=fingerHand(mel.map(n=>({t:n.t,d:n.d,m:n.m,sp:n.sp})),'R')}
+  const by={};Lt.forEach(n=>{if(!by[n.t]||n.m<by[n.t].m)by[n.t]=n});tracks.Ls=Object.values(by).map(n=>Object.assign({},n,{f:5}));
   const bpb=o.bpb||4;
-  return{id:'imp'+Date.now(),title:(o.title||name.replace(/\.[^.]+$/,'')).slice(0,60),bpm:Math.min(200,Math.max(30,o.bpm||80)),bpb,tracks:{R,L:Lt,Ls}};
+  let sections=o.sections;
+  if(!sections){const end=Math.max(0,...[...Rall,...Lt].map(n=>n.t+n.d)),bars=Math.ceil(end/bpb-1e-9);
+    if(bars>12){sections=[];for(let b=0;b<bars;b+=8){const e=Math.min(bars,b+8);sections.push([`Compassos ${b+1}–${e}`,b*bpb,e*bpb])}}}
+  return{id:'imp'+Date.now(),title:(o.title||name.replace(/\.[^.]+$/,'')).slice(0,60),bpm:Math.min(200,Math.max(30,o.bpm||80)),bpb,tracks,sections:sections||undefined};
 }
 function loadImported(){const list=ST.get('imp',[]);list.forEach(o=>{if(SONGS.find(s=>s.id===o.id))return;
   const ms=Object.values(o.tracks).flat().map(n=>n.m);if(!ms.length)return;
-  SONGS.push(mkPiece({id:o.id,title:o.title,sub:'Importada por você · uso pessoal',imported:true,bpm:o.bpm,bpb:o.bpb,range:autoRange(ms),tracks:o.tracks,
-    info:'Música importada de um arquivo. O dedilhado foi sugerido automaticamente (ou veio da própria partitura). Se algum dedo parecer estranho, use o que for mais confortável para você.'}))})}
+  SONGS.push(mkPiece({id:o.id,title:o.title,sub:'Importada por você · uso pessoal',imported:true,bpm:o.bpm,bpb:o.bpb,range:autoRange(ms),tracks:o.tracks,sections:o.sections,
+    info:'Música importada de um arquivo. O dedilhado foi sugerido automaticamente (ou veio da própria partitura). Se algum dedo parecer estranho, use o que for mais confortável para você.'+(o.tracks.Rf?' A mão direita tem mais de uma voz: no nível 1 o app pede só a melodia (a voz mais aguda); a mão direita completa entra nos níveis 4 e 5.':'')+(o.sections?' Use a opção Trecho para estudar uma parte de cada vez; as repetições da partitura já estão escritas por extenso.':'')}))})}
 async function importFile(file){
   const buf=await file.arrayBuffer();const nm=file.name.toLowerCase();let o;
   if(/\.(mid|midi)$/.test(nm))o=parseMidi(buf);
   else if(nm.endsWith('.mxl'))o=parseMusicXML(await unzipMxl(buf));
   else if(/\.(xml|musicxml)$/.test(nm))o=parseMusicXML(new TextDecoder().decode(buf));
   else throw new Error('Formato não reconhecido. Use .mid, .midi, .musicxml, .xml ou .mxl.');
-  const s=buildImported(o,file.name);const n=s.tracks.R.length+s.tracks.L.length;if(n>6000)throw new Error('Partitura muito longa (mais de 6.000 notas).');
+  const s=buildImported(o,file.name);const n=(s.tracks.Rf||s.tracks.R).length+s.tracks.L.length;if(n>6000)throw new Error('Partitura muito longa (mais de 6.000 notas).');
   const list=ST.get('imp',[]);list.push(s);ST.set('imp',list);
   if(!ST.get('imp',[]).find(x=>x.id===s.id))throw new Error('Não há espaço para salvar esta música neste celular.');
   loadImported();return s;
@@ -1928,7 +2050,7 @@ function bestStreak(){const ds=[...new Set(DAYS)].sort();let best=0,cur=0,prev=n
 function achStats(){const ks=Object.keys(PROG);const st=ks.reduce((a,k)=>a+(PROG[k].stars||0),0);
   return{lessons:lessonsDone(),ex:ks.filter(k=>/^x[rlb]\d/.test(k)).length,songAny:ks.some(k=>k.startsWith('s:')),
     twoHands:ks.some(k=>/^s:.*:(2|3)$/.test(k)),stage:ks.some(k=>/^s:.*:4$/.test(k)&&PROG[k].stars>=2),
-    rep:new Set(ks.filter(k=>/^s:.*:3$/.test(k)).map(k=>k.split(':')[1])).size,three:ks.filter(k=>PROG[k].stars===3).length,stars:st,
+    rep:new Set(ks.filter(k=>/^s:.*:3$/.test(k)).map(k=>k.split(':')[1].split('-')[0])).size,three:ks.filter(k=>PROG[k].stars===3).length,stars:st,
     streak:Math.max(bestStreak(),streak()),thBas:T_BAS.every(tDone),thAll:TLESS.every(tDone),th1:TLESS.some(tDone),rt:ST.get('rtbest',0),treino:ST.get('treinoOk',0),mod:MODULES.some(M=>M.ls.every(l=>PROG['l'+l.n])),imp:ST.get('imp',[]).length}}
 const ACHS=[
   {ic:'🌱',t:'Primeiro passo',d:'Concluir a primeira lição',ok:s=>s.lessons>=1},
@@ -2363,7 +2485,7 @@ const NIVEIS=[
   {n:'Nunca toquei',d:'Começar do zero: postura, notas, ritmo e as primeiras melodias.',mods:[0],ex:{r:[1,10],l:[1,10]},songs:['sino','parab'],maxLv:1},
   {n:'Acho as notas e toco com uma mão',d:'Leitura de partitura, primeiras músicas com as duas mãos.',mods:[1,2],ex:{r:[11,20],l:[11,20],b:[1,10]},songs:['ode','noite','marcha','green'],maxLv:2},
   {n:'Toco devagar com as duas mãos',d:'Escalas, acordes, cifras e independência entre as mãos.',mods:[3,4,9],ex:{r:[21,30],l:[21,30],b:[11,20]},songs:['minu','canon','lib','prel'],maxLv:3},
-  {n:'Já toco algumas músicas',d:'Teclado arranjador, estilos brasileiros, ouvido e introduções.',mods:[5,6,7,8],ex:{b:[21,30]},songs:['fe','gym','lib','canon'],maxLv:4}
+  {n:'Já toco algumas músicas',d:'Teclado arranjador, estilos brasileiros, ouvido e introduções.',mods:[5,6,7,8],ex:{b:[21,30]},songs:['fe','gym','lib','canon','air'],maxLv:4}
 ];
 const OBJ={musicas:'Tocar músicas',acordes:'Acompanhar com acordes',partitura:'Ler partitura'};
 const GOALMOD={acordes:4,partitura:1};
@@ -2402,7 +2524,7 @@ function itemKey(it){return it.kind==='theory'?'th'+it.id:it.kind==='lesson'?'l'
 function itemLabel(it){if(it.kind==='theory'){const l=TLESS.find(x=>x.id===it.id);return`Teoria: ${l.t}`}if(it.kind==='lesson'){const l=LESSONS[it.n-1];return`Lição ${it.n}: ${l.t}`}
   if(it.kind==='ex'){const x=xInfo(it.k,it.n);return`${XK[it.k].n} ${it.n}: ${x.t}`}
   const s=SONGS.find(x=>x.id===it.id);return`${s.title} · nível ${it.lv+1} (${LEVELS[it.lv].t})`}
-function openItem(it){ac();if(it.kind==='theory')return go(viewTheoryLesson,it.id);if(it.kind==='lesson')go(viewLesson,it.n);else if(it.kind==='ex')go(viewEx,it.k,it.n);else go(viewSong,it.id,it.lv)}
+function openItem(it){ac();if(it.kind==='theory')return go(viewTheoryLesson,it.id);if(it.kind==='lesson')go(viewLesson,it.n);else if(it.kind==='ex')go(viewEx,it.k,it.n);else go(viewSong,it.id,it.lv,'i')}
 function levelComplete(plan){const lp=lessonPool(plan),ep=exPool(plan);return lp.every(n=>stars('l'+n)>=2)&&ep.every(e=>stars('x'+e.k+e.n)>=2)}
 
 function viewPlan(){
@@ -2529,12 +2651,13 @@ function viewHome(){
 
 /* ---------- Sobre ---------- */
 const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
-const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML)','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física e matemática da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
+const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','Air de Bach em 3 versões (fácil, intermediária e completa)','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML), com repetições, melodia separada, trechos e dedilhado automático','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física e matemática da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
 const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Tocar com a cifra','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
 function viewAbout(){
   title('Sobre');showKB(false);
   const f=FEITAS.length;
-  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 1.0 (em teste)</p>
+  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 1.1 (em teste)</p>
+   <div class="card"><h3>🆕 Novidades da versão 1.1</h3><ul style="margin:0;padding-left:18px;line-height:1.5"><li><b>Air (Ária na corda Sol)</b>, de Bach, como 13ª música, em 3 versões: fácil, intermediária e completa, cada uma com 5 níveis e trechos para estudar parte por parte.</li><li><b>Importar partitura</b> melhorada: toca as repetições e as casas 1 e 2 na ordem certa, separa a melodia (o nível 1 pede só a melodia), divide a música em trechos, lê o título completo e sugere um dedilhado melhor.</li></ul></div>
    <div class="card"><h3>O que é</h3><p>Um curso de teclado para iniciantes, com lições, exercícios e músicas. O app confere o que você toca, indica o dedo de cada nota e monta um treino diário de acordo com o seu nível.</p></div>
    <div class="card exp"><h3>Duas formas de abrir o app</h3>
      ${location.protocol==='https:'?'<p style="color:var(--ok);font-weight:800">✓ Você abriu pelo link: tudo funciona, inclusive microfone e cabo USB.</p>':'<p style="color:var(--bad);font-weight:800">Você abriu pelo arquivo: microfone e cabo USB provavelmente não vão funcionar. Use o link abaixo para isso.</p>'}
@@ -2568,7 +2691,7 @@ function viewAbout(){
    <div class="card"><h3>Situação do app</h3><p><b>${f} funções prontas.</b> O app está completo para estudar; a versão ainda está em teste com os primeiros usuários.</p>
      <p style="margin-bottom:4px"><b>✅ Prontas (${f})</b></p><ul style="margin:0 0 10px;padding-left:18px;line-height:1.5">${FEITAS.map(x=>`<li>${x}</li>`).join('')}</ul>
      <p style="margin-bottom:4px"><b>💡 Possíveis melhorias futuras (${FALTAM.length})</b></p><ul style="margin:0;padding-left:18px;line-height:1.5">${FALTAM.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-   <div class="card"><h3>Músicas e direitos autorais</h3><p>O app não reproduz a melodia nem a letra de músicas protegidas por direitos autorais. Nesses casos, inclui apenas um arranjo próprio de acompanhamento (acordes e baixo). Na versão atual, isso vale para <b>Let It Be</b> (The Beatles). As outras ${SONGS.length-1} músicas estão em domínio público.</p></div>
+   <div class="card"><h3>Músicas e direitos autorais</h3><p>O app não reproduz a melodia nem a letra de músicas protegidas por direitos autorais. Nesses casos, inclui apenas um arranjo próprio de acompanhamento (acordes e baixo). Na versão atual, isso vale para <b>Let It Be</b> (The Beatles). As outras ${SONGS.filter(s=>!s.imported).length-1} músicas estão em domínio público. Na <b>Air</b> de Bach, a melodia e o baixo são os originais; as notas de apoio e as simplificações são do próprio app.</p></div>
    <div class="card" style="text-align:center"><p style="margin:0">Desenvolvido por <b>Guido Roberto do Rêgo Cavalcanti Júnior</b><br>usando o Claude (IA da Anthropic)</p></div>`;
 }
 
