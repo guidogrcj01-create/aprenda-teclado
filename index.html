@@ -347,7 +347,7 @@ function dia(m,sp){const pc=mod(m,12);let o=oct(m),li=LETI[pc],acc=isBlack(m)?'#
 const TB=60,BB=128;
 const yT=d=>TB-(d-30)*4, yB=d=>BB-(d-18)*4;
 function glyph(x,ys,d,col,up){
-  const open=d>=2,stem=d<4,flag=d<1,flag2=d<.5,dot=[3,1.5,.75,.375].includes(d);let s='';
+  const open=d>=2,stem=d<4,flag=d<1,flag2=d<.3,dot=[3,1.5,.75,.375].includes(d);let s='';
   ys.forEach(y=>{s+=`<ellipse cx="${x}" cy="${y}" rx="5.6" ry="4.1" transform="rotate(-20 ${x} ${y})" fill="${open?'none':col}" stroke="${col}" stroke-width="${open?1.8:1}"/>`;if(dot)s+=`<circle cx="${x+10}" cy="${y-2}" r="1.7" fill="${col}"/>`});
   if(stem){const top=Math.min(...ys),bot=Math.max(...ys);
     if(up){const sx=x+5;s+=`<line x1="${sx}" y1="${bot}" x2="${sx}" y2="${top-26}" stroke="${col}" stroke-width="1.4"/>`;if(flag)s+=`<path d="M${sx} ${top-26} q9 6 6 17" stroke="${col}" fill="none" stroke-width="1.7"/>`;if(flag2)s+=`<path d="M${sx} ${top-19} q9 6 6 17" stroke="${col}" fill="none" stroke-width="1.7"/>`}
@@ -391,6 +391,47 @@ function staffSVG(steps,cur,width,opt={}){
     });
   });
   return s+'</svg>';
+}
+
+/* =========================================================
+   PAUTA QUE DESLIZA (as notas andam até a linha de tocar)
+   items: [{t, d, notes:[{m,d,f,sp,h}] | rest:true, label}]
+   o: {a, b, bpb, mode:'staff'|'rhythm', scale}
+   ========================================================= */
+function makeScroller(box,items,o){
+  const rh=o.mode==='rhythm',W=Math.max(280,box.clientWidth||340),H=rh?100:158,HEAD=rh?72:Math.round(Math.max(96,W*.24)),sc=o.scale||1;
+  const ts=[...new Set(items.map(i=>+i.t.toFixed(4)))].sort((x,y)=>x-y);let mg=1;for(let k=1;k<ts.length;k++)mg=Math.min(mg,ts[k]-ts[k-1]);
+  const PPB=Math.max(rh?62:54,Math.min(150,(rh?32:30)/Math.max(mg,.2)));
+  const X=t=>HEAD+(t-o.a)*PPB;
+  let body='';
+  const top=rh?32:TB-32,bot=rh?68:BB;
+  for(let bt=Math.ceil(o.a/o.bpb-1e-9)*o.bpb;bt<=o.b+1e-6;bt+=o.bpb)if(bt>o.a+1e-6)body+=`<line x1="${X(bt)-14}" y1="${top}" x2="${X(bt)-14}" y2="${bot}" stroke="#888" stroke-width="1"/>`;
+  items.forEach((it,k)=>{const x=X(it.t);let g=`<g id="sc${k}"><rect class="hl" x="${x-13}" y="4" width="26" height="${H-8}" rx="7" fill="transparent"/>`;
+    if(it.label)g+=`<text x="${x}" y="13" text-anchor="middle" font-size="12" font-weight="800" fill="#7a5200">${it.label}</text>`;
+    if(rh){if(it.rest)g+=restGlyph(x,50,it.d,'#222');
+      else{g+=`<rect x="${x+6}" y="58" width="${Math.max(4,it.d*PPB-16)}" height="5" rx="2.5" fill="rgba(245,184,61,.55)"/>`+glyph(x,[50],it.d,'#222',true)}}
+    else['T','B'].forEach(clef=>{const ns=it.notes.filter(n=>(n.h==='L'?'B':'T')===clef);if(!ns.length)return;
+      const ds=ns.map(n=>dia(n.m,n.sp)),ys=ds.map(q=>clef==='T'?yT(q.d):yB(q.d));
+      ns.forEach((n,j)=>{if(n.d*PPB>30)g+=`<rect x="${x+7}" y="${ys[j]-2}" width="${n.d*PPB-20}" height="4" rx="2" fill="rgba(245,184,61,.45)"/>`});
+      ds.forEach((q,j)=>{g+=ledgers(x,q.d,clef);if(q.acc)g+=`<text x="${x-17}" y="${ys[j]+4}" font-size="13" font-weight="800" fill="#222">${q.acc}</text>`});
+      const mid=clef==='T'?34:22,avg=ds.reduce((s,q)=>s+q.d,0)/ds.length;
+      g+=glyph(x,ys,ns[0].d*sc,'#222',avg<mid);
+      const fs=ns.filter(n=>n.f).map(n=>n.f);if(fs.length){const fy=clef==='T'?Math.min(TB-36,Math.min(...ys)-(avg<mid?32:10)):Math.max(BB+14,Math.max(...ys)+(avg<mid?14:34));
+        g+=`<text x="${x}" y="${fy+1}" text-anchor="middle" font-size="12" font-weight="800" fill="${FC[fs[0]]?'#222':'#222'}">${fs.join('')}</text>`}});
+    body+=g+'</g>'});
+  let st='';
+  if(rh)st+=`<line x1="4" y1="50" x2="${W-4}" y2="50" stroke="#666"/>`;
+  else{for(let i=0;i<5;i++)st+=`<line x1="4" y1="${TB-i*8}" x2="${W-4}" y2="${TB-i*8}" stroke="#555"/><line x1="4" y1="${BB-i*8}" x2="${W-4}" y2="${BB-i*8}" stroke="#555"/>`}
+  let cl=`<rect x="0" y="0" width="${rh?40:44}" height="${H}" fill="#f7f4ec"/>`;
+  if(!rh)cl+=`<line x1="4" y1="${TB-32}" x2="4" y2="${BB}" stroke="#555" stroke-width="2"/><circle cx="12" cy="${yT(32)}" r="3.5" fill="#b07a00"/><text x="18" y="${yT(32)+4}" font-size="11" font-weight="800" fill="#b07a00">Sol</text><circle cx="12" cy="${yB(24)}" r="3.5" fill="#2a6fb0"/><text x="18" y="${yB(24)+4}" font-size="11" font-weight="800" fill="#2a6fb0">Fá</text>`;
+  else cl+=`<text x="8" y="54" font-size="11" font-weight="800" fill="#7a5200">${o.bpb}/4</text>`;
+  cl+=`<line x1="${HEAD}" y1="2" x2="${HEAD}" y2="${H-2}" stroke="#e0a020" stroke-width="3" stroke-linecap="round"/>`;
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:hidden">${st}<g id="scg">${body}</g>${cl}</svg>`;
+  const G=box.querySelector('#scg'),FILL={cur:'rgba(245,184,61,.32)',good:'rgba(26,158,100,.30)',ok:'rgba(196,138,0,.30)',miss:'rgba(221,51,51,.28)'};
+  let lastX=null;
+  return{
+    update(ph){const tx=Math.round(-(ph-o.a)*PPB*2)/2;if(tx!==lastX){G.setAttribute('transform',`translate(${tx},0)`);lastX=tx}},
+    mark(k,s){const g=G.querySelector('#sc'+k);if(!g)return;g.querySelector('.hl').setAttribute('fill',FILL[s]||'transparent');g.style.opacity=s==='past'?.45:1}};
 }
 
 /* =========================================================
@@ -497,7 +538,7 @@ function runPlay(stage,piece,cfg,demo){
   P={piece,evs,steps,a,b,bps,demo,cfg,rt:[],rtMsg:'',rtUntil:0,wait:!demo&&cfg.wait,idx:0,jidx:0,ph:a,phT:a,errors:0,hits:0,miss:{},dead:false,lastCur:-2,pre:false,done:false};
   newSession();
   stage.innerHTML=`<div class="pstatus"><span id="pinfo">${demo?'Ouvindo…':'Toque a nota indicada'}</span><span id="pscore"></span></div>
-    <div id="nt">${S.notation==='falling'?'<canvas id="fall" class="bleed"></canvas>':S.notation==='staff'?'<div class="staffbox" id="staff"></div>':'<div class="lane" id="lane"></div>'}</div>
+    <div id="nt">${S.notation==='falling'?'<canvas id="fall" class="bleed"></canvas>':S.notation==='staff'?'<div class="staffbox" id="staff"></div>':S.notation==='scroll'?'<div class="staffbox" id="sscroll"></div>':'<div class="lane" id="lane"></div>'}</div>
     ${S.hands?`<div class="hands-row">${handsSVG('p')}</div>`:''}
     <div class="row"><button class="btn sm" id="pstop">⚙ Parar e ajustar</button><button class="btn sm" id="prst">↺ Recomeçar</button>${demo?'':'<button class="btn sm" id="pnext">🔊 Ouvir a próxima</button>'}</div>
     <div id="pres"></div>`;
@@ -506,6 +547,7 @@ function runPlay(stage,piece,cfg,demo){
   $('#prst').onclick=()=>runPlay(stage,piece,cfg,demo);
   if(!demo)$('#pnext').onclick=()=>{const s=curStep();if(s)s.notes.forEach(n=>tone(n.m,0,.8,{dest:master}))};
   if(!steps.length){$('#pinfo').textContent='Nada para tocar neste trecho com este nível.';return}
+  if(S.notation==='scroll'){P.scr=makeScroller($('#sscroll'),steps.map(s=>({t:s.t,notes:s.notes,label:s.label})),{a,b,bpb:piece.bpb,scale:piece.dscale||1});P.scrCur=-1}
   const c=AC;
   if(!P.wait){
     const cb=demo?0:piece.bpb;P.t0=c.currentTime+.3+cb/bps;
@@ -541,7 +583,7 @@ function playNote(m,src){
   }else{const tol=.28*P.bps;let best=null,bd=1e9;
     for(let k=P.jidx;k<P.steps.length;k++){const s=P.steps[k];if(s.t-P.ph>tol)break;if(s.done)continue;const d=Math.abs(s.t-P.ph);
       if(d<=tol&&d<bd&&s.notes.some(n=>mod(n.m,12)===pc&&!s.got.has(n))){bd=d;best=s}}
-    if(best){const n=best.notes.find(n=>mod(n.m,12)===pc&&!best.got.has(n));best.got.add(n);flashKey(n.m,'ok');if(best.got.size>=best.notes.length){best.done=true;P.hits++}}
+    if(best){const n=best.notes.find(n=>mod(n.m,12)===pc&&!best.got.has(n));best.got.add(n);flashKey(n.m,'ok');if(best.got.size>=best.notes.length){best.done=true;P.hits++;if(P.scr)P.scr.mark(P.steps.indexOf(best),'good')}}
     else{P.errors++;flashKey(m,'bad')}}
   const sc=$('#pscore');if(sc)sc.textContent=`✓ ${P.hits}   ✗ ${P.errors}`;
 }
@@ -575,9 +617,10 @@ function finishPlay(stage){
 }
 function renderPlay(){
   const ci=curIndex(),st=P.steps[ci];
+  if(P.scr){P.scr.update(P.ph);if(ci!==P.scrCur){for(let k=Math.max(0,P.scrCur);k<ci&&k<P.steps.length;k++){const s=P.steps[k];P.scr.mark(k,s.missed?'miss':s.done?'good':'past')}if(ci<P.steps.length)P.scr.mark(ci,'cur');P.scrCur=ci}}
   if(ci!==P.lastCur){P.lastCur=ci;setTargets(st?st.notes.map(n=>({m:n.m,f:n.f,sp:n.sp})):[]);setHands('p',st?st.notes:[]);
     if(S.notation==='staff'){const box=$('#staff');if(box){const w=box.clientWidth||320,per=Math.max(4,Math.floor((w-46)/48)),from=Math.max(0,ci-1);box.innerHTML=staffSVG(P.steps.slice(from,from+per),ci-from,w,{scale:P.piece.dscale||1})}}
-    else if(S.notation!=='falling'){const lane=$('#lane');if(lane){const from=Math.max(0,ci-1);lane.innerHTML=P.steps.slice(from,from+10).map((s,i)=>{const k=from+i,cl=k===ci?'cur':k<ci?'past':'';
+    else if(S.notation!=='falling'&&S.notation!=='scroll'){const lane=$('#lane');if(lane){const from=Math.max(0,ci-1);lane.innerHTML=P.steps.slice(from,from+10).map((s,i)=>{const k=from+i,cl=k===ci?'cur':k<ci?'past':'';
       const body=S.notation==='fingers'?s.notes.map(n=>`<div class="fg" style="color:${FC[n.f]||'var(--text)'};-webkit-text-stroke:.6px rgba(0,0,0,.35)">${n.f||'•'}</div>`).join('')+`<div class="hd">${s.notes[0].h==='L'?'esq.':'dir.'} · ${s.notes.map(n=>nn(n.m,n.sp)).join(' ')}</div>`
         :s.notes.map(n=>`<div class="nm" style="${k===ci?'color:#111;background:'+(FC[n.f]||'var(--accent)')+';border-radius:6px;padding:0 4px':''}">${nn(n.m,n.sp)}</div>`).join('')+`<div class="hd">${s.notes.map(n=>n.f||'').join(' ')}</div>`;
       return `<div class="lc ${cl}">${s.label?`<div class="lab">${s.label}</div>`:''}${body}</div>`}).join('')}}}
@@ -1054,28 +1097,51 @@ EX.read=(box,cfg)=>{
 EX.rhythm=(box,cfg)=>{
   const pat=cfg.pattern.map(p=>typeof p==='number'?{d:p}:{d:p.r,r:true});
   const total=pat.reduce((a,p)=>a+p.d,0);let pos=0;const ons=pat.map(p=>{const o={t:pos,d:p.d,r:p.r};pos+=p.d;return o});
+  let mode=ST.get('rmode','metro'),click=ST.get('rclick',true),spd=100,raf=null,scr=null;
   const draw=(stat)=>{const SPx=Math.min(56,(box.clientWidth-30)/Math.max(total,4));let x=18,s='',W=Math.max(300,total*SPx+40);
     s+=`<line x1="6" y1="50" x2="${W-6}" y2="50" stroke="#666"/>`;
     ons.forEach((o,i)=>{const col=stat?(stat[i]==='good'?'#1a9e64':stat[i]==='ok'?'#c48a00':stat[i]==='miss'?'#d33':'#333'):'#333';
       const cx=x+8;if(mod(o.t,cfg.bpb)===0&&o.t>0)s+=`<line x1="${x-6}" y1="30" x2="${x-6}" y2="70" stroke="#999"/>`;
       s+=o.r?restGlyph(cx,50,o.d,col):glyph(cx,[50],o.d,col,true);x+=Math.max(26,o.d*SPx)});
     $('#rsvg').innerHTML=`<svg viewBox="0 0 ${W} 90" width="100%" style="display:block">${s}</svg>`};
-  box.innerHTML=`<div class="exhead"><span class="muted small">${cfg.bpm} batidas por minuto · ${cfg.bpb} tempos por compasso</span></div><div class="staffbox" id="rsvg" style="padding:6px"></div>
+  const bpm=()=>Math.round(cfg.bpm*spd/100);
+  box.innerHTML=`<div class="exhead"><b>Como acompanhar</b></div>
+    <div class="seg" id="rmode"><button data-v="metro">🥁 Metrônomo</button><button data-v="move">🎼 Partitura em movimento</button></div>
+    <p class="muted small" id="rmdesc" style="margin:6px 0 8px"></p>
+    <div class="ctl" style="margin-bottom:8px"><label id="rclk">Com clique do metrônomo <input type="checkbox" id="rclick" ${click?'checked':''}></label>
+      <label>Velocidade <input type="range" id="rspd" min="50" max="100" step="5" value="100"><b id="rspdv" style="width:44px;text-align:right">100%</b></label></div>
+    <div class="exhead"><span class="muted small" id="rinfo"></span></div><div class="staffbox" id="rsvg" style="padding:6px"></div>
     <div class="row" style="margin-top:10px"><button class="btn" id="rhear">▶ Ouvir o ritmo</button><button class="btn primary" id="rgo">Começar</button></div><div class="fb" id="fb"></div>`;
-  draw(null);
-  const sched=(withNotes,cb)=>{newSession();const c=ac(),bps=cfg.bpm/60,t0=c.currentTime+.3+cfg.bpb/bps;
+  const info=()=>{$('#rinfo').textContent=`${bpm()} batidas por minuto · ${cfg.bpb} tempos por compasso`};
+  const stopAnim=()=>{if(raf)cancelAnimationFrame(raf);raf=null};addClean(stopAnim);
+  const setMode=v=>{mode=v;ST.set('rmode',v);stopAnim();box.querySelectorAll('#rmode button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+    $('#rclk').classList.toggle('hidden',v!=='move');
+    $('#rmdesc').textContent=v==='move'?'As figuras andam até a linha amarela. Toque quando a nota encostar na linha; nas pausas, não toque. A faixa amarela mostra quanto a nota dura.':'A partitura fica parada. Depois de 4 cliques de preparação, toque junto com o metrônomo.';
+    if(v==='move'){$('#rsvg').style.padding='0';scr=makeScroller($('#rsvg'),ons,{a:0,b:total,bpb:cfg.bpb,mode:'rhythm'});scr.update(-cfg.bpb)}else{$('#rsvg').style.padding='6px';scr=null;draw(null)}};
+  box.querySelectorAll('#rmode button').forEach(b=>b.onclick=()=>setMode(b.dataset.v));
+  $('#rclick').onchange=e=>{click=e.target.checked;ST.set('rclick',click)};
+  $('#rspd').oninput=e=>{spd=+e.target.value;$('#rspdv').textContent=spd+'%';info()};
+  info();setMode(mode);
+  const sched=(withNotes)=>{newSession();const c=ac(),bps=bpm()/60,t0=c.currentTime+.3+cfg.bpb/bps;
     for(let k=0;k<cfg.bpb;k++)drum(k===0?'accent':'click',t0-(cfg.bpb-k)/bps);
-    for(let bt=0;bt<total;bt++)drum(mod(bt,cfg.bpb)===0?'accent':'click',t0+bt/bps,.8);
-    if(withNotes)ons.forEach(o=>{if(!o.r)tone(60,t0+o.t/bps,o.d/bps*.9)});return{t0,bps}};
-  $('#rhear').onclick=()=>{sched(true);$('#fb').className='fb';$('#fb').textContent='Ouça e conte junto…'};
-  $('#rgo').onclick=()=>{const{t0,bps}=sched(false);const taps=[];$('#fb').className='fb';$('#fb').textContent='Prepare-se: 4 cliques e comece…';
-    HANDLER=()=>taps.push(AC.currentTime);
+    if(mode==='metro'||click)for(let bt=0;bt<total;bt++)drum(mod(bt,cfg.bpb)===0?'accent':'click',t0+bt/bps,.8);
+    if(withNotes)ons.forEach(o=>{if(!o.r)tone(60,t0+o.t/bps,o.d/bps*.95)});return{t0,bps}};
+  const animate=(t0,bps,live)=>{stopAnim();if(mode!=='move'||!scr)return;const sc=scr;ons.forEach((o,i)=>sc.mark(i,'none'));
+    const loop=()=>{const ph=(AC.currentTime-t0)*bps;sc.update(ph);if(live)live(ph);if(ph<total+1)raf=requestAnimationFrame(loop);else raf=null};raf=requestAnimationFrame(loop)};
+  $('#rhear').onclick=()=>{if(mode==='move'&&!scr)setMode('move');const{t0,bps}=sched(true);$('#fb').className='fb';$('#fb').textContent='Ouça e conte junto…';if(mode==='metro')draw(null);animate(t0,bps)};
+  $('#rgo').onclick=()=>{if(mode==='move'&&!scr)setMode('move');const{t0,bps}=sched(false);const taps=[];$('#fb').className='fb';$('#fb').textContent='Prepare-se: 4 cliques e comece…';
+    box.querySelectorAll('#rres').forEach(e=>e.remove());if(mode==='metro')draw(null);
+    // marcação ao vivo (partitura em movimento)
+    const lst=ons.map(()=>null),usedL=new Set();
+    HANDLER=()=>{const t=AC.currentTime;taps.push(t);if(mode!=='move'||!scr)return;let bi=-1,bd=9;ons.forEach((o,i)=>{if(o.r||lst[i])return;const d=Math.abs(t-(t0+o.t/bps));if(d<bd){bd=d;bi=i}});
+      if(bi>=0&&bd<.3){lst[bi]=bd<.12?'good':'ok';scr.mark(bi,lst[bi])}};
+    animate(t0,bps,ph=>{ons.forEach((o,i)=>{if(!o.r&&!lst[i]&&(ph-o.t)/bps>.3){lst[i]='miss';scr.mark(i,'miss')}})});
     const id=setTimeout(()=>{HANDLER=null;const stat=[],used=new Set();let good=0,okk=0,n=0;
       ons.forEach((o,i)=>{if(o.r){stat.push('rest');return}n++;const te=t0+o.t/bps;let bi=-1,bd=9;taps.forEach((t,k)=>{if(used.has(k))return;const d=Math.abs(t-te);if(d<bd){bd=d;bi=k}});
         if(bi>=0&&bd<.3){used.add(bi);if(bd<.12){good++;stat.push('good')}else{okk++;stat.push('ok')}}else stat.push('miss')});
-      const extra=taps.length-used.size;draw(stat);
+      const extra=taps.length-used.size;stopAnim();if(mode==='move'){$('#rsvg').style.padding='6px';scr=null}draw(stat);
       const acc=Math.max(0,Math.round((good+okk*.6-extra*.5)/n*100));
-      $('#fb').className='fb';$('#fb').innerHTML=`Verde = no tempo · Amarelo = quase · Vermelho = errou${extra?` · ${extra} toque(s) a mais`:''}`;
+      $('#fb').className='fb';$('#fb').innerHTML=`Verde = no tempo · Amarelo = quase · Vermelho = errou${extra?` · ${extra} toque(s) a mais`:''}${spd<100?` · velocidade ${spd}%`:''}`;
       const stars=acc>=95?3:acc>=80?2:1;saveScore(CURKEY,stars,acc);box.insertAdjacentHTML('beforeend',`<div class="result" id="rres"><div class="stars">${starStr(stars)}</div><div class="pct">${acc}% no ritmo</div></div>`);
       const old=box.querySelectorAll('#rres');if(old.length>1)old[0].remove();
     },(t0-AC.currentTime+total/bps+.5)*1000);addClean(()=>clearTimeout(id))};
@@ -1290,8 +1356,8 @@ function viewSettings(){
   title('Configurações');showKB(false);
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,t])=>`<button data-k="${k}" data-v="${v}" class="${S[k]===v?'on':''}">${t}</button>`).join('')}</div>`;
   V().innerHTML=`
-   <div class="card setg"><h3>Como ver as notas</h3>${seg('notation',[['falling','Notas caindo'],['staff','Partitura'],['names','Nome das notas'],['fingers','Número dos dedos']])}
-     <p class="muted small" style="margin-top:8px">Em todas as formas, a tecla que você deve tocar acende na cor do dedo, com o número do dedo.</p></div>
+   <div class="card setg"><h3>Como ver as notas</h3>${seg('notation',[['falling','Notas caindo'],['staff','Partitura'],['scroll','Partitura deslizando'],['names','Nome das notas'],['fingers','Número dos dedos']])}
+     <p class="muted small" style="margin-top:8px">Em todas as formas, a tecla que você deve tocar acende na cor do dedo, com o número do dedo. <b>Partitura</b> avança de nota em nota; <b>Partitura deslizando</b> corre até a linha amarela, e você toca quando a nota chega nela (a faixa amarela atrás da nota mostra quanto tempo ela dura).</p></div>
    <div class="card setg"><h3>Tema</h3>${seg('theme',[['light','☀️ Claro'],['dark','🌙 Escuro']])}</div>
    <div class="card setg"><h3>Nome das notas</h3>${seg('names',[['solfa','Dó Ré Mi'],['letters','C D E']])}</div>
    <div class="card setg"><h3>Como o app ouve você</h3>${seg('input',[['touch','Tocar na tela'],['mic','Microfone'],['midi','Cabo USB (MIDI)']])}<div class="note" id="inmsg" style="margin-top:10px;display:none"></div>
@@ -2651,13 +2717,14 @@ function viewHome(){
 
 /* ---------- Sobre ---------- */
 const LINK_APP='https://guidogrcj01-create.github.io/aprenda-teclado/';
-const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','Air de Bach em 3 versões (fácil, intermediária e completa)','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML), com repetições, melodia separada, trechos e dedilhado automático','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física e matemática da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
+const FEITAS=[LESSONS.length+' lições em '+MODULES.length+' módulos','90 exercícios progressivos (mão direita, esquerda e duas mãos)',SONGS.filter(s=>!s.imported).length+' músicas com 5 níveis cada','Air de Bach em 3 versões (fácil, intermediária e completa)','Exercícios de ritmo com metrônomo ou partitura em movimento','Partitura deslizando, além de notas caindo, partitura, nomes e dedos','4 formas de ver as notas (notas caindo, partitura, nomes, dedos)','Dedo indicado em cada nota, com cores','Entrada pela tela, microfone e cabo USB (MIDI)','Plano de estudo por nível','Treino do dia','Teste seu teclado','Anotar problema','Modo livre','Tema claro e escuro','Avaliação do ritmo no modo espera','Importar partitura (MIDI e MusicXML), com repetições, melodia separada, trechos e dedilhado automático','Funciona sem internet e pode ser instalado (pelo link)','Dinâmica (forte e piano) e pedal','Conquistas','Teoria musical: introdução (física e matemática da música), básica, intermediária e avançada, com '+TLESS.length+' lições','Teoria rápida: escalas, armaduras, campo harmônico, acordes e intervalos de qualquer tom'];
 const FALTAM=['Som de piano real','Microfone ajustado com testes em teclados reais','Tocar com a cifra','Completar a Gymnopédie e a Marcha Nupcial','Progresso salvo na nuvem','Publicação na Play Store'];
 function viewAbout(){
   title('Sobre');showKB(false);
   const f=FEITAS.length;
-  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 1.1 (em teste)</p>
-   <div class="card"><h3>🆕 Novidades da versão 1.1</h3><ul style="margin:0;padding-left:18px;line-height:1.5"><li><b>Air (Ária na corda Sol)</b>, de Bach, como 13ª música, em 3 versões: fácil, intermediária e completa, cada uma com 5 níveis e trechos para estudar parte por parte.</li><li><b>Importar partitura</b> melhorada: toca as repetições e as casas 1 e 2 na ordem certa, separa a melodia (o nível 1 pede só a melodia), divide a música em trechos, lê o título completo e sugere um dedilhado melhor.</li></ul></div>
+  V().innerHTML=`<h1>🎹 Aprenda teclado</h1><p class="muted">Versão 1.2 (em teste)</p>
+   <div class="card"><h3>🆕 Novidades da versão 1.2</h3><ul style="margin:0;padding-left:18px;line-height:1.5"><li><b>Exercícios de ritmo:</b> agora você escolhe entre <b>Metrônomo</b> (partitura parada) ou <b>Partitura em movimento</b> (as figuras andam até a linha e mudam de cor na hora em que você toca), com opção de clique e controle de velocidade.</li><li><b>Partitura deslizando:</b> nova forma de ver as notas em ⚙ Configurações, para músicas, lições, técnica e estilos.</li></ul></div>
+   <div class="card"><h3>Novidades da versão 1.1</h3><ul style="margin:0;padding-left:18px;line-height:1.5"><li><b>Air (Ária na corda Sol)</b>, de Bach, como 13ª música, em 3 versões: fácil, intermediária e completa, cada uma com 5 níveis e trechos para estudar parte por parte.</li><li><b>Importar partitura</b> melhorada: toca as repetições e as casas 1 e 2 na ordem certa, separa a melodia (o nível 1 pede só a melodia), divide a música em trechos, lê o título completo e sugere um dedilhado melhor.</li></ul></div>
    <div class="card"><h3>O que é</h3><p>Um curso de teclado para iniciantes, com lições, exercícios e músicas. O app confere o que você toca, indica o dedo de cada nota e monta um treino diário de acordo com o seu nível.</p></div>
    <div class="card exp"><h3>Duas formas de abrir o app</h3>
      ${location.protocol==='https:'?'<p style="color:var(--ok);font-weight:800">✓ Você abriu pelo link: tudo funciona, inclusive microfone e cabo USB.</p>':'<p style="color:var(--bad);font-weight:800">Você abriu pelo arquivo: microfone e cabo USB provavelmente não vão funcionar. Use o link abaixo para isso.</p>'}
